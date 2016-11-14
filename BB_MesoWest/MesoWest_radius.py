@@ -12,8 +12,6 @@ Get MesoWest data for all stations within within defined bounds:
 
 Returns a dictionary that contains station names, ids, lats/lons, and observed
 variables.
-
-I just made an edit to this file
 """
 
 import json
