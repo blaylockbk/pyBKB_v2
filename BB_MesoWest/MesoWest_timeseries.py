@@ -80,7 +80,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
         + '&vars=' + variables \
         + '&obtimezone=' + tz \
         + '&output=json'
-
+    
     try:
         # Just try everything first.
         # If it doens't work, return an error message with the URL for
@@ -104,6 +104,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
         return_this['ELEVATION'] = float(data['STATION'][0]['ELEVATION'])
                                       # Note: Elevation is in feet, NOT METERS!
 
+
         # Dynamically create keys in the dictionary for each requested variable
         for v in data['STATION'][0]['SENSOR_VARIABLES'].keys():
             if v == 'date_time':
@@ -111,6 +112,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
                 dates = data["STATION"][0]["OBSERVATIONS"]["date_time"]
                 converttime = np.vectorize(MWdate_to_datetime)
                 return_this['DATETIME'] = converttime(dates)
+
             else:
                 # v represents all the variables, but each variable may have
                 # more than one set.
@@ -121,8 +123,9 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
                 grab_this_set = str(data['STATION'][0]['SENSOR_VARIABLES']\
                                     [key_name].keys()[set_num])
                 variable_data = np.array(data['STATION'][0]['OBSERVATIONS']\
-                                         [grab_this_set], dtype=np.float)
+                                        [grab_this_set], dtype=np.float)
                 return_this[key_name] = variable_data
+
 
         return return_this
 
@@ -149,7 +152,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
 
     except:
         # If it doens't work, then return the URL for debugging.
-        print 'Errors loading:', URL
+        print 'Errors loading:', URL, v
 
 
 #--- Example -----------------------------------------------------------------#

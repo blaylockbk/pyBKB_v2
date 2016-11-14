@@ -6,6 +6,8 @@
 Converts MesoWest date strings to python datetime objects
 """
 
+from datetime import datetime
+
 def MWdate_to_datetime(x):
     """
     Converts a MesoWest date string to a python datetime object
