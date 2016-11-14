@@ -65,19 +65,12 @@ def get_station_info(stationIDs):
             time_zone = np.append(time_zone, str(i['TIMEZONE']))
 
         data_dict = {'URL': URL,
-
                      'NAME': name,
-
                      'STNID': stnid,
-
                      'LAT': lat,
-
                      'LON': lon,
-
                      'TIME_ZONE': time_zone
-
-                     }
-
+                    }
 
         return data_dict
 

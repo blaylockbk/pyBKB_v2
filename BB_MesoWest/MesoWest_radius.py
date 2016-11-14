@@ -18,6 +18,7 @@ import json
 import urllib2
 from datetime import datetime
 from get_token import my_token  # returns my personal token
+from convert_MW_date import MWdate_to_datetime
 import numpy as np
 
 # Get my token. You may request an API key and token from the here:
@@ -27,30 +28,6 @@ token = my_token()
 # Request these default variables.
 default_vars = 'wind_speed,wind_direction,ozone_concentration,\
 PM_25_concentration,air_temp,pressure'
-
-def MWdate_to_datetime(x):
-    """
-    Converts a MesoWest date string to a python datetime object
-    So far only works for summer months (daylight savings time). Best if you
-    make all your MesoWest API calls in UTC time.
-
-    For fastest calculations, vectorize this function before using:
-    Example:
-        vectorized_convert_time_function = np.vectorize(MWdate_to_datetime)
-        DATES = vectorized_convert_time_function(dates)
-
-    As my personal notation:
-        DATES = list or array of python datetime object
-        dates = native dates format, typically a string or number in epoch time
-    """
-
-    try:
-        # print 'Times are in UTC'
-        return datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
-
-    except:
-        # print 'Times are in Local Time'
-        return datetime.strptime(x, '%Y-%m-%dT%H:%M:%S-0600')
 
 
 def get_mesowest_radius(attime, within,
