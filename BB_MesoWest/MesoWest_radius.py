@@ -2,22 +2,31 @@
 # Version 2.0 update
 # 8 November 2016                     (Trump vs. Clinton Presidential Election)
 
-# Get MesoWest data for all stations within a radius of a point.
-# Return the Name, Lat, Lon, WS, and WD in a dictionary
-# Test Update
+"""
+Get MesoWest data for all stations within within defined bounds:
+    - stations within a radius within a latitude longitude point
+    - stations within a radius of a specified station
+    - specific state or states
+    - etc. (see MesoWest API documentation
+            https://synopticlabs.org/api/mesonet/reference/#stations_Resources)
+
+Returns a dictionary that contains station names, ids, lats/lons, and observed
+variables.
+"""
 
 import json
 import urllib2
 from datetime import datetime
-from get_token import my_token # returns my personal token
+from get_token import my_token  # returns my personal token
 import numpy as np
 
-# Get your own key and token from here: https://mesowest.org/api/signup/
+# Get my token. You may request an API key and token from the here:
+# https://mesowest.org/api/signup/
 token = my_token()
 
+# Request these default variables.
 default_vars = 'wind_speed,wind_direction,ozone_concentration,\
 PM_25_concentration,air_temp,pressure'
-
 
 def MWdate_to_datetime(x):
     """
@@ -45,19 +54,19 @@ def MWdate_to_datetime(x):
 
 
 def get_mesowest_radius(attime, within,
-                        radius='kslc,30',
+                        extra='&radius=kslc,30',
                         variables=default_vars):
     """
-    Gets data nearest a time for all stations within a radius.
+    Gets data nearest a time for all stations.
+    https://synopticlabs.org/api/mesonet/reference/
 
     Inputs:
         attime - A python datetime object of the desired time.
         within - A string of the number of minutes to request data from. Use
                  two numbers to request before and after attime 10,10.
-        raduis - A string of the location to center the radius, followed by
-                 number of {miles}.
-                 Can center on a MesoWest station ID (ksl,30) like the default,
-                 or center on a lat/lon (41.5,-120.25,30)
+        extra - A string of extra API calls (refer to the API documentation)
+                The default is to return stations within a 30 mile radius of
+                kslc.
 
     Outputs:
         Dictionary containing the station metadata, observations, and datetimes
@@ -70,8 +79,8 @@ def get_mesowest_radius(attime, within,
     URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token=' + token \
         + '&attime=' + attime \
         + '&within=' + within \
-        + '&radius=' + radius \
         + '&obtimezone=' + tz \
+        + extra \
         + '&vars=' + variables
 
     # Open URL and read JSON content. Convert JSON string to some python
@@ -88,7 +97,8 @@ def get_mesowest_radius(attime, within,
                    'LON': np.array([]),
                    'ELEVATION': np.array([]),  # Note: Elevation is in feet.
                    'DATETIME': np.array([])
-                   }
+                  }
+
     # Create a new key for each possible variable
     for v in data['UNITS'].keys():
         return_this[str(v)] = np.array([])
@@ -134,7 +144,6 @@ def get_mesowest_radius(attime, within,
 
             except:
                 # If it doesn't exist, then append with np.nan
-
                 return_this[key_name] = \
                     np.append(return_this[key_name], np.nan)
                 return_this[key_name + '_DATETIME'] = \
@@ -146,4 +155,4 @@ def get_mesowest_radius(attime, within,
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
 
-    a = get_mesowest_radius(datetime(2016, 4, 4), '10', radius='kslc,7')
+    a = get_mesowest_radius(datetime(2016, 4, 4), '10', extra='&radius=kslc,7')
