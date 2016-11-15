@@ -16,7 +16,13 @@ import linecache
 try:
     from bs4 import BeautifulSoup
 except:
-    print 'beautiful soup is not installed'
+    try:
+        import sys
+        # try getting bs4 from here...
+        sys.path.append('/uufs/chpc.utah.edu/sys/installdir/anaconda/2.0.1/2.7.7/lib/python2.7/site-packages/')
+        import bs4
+    except:
+        print 'beautiful soup is not installed'
 
 from datetime import datetime
 
