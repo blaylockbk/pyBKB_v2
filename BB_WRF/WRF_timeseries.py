@@ -16,7 +16,7 @@ import numpy as np
 
 import sys
 sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
-from wx_calcs.wind import *
+from BB_wx_calcs.wind import *
 
 def get_ts_header(TSfile):
     """
