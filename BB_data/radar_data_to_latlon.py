@@ -146,6 +146,7 @@ def level2_radar_to_latlon(FILE, sweep=0):
         xlocs = var_range * np.sin(np.deg2rad(az[:, np.newaxis]))
         ylocs = var_range * np.cos(np.deg2rad(az[:, np.newaxis]))
 
+        # Latitude and Longitude data is unique to the variable.
         return_this[VAR+'_DATA'] = data
         return_this[VAR+'_LON'] = lon
         return_this[VAR+'_LAT'] = lat
