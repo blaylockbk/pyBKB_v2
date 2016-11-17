@@ -37,7 +37,6 @@ def level3_radar_to_latlon(FILE):
     Input:
         FILE - The path and filename of the radar file you wish to open.
 
-    Outpu:
     """
 
     # Open the TDWR with MetPy and extract the data we want.
