@@ -1,0 +1,8 @@
+# dpi recomendations
+#
+# 1000 (high) - line plots
+#  500 (medium) - colorfill
+#  300 (low) - photographs
+#   72 (web) - web
+
+savefig.dpi : 72

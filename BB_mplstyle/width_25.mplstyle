@@ -1,0 +1,11 @@
+# Specify universal figure sizes acceptable for publication
+# J.AtmosEnv
+#        Figure width     |   Inches wide       
+#   ----------------------+---------------------
+#     minimumal size      |  1.18 in. ( 30 mm)
+#   1/2 page (1 column)   |  3.54 in. ( 90 mm)   
+#   3/4 page (1.5 column) |  5.51 in. (140 mm)    
+#   1   page (2 column)   |  7.48 in. (190 mm)    
+#   ---------------------------------------------
+
+figure.figsize : 1.5, 2.8  # width, height

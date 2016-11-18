@@ -1,0 +1,22 @@
+# Customizable Matplotlib settings for publications.
+
+# See customizable options here:
+# http://matplotlib.org/users/customizing.html
+
+
+## Reset the defaults (see more here: http://matplotlib.org/users/customizing.html)
+
+xtick.labelsize : 8
+ytick.labelsize : 8
+
+axes.labelsize : 10
+axes.titlesize : 14
+
+legend.fontsize : 7
+legend.framealpha : .5  # opacity of legend frame
+
+grid.linewidth : .25
+
+savefig.bbox : 'tight'
+
+mathtext.default : 'regular'
