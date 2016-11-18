@@ -29,11 +29,13 @@ For publicaitons, use publication and define the page width and dpi for the figu
             dpi_low: dpi is 300, acceptable for photographs
             dpi_web: dpi is 72, acceptable for plots only displayed on the web
 
-Example for using these:
+
+Example for using a customized style:
 >>> plt.style.use([style_path+'publications.mplstyle',
                    style_path+'width_100.mplstyle',
                    style_path+'dpi_high.mplstyle']
                    )
+
 
 There are additional default styles that look nice. To see the available styles
 type (plt.style.available). They include:
