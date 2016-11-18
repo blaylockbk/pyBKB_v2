@@ -1,3 +1,6 @@
+Brian Blaylock
+18 November 2016
+
 Instructions for using a customized style for published documents
 http://matplotlib.org/users/style_sheets.html
 
