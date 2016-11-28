@@ -1,6 +1,10 @@
 # Brian Blaylock
 # Mean Smoother
 
+"""
+Smoothers for 1D arrays, converted from MatLab code by John Horel
+"""
+
 import numpy as np
 
 def mean_smooth(data, ns, p):
