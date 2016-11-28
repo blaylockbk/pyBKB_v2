@@ -1,4 +1,6 @@
 # pyBKB_v2
+python scripts for Brian K Blaylock, version 2
+
 Updated and cleaned up code.
 
 - BB_HRRR - For handling HRRR data
