@@ -10,13 +10,15 @@ xtick.labelsize : 8
 ytick.labelsize : 8
 
 axes.labelsize : 10
-axes.titlesize : 14
+axes.titlesize : 12
+axes.labelpad  : 3.0 
 
 legend.fontsize : 7
-legend.framealpha : .5  # opacity of legend frame
+legend.framealpha: .75  # to set no linewidth need to do this in script > legend.get_frame().set_linewidth(0)
 
 grid.linewidth : .25
 
-savefig.bbox : 'tight'
+savefig.bbox : tight
+savefig.pad_inches  : 0.06
 
-mathtext.default : 'regular'
+mathtext.default : regular

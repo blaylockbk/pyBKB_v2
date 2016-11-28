@@ -49,6 +49,41 @@ def draw_utah_map(res='i'):
     return m
 
 
+def draw_GSL_map(res='i'):
+    """
+    Draw a custom basemap for Great Salt Lake
+    """
+    ## Draw Background basemap
+    bot_left_lat  = 40.5
+    bot_left_lon  = -113.25
+    top_right_lat = 41.9
+    top_right_lon = -111.75
+
+    ## Map in cylindrical projection (data points may apear skewed)
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    return m
+
+
+def draw_UtahLake_map(res='i'):
+    """
+    Draw a custom basemap for Utah Lake
+    """
+    ## Draw Background basemap
+    bot_left_lat  = 40.
+    bot_left_lon  = -111.95
+    top_right_lat = 40.38
+    top_right_lon = -111.65
+
+    ## Map in cylindrical projection (data points may apear skewed)
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    return m
+
+
+
 if __name__ == "__main__":
 
     m = draw_utah_map()

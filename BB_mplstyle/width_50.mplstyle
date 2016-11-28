@@ -8,4 +8,4 @@
 #   1   page (2 column)   |  7.48 in. (190 mm)    
 #   ---------------------------------------------
 
-figure.figsize : 3.5, 2.8  # width, height
+figure.figsize : 3.5, 2.3  # width, height
