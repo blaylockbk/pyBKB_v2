@@ -25,6 +25,10 @@ except:
         print 'beautiful soup is not installed'
 
 from datetime import datetime
+import sys
+sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/')
+sys.path.append('B:/pyBKB_v2/')
+import BB_wx_calcs.wind as wind_calcs 
 
 import numpy as np
 
@@ -315,8 +319,8 @@ def get_wyoming_sounding(request_date, station='slc'):
     last_line = sum(1 for line in open(Sounding_filename))
     # Not entirely sure why we need to subtract 14, but it works.
     foot = last_line - end_data_line - 14
-    print last_line
-    print end_data_line
+    #print last_line
+    #print end_data_line
 
     sounding = np.genfromtxt(Sounding_filename,
                              skip_header=8, skip_footer=foot)

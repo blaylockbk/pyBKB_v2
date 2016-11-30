@@ -1,5 +1,11 @@
 import numpy as np
 
+def c_to_K(c):
+    """
+    Converts Celsius to Kelvin temperature
+    """
+    return c+273.15
+
 def TempPress_to_PotTemp(temp,press):
     """
     Converts a temperature and pressure to potential temperature
