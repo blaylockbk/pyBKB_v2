@@ -65,6 +65,23 @@ def draw_GSL_map(res='i'):
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
     return m
 
+def draw_GSL2_map(res='i'):
+    """
+    Draw a custom basemap for Great Salt Lake
+    Domain extends out to BFLAT station 
+    """
+    ## Draw Background basemap
+    bot_left_lat  = 40.5
+    bot_left_lon  = -114.1
+    top_right_lat = 41.9
+    top_right_lon = -111.75
+
+    ## Map in cylindrical projection (data points may apear skewed)
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    return m
+
 
 def draw_UtahLake_map(res='i'):
     """

@@ -12,9 +12,9 @@ import urllib2
 
 token = '2562b729557f45f5958516081f06c9eb' #Request your own token at http://mesowest.org/api/signup/
 
-variables = 'T_water_temp,wind_direction,wind_speed,wind_gust,air_temp,dew_point_temperature,relative_humidity,ozone_concentration'
+variables = 'T_water_temp,wind_direction,wind_speed,wind_gust,air_temp,dew_point_temperature,relative_humidity'
 
-def get_mesowest_ts(start_time,end_time,stationID='GSLBY'):
+def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
     """
     Makes a time series query from the MesoWest API
     
@@ -63,6 +63,11 @@ def get_mesowest_ts(start_time,end_time,stationID='GSLBY'):
     stn_name = str(data['STATION'][0]['NAME'])
     stn_id   = str(data['STATION'][0]['STID'])
     
+
+    try:
+        air_temp = np.array(data['STATION'][0]["OBSERVATIONS"]["air_temp_set_1"],dtype=float) 
+    except:
+        air_temp = np.ones(len(DATES))*np.nan
     try:
         Water_temp1     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_1"],dtype=float) 
     except:
@@ -104,23 +109,23 @@ def get_mesowest_ts(start_time,end_time,stationID='GSLBY'):
     except:
         Water_temp10 = np.ones(len(DATES))*np.nan
     try:
-        Water_temp11     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_11"],dtype=float) 
+        Water_temp11 = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_11"],dtype=float) 
     except:
         Water_temp11 = np.ones(len(DATES))*np.nan
     try:
-        Water_temp12     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_12"],dtype=float) 
+        Water_temp12 = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_12"],dtype=float) 
     except:
         Water_temp12 = np.ones(len(DATES))*np.nan
     try:
-        Water_temp13     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_13"],dtype=float) 
+        Water_temp13 = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_13"],dtype=float) 
     except:
         Water_temp13 = np.ones(len(DATES))*np.nan
     try:
-        Water_temp14     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_14"],dtype=float) 
+        Water_temp14 = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_14"],dtype=float) 
     except:
         Water_temp14 = np.ones(len(DATES))*np.nan
     try:
-        Water_temp15     = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_15"],dtype=float) 
+        Water_temp15 = np.array(data['STATION'][0]["OBSERVATIONS"]["T_water_temp_set_15"],dtype=float) 
     except:
         Water_temp15 = np.ones(len(DATES))*np.nan
         
@@ -128,6 +133,7 @@ def get_mesowest_ts(start_time,end_time,stationID='GSLBY'):
     data_dict = {'DATES': DATES,
                  'STID': stn_id,
                  'NAME': stn_name,
+                 'TEMP': temp, # air temperature
                  'T_water1':Water_temp1,
                  'T_water2':Water_temp2,
                  'T_water3':Water_temp3,
