@@ -72,7 +72,7 @@ def draw_GSL2_map(res='i'):
     """
     ## Draw Background basemap
     bot_left_lat  = 40.5
-    bot_left_lon  = -114.1
+    bot_left_lon  = -114.0
     top_right_lat = 41.9
     top_right_lon = -111.75
 
