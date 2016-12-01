@@ -133,7 +133,7 @@ def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
     data_dict = {'DATES': DATES,
                  'STID': stn_id,
                  'NAME': stn_name,
-                 'TEMP': temp, # air temperature
+                 'air_temp': air_temp, # air temperature
                  'T_water1':Water_temp1,
                  'T_water2':Water_temp2,
                  'T_water3':Water_temp3,
