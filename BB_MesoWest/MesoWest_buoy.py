@@ -5,12 +5,13 @@
 # Function for getting MesoWest time series from the API for one station
 
 import numpy as np
-import datetime
+from datetime import datetime
 import json
+from get_token import my_token  # returns my personal token
 import urllib2
 
 
-token = '2562b729557f45f5958516081f06c9eb' #Request your own token at http://mesowest.org/api/signup/
+token = my_token() #Request your own token at http://mesowest.org/api/signup/
 
 variables = 'T_water_temp,wind_direction,wind_speed,wind_gust,air_temp,dew_point_temperature,relative_humidity'
 
@@ -32,7 +33,13 @@ def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
     end = end_time.strftime("%Y%m%d%H%M")
     
     # The API request URL
-    URL = 'http://api.mesowest.net/v2/stations/timeseries?stid='+stationID+'&start='+start+'&end='+end+'&vars='+variables+'&obtimezone=utc&token='+token
+    URL = 'http://api.mesowest.net/v2/stations/timeseries?&token=' + token \
+        + '&stid=' + stationID \
+        + '&start=' + start \
+        + '&end=' + end \
+        + '&vars=' + variables \
+        + '&obtimezone=utc'
+        
     
     print URL    
     
@@ -46,19 +53,14 @@ def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
     # Need to do some special stuff with the dates
     ##Get date and times
     dates = data["STATION"][0]["OBSERVATIONS"]["date_time"]
-    ##Convert to datetime and put into a numpy array
-    DATES = np.array([]) #initialize the array to store converted datetimes    
-    ##Loop through each date. Convert into datetime format and put into DATES array
-    ## NOTE: only works for MDT which is 6 hours behind UTC
-    for j in dates:
-    	try:
-    		converted_time = datetime.datetime.strptime(j,'%Y-%m-%dT%H:%M:%SZ')
-    		DATES = np.append(DATES,converted_time)
-    		#print 'Times are in UTC'
-    	except:
-    		converted_time = datetime.datetime.strptime(j,'%Y-%m-%dT%H:%M:%S-0600')
-    		DATES = np.append(DATES,converted_time)
-    		#print 'Times are in Local Time'    
+        
+    try:
+        DATES = [datetime.strptime(x,'%Y-%m-%dT%H:%M:%SZ') for x in dates]
+        # print 'times are in UTC'
+    except:
+        DATES = [datetime.strptime(x,'%Y-%m-%dT%H:%M:%S-0600') for x in dates]
+        # print 'times are in local time'
+    
     
     stn_name = str(data['STATION'][0]['NAME'])
     stn_id   = str(data['STATION'][0]['STID'])
@@ -130,7 +132,7 @@ def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
         Water_temp15 = np.ones(len(DATES))*np.nan
         
     
-    data_dict = {'DATES': DATES,
+    data_dict = {'DATETIMES': DATES,
                  'STID': stn_id,
                  'NAME': stn_name,
                  'air_temp': air_temp, # air temperature
@@ -159,91 +161,65 @@ def get_buoy_ts(start_time,end_time,stationID='GSLBY'):
 if __name__ == "__main__":
     
     import matplotlib.pyplot as plt
+    style_path = '/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/BB_mplstyle/'
+    plt.style.use([style_path+'publications.mplstyle',
+                   style_path+'width_50.mplstyle',
+                   style_path+'dpi_high.mplstyle']
+                   )
     from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator
     import matplotlib as mpl
     import os    
     
-    # Get MesoWest data from functin above
-    station_list = ['GSLBY']
-    for station in station_list:
-        print station
-        #plt.cla()
-        #plt.clf()
-        #plt.close()
-        start_time = datetime.datetime(2015,6,18,12)
-        end_time = datetime.datetime(2015,6,19,6)
-        
-        a = get_mesowest_ts(station,start_time,end_time)
-        
-        # Make a quick water temperature plot
-        dates = a['datetimes']        
-        sub40 = a['T_water1']+273.15 # 0.4m subsurface
-        sub100 = a['T_water2']+273.15 # 1.0m subsurface
+    # Get buoy time sereis for the time period requested
+    start_time = datetime(2015,6,18,12)
+    end_time = datetime(2015,6,19,6)
+    a = get_buoy_ts(start_time,end_time)
     
-        
-        #convert dates from UTC to mountain time (-6 hours)
-        #dates = dates - datetime.timedelta(hours=6)
-        
-        
-        
-        tick_font = 15
-        label_font = 20
-        lw = 4
-        
-        width=12
-        height=8
-        
-        
-        mpl.rcParams['xtick.labelsize'] = tick_font
-        mpl.rcParams['ytick.labelsize'] = tick_font
-        
-        
-        fig, ax1 = plt.subplots(1,1,figsize=(width,height))
-        #ax1.set_title(station+' '+a['station name']+'\n-0.4m below surface',fontsize=label_font)
-           
-        
-        ax1.plot(dates,sub40,lw=lw,label='-0.4 m')   
-        ax1.plot(dates,sub100,lw=lw-1,label='-1.0 m')   
-        ax1.set_ylabel('Water Temperature (K)',fontsize=label_font)
-        
-        ax1.axhline(y=302)      
-        ax1.axhline(y=295)      
-        ax1.legend(loc='upper left',fontsize=18)    
-        #ax1.set_ylim([10,40])
-        ax1.set_ylim([295,302])
-        ax1.grid()        
+    dates = a['DATETIMES']        
+    sub40 = a['T_water1']  # 0.4m subsurface
+    sub100 = a['T_water2']  # 1.0m subsurface
 
-        #ax1a.legend(loc='upper right')    
+    """
+    Create Plot of the the time series and water temperatures
+    """    
+    
+    fig, ax1 = plt.subplots(1,1)
+    
+    ax1.plot(dates,sub40, label='-0.4 m')   
+    ax1.plot(dates,sub100, label='-1.0 m')   
+    ax1.set_ylabel('Water Temperature (C)')
+    
+    ax1.grid()        
+    ax1.legend()    
         
-        
-        fig.subplots_adjust(hspace=.05)    
-        
-        
-        ##Format Ticks##
-        ##----------------------------------
-        # Find months
-        months = MonthLocator()
-        # Find days
-        days = DayLocator()
-        # Find each 0 and 12 hours
-        hours = HourLocator(byhour=[0,3,6,9,12,15,18,21])
-        # Find all hours
-        hours_each = HourLocator()
-        # Tick label format style
-        dateFmt = DateFormatter('%b %d\n%H:%M')
-        blank_dateFmt = DateFormatter('')    
-        # Set the x-axis major tick marks
-        ax1.xaxis.set_major_locator(hours)
-        # Set the x-axis labels
-        ax1.xaxis.set_major_formatter(dateFmt)
-        # For additional, unlabeled ticks, set x-axis minor axis
-        ax1.xaxis.set_minor_locator(hours_each)
-        
-        
-        out_dir = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/MS/laketemp/'
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        plt.savefig(out_dir+station+'_bouy.png',bbox_inches="tight",dpi=300)
+    fig.subplots_adjust(hspace=.05)    
+    
+    
+    ##Format Ticks##
+    ##----------------------------------
+    # Find months
+    months = MonthLocator()
+    # Find days
+    days = DayLocator()
+    # Find each 0 and 12 hours
+    hours = HourLocator(byhour=[0,3,6,9,12,15,18,21])
+    # Find all hours
+    hours_each = HourLocator()
+    # Tick label format style
+    dateFmt = DateFormatter('%b %d\n%H:%M')
+    blank_dateFmt = DateFormatter('')    
+    # Set the x-axis major tick marks
+    ax1.xaxis.set_major_locator(hours)
+    # Set the x-axis labels
+    ax1.xaxis.set_major_formatter(dateFmt)
+    # For additional, unlabeled ticks, set x-axis minor axis
+    ax1.xaxis.set_minor_locator(hours_each)
+    
+    # Save Figure
+    #out_dir = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/MS/laketemp/'
+    #if not os.path.exists(out_dir):
+    #    os.makedirs(out_dir)
+    #plt.savefig(out_dir+'GSLBY.png')
 
-        
-        
+    plt.show(block=False)
+    
