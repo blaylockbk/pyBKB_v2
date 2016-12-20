@@ -21,7 +21,30 @@ Can define the resolution of the map with res argument:
 """
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
+from map_domains import get_domain
 
+
+def draw_map(DOMAIN, res='i'):
+    """
+    Draw a map for a special domain zoomed in on a focus area
+    
+    Input:
+        DOMAIN - Refer to map_domains file. Create custom maps there.
+    """
+    d = get_domain(DOMAIN)
+    bot_left_lat  = d['bot_left_lat']
+    bot_left_lon  = d['bot_left_lon']
+    top_right_lat = d['top_right_lat']
+    top_right_lon = d['top_right_lon']
+
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    return m
+
+### functions below shouldn't be used anymore. Make edit to the
+### map_domains.py script and call the domain in the draw_map() function.
+### See below for an example.
 
 def draw_world_map(res='i'):
     """
@@ -107,7 +130,7 @@ def draw_CONUS_HRRR_map(res='i'):
 if __name__ == "__main__":
 
     print 'drawing Utah map...',
-    m = draw_Utah_map()
+    m = draw_map('UTAH')
     print '...finished'
 
     # Examples of drawing other things on a map
