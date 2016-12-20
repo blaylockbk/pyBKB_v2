@@ -1,5 +1,6 @@
 # pyBKB_v2
-Python scripts created and used by Brian K. Blaylock
+Python scripts created and used by [Brian K. Blaylock](http://home.chpc.utah.edu/~u0553130/Brian_Blaylock/home.html)
+
 
 Version 2: This code is being updated and cleaned up regularly, as opposed to 
 the first version which isn't being used anymore.
@@ -18,3 +19,4 @@ the first version which isn't being used anymore.
 |BB_special | Special and misc. functions |
 |BB_wx_calcs | Various weather related calculations|
 |MetPy_BB | An older version of MetPy with a fix for reading TDWR data|
+
