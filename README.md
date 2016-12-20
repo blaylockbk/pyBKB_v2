@@ -3,7 +3,7 @@ Python scripts created and used by [Brian K. Blaylock](http://home.chpc.utah.edu
 
 
 Version 2: This code is being updated and cleaned up regularly, as opposed to 
-the first version which isn't being used anymore.
+the first version.
 
 |Directory | Purpose |
 |--------|------------------------|
