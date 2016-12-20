@@ -1,7 +1,9 @@
-## Brian Blaylock
-## 20 May 2016
+# Brian Blaylock
+# 20 May 2016
 
-## Download HRRR file from ncep nomads server
+"""
+Download HRRR file from NCEP NOMADS server
+"""
 
 import urllib
 from datetime import datetime, timedelta
@@ -23,22 +25,25 @@ def reporthook_10(count, block_size, total_size):
         print (count * block_size * 100 / total_size),"% complete"
 
 
-def download_hrrr(request_date,fields=['prs', 'sfc','nat','subh'],hour=range(0,24),forecast=range(0,19),outpath='./'):
+def download_hrrr(request_date, fields=['prs', 'sfc', 'nat', 'subh'],
+                  hour=range(0, 24), forecast=range(0, 19), outpath='./'):
     """
     Downloads HRRR grib2 files from the nomads server
     http://nomads.ncep.noaa.gov/
-    
-    request_date = a datetime object for which you wish to download
-    fields= list of fields you want to download
-             Default is all fields ['prs', 'sfc','nat']
-             pressure fields (~350 MB), surface fields (~6 MB), Native fields(??) (~510 MB)
-    hour = a list of hours you want to download
-           Default all hours in the day
-    forecast = a list of forecast hour you wish to download
-               Default all forecast hours (0,15)
-    outpath = the outpath directory you wish to save the files.
-              Default to current directory but will create a new
-              directory in that path for each field (prs or sfc)
+        
+    Input:
+        request_date - a datetime object for which you wish to download
+        fields - list of fields you want to download
+                 Default is all fields ['prs', 'sfc','nat']
+                 pressure fields (~350 MB), surface fields (~6 MB), 
+                 native fields (~510 MB)
+        hour - a list of hours you want to download
+               Default all hours in the day
+        forecast - a list of forecast hour you wish to download
+                   Default all forecast hours (0-18)
+        outpath - the outpath directory you wish to save the files.
+                Default to current directory but will create a new
+                directory in that path for each field (prs or sfc)
     """
     # We'll store the URLs we download from and return them for troubleshooting
     URL_list = []    
@@ -48,13 +53,20 @@ def download_hrrr(request_date,fields=['prs', 'sfc','nat','subh'],hour=range(0,2
     day      = request_date.day
 
     # Build the URL string we want to download. One for each field, hour, and forecast
+    
+    # Old URL for downloading HRRRv1
     #URL = 'http://nomads.ncep.noaa.gov/pub/data/nccf/nonoperational/com/hrrr/prod/hrrr.%04d%02d%02d/' % (year,month,day)
+    
+    # New URL for downloading HRRRv2+
     URL = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/' % (year,month,day)
+    
     for field in fields:
-      # Create a new array for each field to keep things organized
-      outdir = outpath +'%04d%02d%02d/%s/' % (year,month,day,field) # the path we want to save the file. Put pressure and surface field in different directory
+      # Create a new array for each field to keep things organized.
+      # Put pressure and surface field in different directory
+      outdir = outpath +'%04d%02d%02d/%s/' % (year,month,day,field) 
       if not os.path.exists(outdir):
           os.makedirs(outdir)
+      
       for h in hour:
             for f in forecast:
                 FileName = 'hrrr.t%02dz.wrf%sf%02d.grib2' % (h,field,f) 
@@ -64,6 +76,7 @@ def download_hrrr(request_date,fields=['prs', 'sfc','nat','subh'],hour=range(0,2
                 urllib.urlretrieve(URL+FileName,outdir+FileName,reporthook_10) # if you don't want to print the progress get rid of third argument 'reporthook'
                 print 'Saved:', outdir+FileName
                 URL_list.append(URL+FileName)
+    
     # Return the list of URLs we downloaded from for troubleshooting    
     return URL_list
 

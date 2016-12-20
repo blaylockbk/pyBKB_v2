@@ -1,20 +1,28 @@
-#Brian Blaylock
-#January 9, 2015
+# Brian Blaylock
+# January 9, 2015
 
-
-# Download and save available VIIRS images
+"""
+Download and save available VIIRS images
+"""
 
 import urllib,urllib2
 from datetime import datetime, timedelta
 
 
-#Since images can be created of any minute of the day, here we try to find 
+# Since images can be created of any minute of the day, here we try to find 
 # if an image is available at any minute between two dates. Yeah, I know it
 # takes a long time to loop over every minute to find a date.
 
 
 # There are several available products. We will save all of them.
-product = ["snowcloud.jpg","truecolor.jpg","vis.gif","fog.gif","ntmicro.jpg","39um.gif","11um.gif","dust.jpg"]
+product = ["snowcloud.jpg",
+           "truecolor.jpg",
+           "vis.gif",
+           "fog.gif",
+           "ntmicro.jpg",
+           "39um.gif",
+           "11um.gif",
+           "dust.jpg"]
 
 #Loop through a set of dates
 start_date = datetime.now()-timedelta(days=3)
@@ -63,3 +71,4 @@ while current_time < end_date:
 
     #check next minute on repeat
     current_time = current_time+timedelta(minutes=1)
+    

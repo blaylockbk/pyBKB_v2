@@ -57,7 +57,6 @@ def get_surface_field(item):
 
     """
     #print item
-
        
     if item.isdigit() and datetime.strptime(item[0:5], '%y%j').day==yesterday.day:
         # For some reason, I need to log onto the FTP for each process being run
@@ -121,8 +120,8 @@ def check_downloads():
     Print a table of the files that were successfully retreived
     """
     print '\n'
-    hours = range(0,24)
-    forecasts = range(0,19)
+    hours = range(0, 24)
+    forecasts = range(0, 19)
 
     print 'Date:', yesterday.strftime('%Y-%m-%d')
     print 'sfc  - HRRRX surface fields'
@@ -174,6 +173,13 @@ def check_downloads():
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
 
+    """
+    Download from ESRL in two parts
+    1) Get Surface Fields
+    2) Get Pressure Fields
+    """
+
+    # 1)
     print "\nGetting Surface Fields\n-------------------------------------"
     # FTP login: gsdftp.fsl.noaa.gov
     ftp = FTP('gsdftp.fsl.noaa.gov')
@@ -189,6 +195,7 @@ if __name__ == '__main__':
     p.map(get_surface_field, filenames)
 
 
+    # 2)
     print "\nGetting Pressure Fields\n-------------------------------------"
     # FTP login: gsdftp.fsl.noaa.gov
     ftp = FTP('gsdftp.fsl.noaa.gov')
