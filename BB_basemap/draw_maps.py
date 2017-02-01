@@ -53,7 +53,7 @@ def draw_world_map(res='i'):
     return Basemap(resolution=res)
     
 
-def draw_Utah_map(res='i'):
+def draw_Utah_map(res='i', return_domain_boundaires=False):
     """
     Draw a basemap of Utah
     """
@@ -65,10 +65,13 @@ def draw_Utah_map(res='i'):
     m = Basemap(resolution=res, projection='cyl', \
         llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
-    return m
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
 
-def draw_GSL_map(res='i'):
+def draw_GSL_map(res='i', return_domain_boundaires=False):
     """
     Draw a custom basemap for Great Salt Lake
     """
@@ -80,7 +83,10 @@ def draw_GSL_map(res='i'):
     m = Basemap(resolution=res, projection='cyl', \
         llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
-    return m
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
 def draw_GSL2_map(res='i'):
     """
@@ -98,7 +104,7 @@ def draw_GSL2_map(res='i'):
     return m
 
 
-def draw_UtahLake_map(res='i'):
+def draw_UtahLake_map(res='i', return_domain_boundaires=False):
     """
     Draw a custom basemap for Utah Lake
     """
@@ -110,8 +116,47 @@ def draw_UtahLake_map(res='i'):
     m = Basemap(resolution=res, projection='cyl', \
         llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
+
+def draw_Uintah_map(res='i', return_domain_boundaires=False):
+    """
+    Draw a custom basemap for Uintah Basin
+    """
+    bot_left_lat  = 39.73
+    bot_left_lon  = -111.
+    top_right_lat = 41.
+    top_right_lon = -109.
+
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
+
+def draw_HRRRwest(res='i', return_domain_boundaires=False):
+    """
+    Draw a custom basemap for HRRR West
+    """
+    m = Basemap(resolution=res, projection='lcc', \
+                width=1800*1800, height=1060*3000, \
+                lat_1=38.5, lat_2=38.5, \
+                lat_0=38.5, lon_0=-112)
     return m
 
+def draw_HRRReast(res='i', return_domain_boundaires=False):
+    """
+    Draw a custom basemap for HRRR West
+    """
+    m = Basemap(resolution=res, projection='lcc', \
+                width=1800*1800, height=1060*3000, \
+                lat_1=38.5, lat_2=38.5, \
+                lat_0=38.5, lon_0=-84)
+    return m
 
 
 def draw_CONUS_HRRR_map(res='i'):

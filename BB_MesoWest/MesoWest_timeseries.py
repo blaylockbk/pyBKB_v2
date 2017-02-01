@@ -53,15 +53,19 @@ default_vars = 'altimeter,pressure,sea_level_pressure,wind_direction,\
 wind_speed,air_temp,relative_humidity,dew_point_temperature,wind_gust'
 
 
-def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
+def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, verbose=True):
     """
     Get MesoWest Time Series:
     Makes a time series query from the MesoWest API for a single station.
+    
+    Note: Put all print statements under "if verbose==True:" because some of my 
+    cgi scripts cannot deal with printed statements.
 
     Input:
         stationID  : string of the station ID
         start_time : datetime object of the start time in UTC
         end_time   : datetime object of the end time in UTC
+        verbose    : print out some diagnostics, defualt is True
 
     Output:
         A dictionary of the data.
@@ -122,6 +126,15 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
 
                 grab_this_set = str(data['STATION'][0]['SENSOR_VARIABLES']\
                                     [key_name].keys()[set_num])
+                
+                # Always grab the first set (either _1 or _1d)
+                # should make exceptions to this rule for certain stations and certain variables
+                if grab_this_set[-1] != '1' and grab_this_set[-1] != 'd':
+                    grab_this_set = grab_this_set[0:-1]+'1'
+                if grab_this_set[-1] == 'd':
+                    grab_this_set = grab_this_set[0:-2]+'1d'
+                
+                
                 variable_data = np.array(data['STATION'][0]['OBSERVATIONS']\
                                         [grab_this_set], dtype=np.float)
                 return_this[key_name] = variable_data
@@ -152,7 +165,9 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars):
 
     except:
         # If it doens't work, then return the URL for debugging.
-        print 'Errors loading:', URL, v
+        if verbose==True:
+            print 'Errors loading:', URL
+        return 'ERROR'
 
 
 #--- Example -----------------------------------------------------------------#
@@ -162,8 +177,8 @@ if __name__ == "__main__":
     from datetime import timedelta
 
     # Get MesoWest data from functin above
-    station = 'UKBKB'
-    start_time = datetime(2016, 9, 22)
+    station = 'NAA'
+    start_time = datetime(2016, 9, 25)
     end_time = datetime(2016, 9, 26)
 
     a = get_mesowest_ts(station, start_time, end_time)

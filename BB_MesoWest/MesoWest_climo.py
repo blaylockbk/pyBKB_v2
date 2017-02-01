@@ -17,7 +17,7 @@ import numpy as np
 token = my_token()
 
 
-def get_mesowest_climatology(station, start, end):
+def get_mesowest_climatology(station, start, end, variables='air_temp'):
     """
     Get data from MesoWest Climatology service for a station between two dates.
 
@@ -37,6 +37,7 @@ def get_mesowest_climatology(station, start, end):
         + '&stid=' + station \
         + '&startclim=' + start \
         + '&endclim=' + end \
+        + '&vars=' + variables \
         + '&obtimezone=' + tz
 
     # Open URL and read JSON content. Convert JSON string to some python
@@ -86,7 +87,10 @@ if __name__ == "__main__":
     months = np.arange(1, 13)
     for m in months:
         start = '%02d010000' % (m)
-        end = '%02d280000' % (m)
+        if m != 12:
+                end = '%02d010000' % (m+1)
+        else:
+                end = '12312359'
 
         a = get_mesowest_climatology(station, start, end)
 
