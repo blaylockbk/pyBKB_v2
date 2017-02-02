@@ -126,15 +126,14 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, v
 
                 grab_this_set = str(data['STATION'][0]['SENSOR_VARIABLES']\
                                     [key_name].keys()[set_num])
-                
+
                 # Always grab the first set (either _1 or _1d)
                 # should make exceptions to this rule for certain stations and certain variables
                 if grab_this_set[-1] != '1' and grab_this_set[-1] != 'd':
                     grab_this_set = grab_this_set[0:-1]+'1'
                 if grab_this_set[-1] == 'd':
                     grab_this_set = grab_this_set[0:-2]+'1d'
-                
-                
+
                 variable_data = np.array(data['STATION'][0]['OBSERVATIONS']\
                                         [grab_this_set], dtype=np.float)
                 return_this[key_name] = variable_data

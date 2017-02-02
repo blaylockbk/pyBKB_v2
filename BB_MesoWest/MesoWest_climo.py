@@ -7,7 +7,7 @@
 from datetime import datetime
 import json
 import urllib2
-from get_token import my_token # returns my personal token
+from get_token import my_token  # returns my personal token
 from convert_MW_date import MWdate_to_datetime
 
 import numpy as np
@@ -88,9 +88,9 @@ if __name__ == "__main__":
     for m in months:
         start = '%02d010000' % (m)
         if m != 12:
-                end = '%02d010000' % (m+1)
+            end = '%02d010000' % (m + 1)
         else:
-                end = '12312359'
+            end = '12312359'
 
         a = get_mesowest_climatology(station, start, end)
 
