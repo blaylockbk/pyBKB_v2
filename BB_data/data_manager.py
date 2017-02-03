@@ -311,19 +311,34 @@ def get_wyoming_sounding(request_date, station='slc'):
     # 5) Read the observed sounding file
     # Figure out where the footer is so we can skip it in np.genfromtxt
     # This is the line the data ends
-    lookup = 'Station information and sounding indices'
-    with open(Sounding_filename) as myFile:
-        for num, line in enumerate(myFile, 1):
-            if lookup in line:
-                end_data_line = num
-    last_line = sum(1 for line in open(Sounding_filename))
-    # Not entirely sure why we need to subtract 14, but it works.
-    foot = last_line - end_data_line - 14
-    #print last_line
-    #print end_data_line
+    f = open(Sounding_filename, 'r')
+    ls = f.readlines()
+    f.close()
+
+    header = 6 # There are at least six header rows
+    data_in_row = [len(i.split()) for i in ls]
+    for i in data_in_row[header:]:
+        # Add a header row if 11 data points don't exist.
+        if i != 11:
+            header += 1
+        else:
+            break
+
+    data_rows = 0 # count number of data rows
+    for i in data_in_row[header:]:
+        # as long as there are 11 data points in the row, add to data_rows
+        if i == 11:
+            data_rows += 1
+        else:
+            break
+    
+    # calculate number of lines in the footer
+    last_line = len(ls)
+    foot = last_line - header - data_rows
+
 
     sounding = np.genfromtxt(Sounding_filename,
-                             skip_header=8, skip_footer=foot)
+                             skip_header=header, skip_footer=foot)
     obs_press = sounding[:, 0]         # hPa
     obs_hght = sounding[:, 1]          # m
     obs_temp = sounding[:, 2]          # C
@@ -355,7 +370,7 @@ def get_wyoming_sounding(request_date, station='slc'):
             'theta': obs_theta,
             'u': obs_u,
             'v': obs_v
-            }
+           }
 
     return data
 

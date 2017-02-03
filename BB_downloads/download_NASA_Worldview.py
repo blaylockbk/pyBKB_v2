@@ -41,10 +41,10 @@ def add_watermark(in_file, text, out_file='watermark.jpg', angle=0, opacity=0.8)
 
 if __name__ == "__main__":
 
-    outdir = './sat_images/'
+    outdir = '../../public_html/sat_images/'
 
-    start_date = datetime(2016,7,18)
-    end_date   = datetime(2016,7,21)
+    start_date = datetime(2017,1,5)
+    end_date   = datetime(2017,1,9)
     
 
     # specify the dates you want to retrieve

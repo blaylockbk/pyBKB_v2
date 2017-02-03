@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
-
 def KtoC(Tk):
     return Tk-273.15
 

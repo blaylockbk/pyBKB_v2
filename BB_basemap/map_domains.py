@@ -17,7 +17,7 @@ def get_domain(this_one):
                     'bot_left_lat'   : 39.73,                
                     'bot_left_lon'   : -111.,
                     'top_right_lat'  : 41.,                
-                    'top_right_lon'  : -109.,                
+                    'top_right_lon'  : -109.,                 
                     },
 
     'SALT_LAKE_VALLEY': {

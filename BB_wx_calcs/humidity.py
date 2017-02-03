@@ -49,15 +49,15 @@ def TempRH_to_dwpt(Temp, RH):
         Temp - Air temperature in Celsius
         RH - relative humidity in %
     Output:
-        dwpt - Dew point temperature in Celsius 
+        dwpt - Dew point temperature in Celsius
     """
     # Check if the Temp coming in is in celsius and if RH is between 0-100%
     passed = False
-    test_temp = temp<65
+    test_temp = Temp < 65
 
-    if np.sum(test_temp) == np.size(temp):
+    if np.sum(test_temp) == np.size(Temp):
         passed = True
-        test_rh = np.logical_and(RH<=100,RH>=0)
+        test_rh = np.logical_and(RH <= 100, RH >= 0)
         if np.sum(test_rh) == np.size(RH):
             passed = True
         else:
@@ -65,7 +65,7 @@ def TempRH_to_dwpt(Temp, RH):
     else:
         print "faild temperature check"
 
-    if passed == True:
+    if passed is True:
         a = 17.625
         b = 243.04
         dwpt = b * (np.log(RH/100.) + (a*Temp/(b+Temp))) / (a-np.log(RH/100.)-((a*Temp)/(b+Temp)))
@@ -74,3 +74,26 @@ def TempRH_to_dwpt(Temp, RH):
     else:
         print "TempRH_to_dwpt input requires a valid temperature and humidity."
         return "Input needs a valid temperature (C) and humidity (%)."
+
+def TempRH_to_dwpt_2(Temp, RH):
+    """
+    Alternative solution to convert Temp and RH to DWPT.
+    Difference between this and previous solution gets large when dwpt is < -50
+    Convert a temperature and relative humidity to a dew point temperature.
+    Equation from:
+    http://www.ajdesigner.com/phphumidity/dewpoint_equation_dewpoint_temperature.php
+
+    Input:
+        Temp - Air temperature in Celsius
+        RH - relative humidity in %
+    Output:
+        dwpt - Dew point temperature in Celsius
+    """
+    p1 = (RH/100.)**(1/8.)
+    p2 = 112 + 0.9*Temp
+    p3 = 0.1*Temp
+    p4 = 112
+
+    Td = p1*p2+p3-p4
+
+    return Td
