@@ -20,7 +20,11 @@ sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
 sys.path.append('B:\pyBKB_v2')
 from BB_wx_calcs.humidity import TempRH_to_dwpt, TempRH_to_dwpt_2
 
+<<<<<<< HEAD
 def get_rad_sounding(request_time, stn='DEQMR'):
+=======
+def get_sounding(request_time, stn='DEQMR'):
+>>>>>>> 38312e4ab11dffc6e8d85ae0f7326da83d8664b4
     """
     Get the data needed to create a sounding profile. The time range request
     will return multiple instances. The API is set up this way because the
@@ -132,7 +136,11 @@ if __name__ == "__main__":
     import math
 
     request = datetime(2017, 2, 1)
+<<<<<<< HEAD
     b = get_rad_sounding(request)
+=======
+    b = get_sounding(request)
+>>>>>>> 38312e4ab11dffc6e8d85ae0f7326da83d8664b4
 
     plt.plot(b['ZENITH_TEMP'], b['PRES_LEVELS'], color='r')
     plt.plot(b['ZENITH_DWPT'], b['PRES_LEVELS'], color='r')
