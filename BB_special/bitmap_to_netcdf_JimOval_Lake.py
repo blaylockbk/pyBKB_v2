@@ -52,6 +52,17 @@ new_LU = old_LU.copy()
 new_LU[landmask==0] = 16
 nc_copy.variables['LU_INDEX'][0] = new_LU
 
+# 4. Set the fractional land use categories
+old_LUf = nc_copy.variables['LANDUSEF'][0][15]
+new_LUf = old_LUf.copy()
+new_LUf[landmask==0] = 1
+nc_copy.variables['LANDUSEF'][0][15] = new_LUf
+#
+for i in [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23]:
+    old_LUf = nc_copy.variables['LANDUSEF'][0][i]
+    new_LUf = old_LUf.copy()
+    new_LUf[landmask==0] = 0
+    nc_copy.variables['LANDUSEF'][0][i] = new_LUf
 
 nc_copy.sync()
 nc_copy.close
