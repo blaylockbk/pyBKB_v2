@@ -138,6 +138,25 @@ def draw_Uintah_map(res='i', return_domain_boundaires=False):
     else:
         return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
+def draw_UWFPS_map(res='i', return_domain_boundaires=False):
+    """
+    Draw a basemap of northern utah for the Utah Winter Fine Particulate Study
+    (UWFPS). Contains Utah, Salt Lake, and Cache Counties
+    """
+    bot_left_lat  = 39.8
+    bot_left_lon  = -113.25
+    top_right_lat = 42.1
+    top_right_lon = -111
+
+    m = Basemap(resolution=res, projection='cyl', \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
+
+
 def draw_HRRRwest(res='i', return_domain_boundaires=False):
     """
     Draw a custom basemap for HRRR West

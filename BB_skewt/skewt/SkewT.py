@@ -650,7 +650,6 @@ class Sounding(UserDict):
         # any equilibrium levels below LCL
         # eqlev,stab=solve_eq(pparcel[::-1],(tparcel-tempenv)[::-1])
         # This is equivalent to the old statement :
-         
         eqlev,stab=solve_eq(pparcel[pparcel<=P_lcl][::-1],\
                 (tparcel-tempenv)[pparcel<=P_lcl][::-1])
 
@@ -1060,10 +1059,11 @@ def solve_eq(preswet,func):
     equilibrium level (flip the sign to envision d(tw-te)/dz).
     """
 
-    from numpy import sign,diff
+    from numpy import sign, diff
 
     # Sorry to be annoying but I'm going to force you to use
     # a monotonically increasing variable
+    print diff(preswet)
     assert (sign(diff(preswet))==1).all(), "Use a monotonically increasing abscissa"
 
     # Identify changes in sign of function
