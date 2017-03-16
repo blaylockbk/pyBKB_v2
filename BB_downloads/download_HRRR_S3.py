@@ -19,8 +19,6 @@ import urllib
 from datetime import date, datetime, timedelta
 import time
 import os
-import stat
-import numpy as np
 
 def reporthook(a, b, c):
     """
@@ -92,14 +90,13 @@ def download_HRRR(DATE,
 
 if __name__ == '__main__':
 
-    # Customized download for a week
+    # Example downloads all analysis hours for a single day.
 
     # -------------------------------------------------------------------------
     # --- Settings: Check online documentation for available dates and hours --
     # -------------------------------------------------------------------------
     # Start and End Date
-    start_day = date(2017, 2, 1)
-    end_day = date(2017, 2, 8)
+    get_this_date = date(2017, 2, 1)
 
     # Model Type: options include 'hrrr', 'hrrrX', 'hrrrAK'
     model_type = 'hrrr'
@@ -124,15 +121,10 @@ if __name__ == '__main__':
     SAVEDIR = './HRRR_from_UofU/'
     # -------------------------------------------------------------------------
 
-    # Create a range of dates to download (+1 to include end_day in list)
-    days = (end_day-start_day).days + 1
-    date_list = np.array([start_day + timedelta(days=x) for x in range(0, days)])
-
     # Make SAVEDIR path if it doesn't exist.
     if not os.path.exists(SAVEDIR):
         os.makedirs(SAVEDIR)
 
-    # Loop through all dates and call the function to download each file.
-    for d in date_list:
-        download_HRRR(d, model=model_type, field=var_type,
-                      hour=hours, fxx=forecasts, OUTDIR=SAVEDIR)
+    # Call the function to download
+    download_HRRR(get_this_date, model=model_type, field=var_type,
+                  hour=hours, fxx=forecasts, OUTDIR=SAVEDIR)

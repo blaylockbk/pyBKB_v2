@@ -178,14 +178,14 @@ def draw_HRRReast(res='i', return_domain_boundaires=False):
     return m
 
 
-def draw_CONUS_HRRR_map(res='i'):
+def draw_CONUS_HRRR_map(res='i', area_thresh=2000):
     """
     Draw the Contintental United States HRRR Domain with lambert conformal
     projection.
     Map specifications are from the HRRR's namelis.wps file:
     http://ruc.noaa.gov/hrrr/namelist.wps.txt
     """
-    m = Basemap(resolution=res, projection='lcc', \
+    m = Basemap(resolution=res, projection='lcc', area_thresh=area_thresh, \
                 width=1800*3000, height=1060*3000, \
                 lat_1=38.5, lat_2=38.5, \
                 lat_0=38.5, lon_0=-97.5)
