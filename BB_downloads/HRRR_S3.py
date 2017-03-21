@@ -19,11 +19,6 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import multiprocessing
 
-# ?? Ignore ssl certificate (else urllib2.openurl wont work)
-# See here: http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc'):
     """
@@ -59,8 +54,15 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc'):
     pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
                 % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
 
-    #try:
-    idxpage = urllib2.urlopen(fileidx, context=ctx)
+    try:
+        # ?? Ignore ssl certificate (else urllib2.openurl wont work). Depends on your version of python.
+        # See here: http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        idxpage = urllib2.urlopen(fileidx, context=ctx)
+    except:
+        idxpage = urllib2.urlopen(fileidx)
     lines = idxpage.readlines()
     # 1) Find the byte range for the variable. Need to first find where the
     #    variable is located. Keep a count (gcnt) so we can get the end
