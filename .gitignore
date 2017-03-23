@@ -6,3 +6,4 @@ get_token.py
 *.pyc
 *.out
 *.nc
+*.grib2
