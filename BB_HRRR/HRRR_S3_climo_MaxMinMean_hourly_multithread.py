@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import multiprocessing
 from scipy.io import netcdf
+from queue import Queue
+from threading import Thread
 
 import sys
 sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
@@ -117,7 +119,9 @@ def get_HRRR(getthisDATE):
     return H
 
 
-for h in hours:
+def each_hour(h):
+    created_NC = False
+
     # Iniitialize the arrays with the first date
     firstDATE = DATES[0]
     H = get_HRRR(datetime(firstDATE.year, firstDATE.month, firstDATE.day, h))
@@ -163,6 +167,27 @@ for h in hours:
     del maxH
     del minH
     del sumH
+
+
+num_of_threads = 10
+def worker():
+    while True:
+        item = q.get()
+        print "number:", item
+        each_hour(item)
+        q.task_done()
+
+q = Queue()
+for i in range(num_of_threads):
+    t = Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+for item in hours:
+    q.put(item)
+
+q.join()       # block until all tasks are done
+
 
 f.history = 'HRRR Hourly Max/Min/Mean Climatology for '+variable
 
