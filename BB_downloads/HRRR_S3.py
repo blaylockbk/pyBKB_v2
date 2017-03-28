@@ -20,7 +20,7 @@ import matplotlib.dates as mdates
 import multiprocessing
 
 
-def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFile=True):
+def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFile=True, value_only=False):
     """
     Uses cURL to grab just one variable from a HRRR grib2 file on the MesoWest
     HRRR archive.
@@ -35,6 +35,8 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
         model - the model you want. Options include ['hrrr', 'hrrrX', 'hrrrAK']
         field - the file type your variable is in. Options include ['sfc', 'prs']
         removeFile - True will remove the grib2 file after downloaded. False will not.
+        value_only - Only return the values. Fastest return speed if set to True, when all you need is the value.
+                     Return Time .75-1 Second if False, .2 seconds if True.
     """
     # Model direcotry names are named differently than the model name.
     if model == 'hrrr':
@@ -44,8 +46,9 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    # Save the grib2 file as a temporary file (we remove it later)
     outfile = './temp_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
+
+    print outfile
 
     # URL for the grib2 idx file
     fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
@@ -54,17 +57,22 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
     # URL for the grib2 file (located on PANDO S3 archive)
     pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
                 % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+
     try:
         try:
-            # ?? Ignore ssl certificate (else urllib2.openurl wont work). Depends on your version of python.
-            # See here: http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
+            # ?? Ignore ssl certificate (else urllib2.openurl wont work). 
+            #    Depends on your version of python.
+            #    See here: 
+            #    http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
             idxpage = urllib2.urlopen(fileidx, context=ctx)
         except:
             idxpage = urllib2.urlopen(fileidx)
+        
         lines = idxpage.readlines()
+
         # 1) Find the byte range for the variable. Need to first find where the
         #    variable is located. Keep a count (gcnt) so we can get the end
         #    byte range from the next line.
@@ -85,22 +93,31 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
 
         # 3) Get data from the file
         grbs = pygrib.open(outfile)
-        value, lat, lon = grbs[1].data()
-        validDATE = grbs[1].validDate
-        anlysDATE = grbs[1].analDate
-        msg = str(grbs[1])
+        if value_only is True:
+            value = grbs[1].values
+            # (Remove the temporary file)
+            if removeFile is True:
+                os.system('rm -f %s' % (outfile))
+            return {'value': value}
 
-        # 4) Remove the temporary file
-        if removeFile == True:
-            os.system('rm -f %s' % (outfile))
+        else:
+            value, lat, lon = grbs[1].data()
+            validDATE = grbs[1].validDate
+            anlysDATE = grbs[1].analDate
+            msg = str(grbs[1])
 
-        # 5) Return some import stuff from the file
-        return {'value': value,
-                'lat': lat,
-                'lon': lon,
-                'valid': validDATE,
-                'anlys': anlysDATE,
-                'msg':msg}
+            # 4) Remove the temporary file
+            if removeFile == True:
+                os.system('rm -f %s' % (outfile))
+
+            # 5) Return some import stuff from the file
+            return {'value': value,
+                    'lat': lat,
+                    'lon': lon,
+                    'valid': validDATE,
+                    'anlys': anlysDATE,
+                    'msg':msg}
+
 
     except:
         print " ! Could not get the file:", pandofile
@@ -112,6 +129,8 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
                 'valid' : None,
                 'anlys' : None,
                 'msg' : None}
+
+
 
 def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='sfc', removeFile=True):
     """
@@ -137,8 +156,24 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    # Save the grib2 file as a temporary file (we remove it later)
-    outfile = './temp_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
+    if removeFile is True:
+        if DATE.hour % 2 == 0:
+            try:
+                outfile = '/scratch/local/brian_hrrr/temp_%04d%02d%02d%02d.grib2' \
+                          % (DATE.year, DATE.month, DATE.day, DATE.hour)
+            except:
+                outfile = './temp_%04d%02d%02d%02d.grib2' \
+                          % (DATE.year, DATE.month, DATE.day, DATE.hour)
+        else:
+            outfile = './temp_%04d%02d%02d%02d.grib2' \
+                       % (DATE.year, DATE.month, DATE.day, DATE.hour)
+
+    else:
+        # Save the grib2 file as a temporary file (that isn't removed)
+        outfile = './temp_%04d%02d%02d%02d.grib2' \
+                  % (DATE.year, DATE.month, DATE.day, DATE.hour)
+
+    print "Hour %s out file: %s" % (DATE.hour, outfile)
 
     # URL for the grib2 idx file
     fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
@@ -149,15 +184,19 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
                 % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
     try:
         try:
-            # ?? Ignore ssl certificate (else urllib2.openurl wont work). Depends on your version of python.
-            # See here: http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
+            # ?? Ignore ssl certificate (else urllib2.openurl wont work).
+            #    (Depends on your version of python.)
+            # See here:
+            # http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
             idxpage = urllib2.urlopen(fileidx, context=ctx)
         except:
             idxpage = urllib2.urlopen(fileidx)
+
         lines = idxpage.readlines()
+
         # 1) Find the byte range for the variable. Need to first find where the
         #    variable is located. Keep a count (gcnt) so we can get the end
         #    byte range from the next line.
@@ -172,6 +211,7 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
                 rangeend = int(parts[1])-1
                 print 'range:', rangestart, rangeend
                 byte_range = str(rangestart) + '-' + str(rangeend)
+
                 # 2) When the byte range is discovered, use cURL to download.
                 os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
             gcnt += 1
@@ -180,14 +220,14 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
 
         # 3) Get data from the file
         grbs = pygrib.open(outfile)
-        for i in range(1,next+1):
+        for i in range(1, next+1):
             return_this[grbs[i]['name']], return_this['lat'], return_this['lon'] = grbs[1].data()
             return_this['msg'] = np.append(return_this['msg'], str(grbs[i]))
         return_this['valid'] = grbs[1].validDate
         return_this['anlys'] = grbs[1].analDate
 
         # 4) Remove the temporary file
-        if removeFile == True:
+        if removeFile is True:
             os.system('rm -f %s' % (outfile))
 
         # 5) Return some import stuff from the file
@@ -269,6 +309,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
                       all except 2, to be nice to others using the computer.
                       If you are working on a wx[1-4] you can safely reduce 0.
     """
+    
     # 1) Create a range of dates and inputs for multiprocessing
     #    the get_hrrr_variable and pluck_point_functions.
     #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]

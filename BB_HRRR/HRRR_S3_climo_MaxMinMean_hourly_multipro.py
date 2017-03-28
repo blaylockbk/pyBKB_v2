@@ -2,9 +2,8 @@
 # March 21, 2017                                           Spring was yesterday
 
 """
-Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
-
-Requires cURL on your linux system
+Find the max, min, and mean for the CONUS between two dates, from the 
+MesoWest HRRR S3 archive. Separated by hour, saved in a NetCDF file.
 """
 
 import os
@@ -30,19 +29,21 @@ timer1 = datetime.now()
 
 DATE = date(2015, 4, 18)
 eDATE = date.today()
+
+#DATE = date(2016, 12, 1)
+#eDATE = DATE + timedelta(days=30)
+
 days = (eDATE - DATE).days
 DATES = [DATE + timedelta(days=x) for x in range(0, days)]
 
-hours = range(0, 24)
 
-
-#variable = 'TMP:2 m'
-#var_name = "temp_2m"
-#var_title = '2-m Temperature'
-#var_units = '(C)'
-#vrange = [-30, 40]
-#cmap = 'Spectral_r'
-#offset = 273.15
+variable = 'TMP:2 m'
+var_name = "temp_2m_TEST"
+var_title = '2-m Temperature'
+var_units = '(C)'
+vrange = [-30, 40]
+cmap = 'Spectral_r'
+offset = 273.15
 
 #variable = 'WIND:10 m'
 #var_name = "wind_10m"
@@ -92,13 +93,13 @@ hours = range(0, 24)
 #cmap = 'PuRd'
 #offset = 0
 
-variable = 'SNOD:surface'
-var_name = "Snow_Depth"
-var_title = 'Snow Depth'
-var_units = 'm'
-vrange = [0, 10]
-cmap = 'GnBu'
-offset = 0
+#variable = 'SNOD:surface'
+#var_name = "Snow_Depth"
+#var_title = 'Snow Depth'
+#var_units = 'm'
+#vrange = [0, 10]
+#cmap = 'GnBu'
+#offset = 0
 
 # The NetCDF file we want to create hasn't been made yet
 created_NC = False
@@ -106,18 +107,30 @@ created_NC = False
 # multiprocessing :)
 cpu_count = multiprocessing.cpu_count() - 1
 
-# we want to distribute chunks of data between the processors
+# Hours to get
+hours = range(0, 24)
 
+timer_hours = []
+timer_chunks = []
+timer_dwnld = []
+
+# we want to distribute chunks of data between the processors
 def get_HRRR(getthisDATE):
     """
     Getting HRRR data
     """
-    print ">>>>>     ", getthisDATE, "     <<<<<"
     H = get_hrrr_variable(getthisDATE, variable, fxx=0, model='hrrr', field='sfc')
     return H
 
+def get_HRRR_value(getthisDATE):
+    """
+    Getting HRRR data, just return the value
+    """
+    H = get_hrrr_variable(getthisDATE, variable, fxx=0, model='hrrr', field='sfc', value_only=True)
+    return H['value']
 
 for h in hours:
+    timerH = datetime.now()
     # Iniitialize the arrays with the first date
     firstDATE = DATES[0]
     H = get_HRRR(datetime(firstDATE.year, firstDATE.month, firstDATE.day, h))
@@ -127,7 +140,6 @@ for h in hours:
 
     # Create the NetCDF file if it hasn't been created yet
     if created_NC == False:
-        # And Create NetCDF Dimensions and Variables
         f = netcdf.NetCDFFile('MP_MaxMinMean_hourly_'+var_name+'.nc', 'w')
         f.createDimension('x', np.shape(H['value'])[0])
         f.createDimension('y', np.shape(H['value'])[1])
@@ -139,22 +151,44 @@ for h in hours:
         nc_count = f.createVariable('count', 'i', ('t'))
         created_NC = True
 
+    # Process DATES in chunks on all the specified processors.
     chunks = range(len(DATES))[1::cpu_count]
     chunks.append(len(DATES))
     for i in range(len(chunks)-1):
+        timerC = datetime.now()
         chunk_DATES = DATES[chunks[i]:chunks[i+1]]
-        # Add the hour to each datetime
-        chunk_DATETIMES = [datetime(D.year, D.month, D.day, h) for D in chunk_DATES]
-        p = multiprocessing.Pool(cpu_count)
-        result = p.map(get_HRRR, chunk_DATETIMES)
-        p.close()
 
-        for G in result:
-            if G['value'] != None:
-                new = G['value']
-                maxH[new > maxH] = new[new > maxH]
-                minH[new < minH] = new[new < minH]
-                sumH = sumH + new; count += 1
+        # Add the hour to each date, and pass datetime object to multipro
+        chunk_DATETIMES = [datetime(D.year, D.month, D.day, h) for D in chunk_DATES]
+        timerD = datetime.now()
+        p = multiprocessing.Pool(cpu_count)
+        result = p.map(get_HRRR_value, chunk_DATETIMES)
+        p.close()
+        timer_dwnld.append(datetime.now()-timerD)
+
+        # Remove empty arrays if any exist
+        empty = [e for e in range(len(result)) if result[e] is None]
+        if len(empty) > 0:
+            offset = range(len(empty))
+            for E in range(len(empty)):
+                # adjust by the offset, becuase pop changes index number
+                result.pop(empty[E]-offset[E])
+
+        result = np.array(result)
+
+        # Use numpy arrays to find max, min, sum
+        # First find min, max, sum of the result array
+        minR = np.min(result, axis=0)
+        maxR = np.max(result, axis=0)
+        sumR = np.sum(result, axis=0)
+
+        # Then, combine the result array to the previous (this two step
+        # process is faster than doing a np.dstack before finding min/max/sum)
+        minH = np.min([minR, minH], axis=0)
+        maxH = np.max([maxR, maxH], axis=0)
+        sumH = np.sum([minR, sumH], axis=0); count += np.shape(result)[0]
+
+        timer_chunks.append(datetime.now() - timerC)
 
     nc_maxH[:, :, h] = maxH
     nc_minH[:, :, h] = minH
@@ -163,11 +197,12 @@ for h in hours:
     del maxH
     del minH
     del sumH
+    timer_hours.append(datetime.now() - timerH)
 
 f.history = 'HRRR Hourly Max/Min/Mean Climatology for '+variable
 
-latH =  f.createVariable('latitude', float, ('x', 'y'))
-lonH =  f.createVariable('longitude', float, ('x', 'y'))
+latH = f.createVariable('latitude', float, ('x', 'y'))
+lonH = f.createVariable('longitude', float, ('x', 'y'))
 latH[:] = H['lat']
 lonH[:] = H['lon']
 begD = f.createVariable('Begin Date', 'i', ('d'))
@@ -175,12 +210,28 @@ endD = f.createVariable('End Date', 'i', ('d'))
 begD[:] = int(DATES[0].strftime('%Y%m%d%H'))
 endD[:] = int(DATES[-1].strftime('%Y%m%d%H'))
 
-# Number of hours used to calculate the mean for each hour
 f.close()
-print "total time:", datetime.now() - timer1
 
+print "==========================================================="
+print "total time:", datetime.now() - timer1
+print ""
+print "mean hour (seconds):", np.mean([i.seconds + i.microseconds/1000000. for i in timer_hours])
+print "mean chunk (seconds):", np.mean([i.seconds + i.microseconds/1000000. for i in timer_chunks])
+print "mean dwnld (seconds):", np.mean([i.seconds + i.microseconds/1000000. for i in timer_dwnld])
+
+"""!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+For 30 days of data:
+    total time: 0:01:15.466156
+        mean hour (seconds): 2.67458229167
+        mean chunk (seconds): 1.799924625
+        mean dwnld (seconds): 1.46710783333
+    (remaining time in set up and saving the NetCDF file)
+Thus, most of the time is taken in downloading.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"""
+
+"""
 #==============================================================================
-# plot
+# plots
 # =============================================================================
 
 SAVE = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/HRRR/climo/'
@@ -266,6 +317,7 @@ cb.set_label('%s %s' % (var_title, var_units))
 plt.title('HRRR Min '+var_title)
 plt.xlabel(str(DATES[0]) +' - '+str(DATES[-1]))
 plt.savefig(SAVE+'hrrr_'+var_name+'_min.png', bbox_inches='tight', dpi=500)
+"""
 
 """
 # Temperature Range
