@@ -3,8 +3,7 @@
 
 """
 Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
-
-Requires cURL on your linux system
+Requires cURL
 """
 
 
@@ -20,7 +19,7 @@ import matplotlib.dates as mdates
 import multiprocessing
 
 
-def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFile=True, value_only=False):
+def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFile=True, value_only=False, verbose=True):
     """
     Uses cURL to grab just one variable from a HRRR grib2 file on the MesoWest
     HRRR archive.
@@ -48,7 +47,8 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
 
     outfile = './temp_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
 
-    print outfile
+    if verbose is True:
+        print outfile
 
     # URL for the grib2 idx file
     fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
@@ -80,12 +80,14 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
         for g in lines:
             expr = re.compile(variable)
             if expr.search(g):
-                print 'matched a variable', g
+                if verbose is True:
+                    print 'matched a variable', g
                 parts = g.split(':')
                 rangestart = parts[1]
                 parts = lines[gcnt+1].split(':')
                 rangeend = int(parts[1])-1
-                print 'range:', rangestart, rangeend
+                if verbose is True:
+                    print 'range:', rangestart, rangeend
                 byte_range = str(rangestart) + '-' + str(rangeend)
                 # 2) When the byte range is discovered, use cURL to download.
                 os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
@@ -309,7 +311,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
                       all except 2, to be nice to others using the computer.
                       If you are working on a wx[1-4] you can safely reduce 0.
     """
-    
+
     # 1) Create a range of dates and inputs for multiprocessing
     #    the get_hrrr_variable and pluck_point_functions.
     #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]
