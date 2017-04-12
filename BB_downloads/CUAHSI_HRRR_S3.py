@@ -45,7 +45,7 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    outfile = './temp_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
+    outfile = '/uufs/chpc.utah.edu/common/home/u0553131/temp/temp_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
 
     if verbose is True:
         print outfile
@@ -172,9 +172,10 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
 
     else:
         # Save the grib2 file as a temporary file (that isn't removed)
-        outfile = './temp_%04d%02d%02d%02d.grib2' \
+        outfile = '/uufs/chpc.utah.edu/common/home/u0553130/temp/temp_%04d%02d%02d%02d.grib2' \
                   % (DATE.year, DATE.month, DATE.day, DATE.hour)
-
+        outfile_nc = '/uufs/chpc.utah.edu/common/home/u0553130/temp/temp_%04d%02d%02d%02d.nc' \
+                  % (DATE.year, DATE.month, DATE.day, DATE.hour)
     print "Hour %s out file: %s" % (DATE.hour, outfile)
 
     # URL for the grib2 idx file
@@ -231,6 +232,9 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
         # 4) Remove the temporary file
         if removeFile is True:
             os.system('rm -f %s' % (outfile))
+        
+        # 5) Convert to NetCDF for CUAHSI workshop
+        os.system('wgrib2 %s -netcdf %s' % (outfile, outfile_nc))
 
         # 5) Return some import stuff from the file
         return return_this
@@ -330,37 +334,16 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
     return [np.array(date_list), np.array(D)]
 
 if __name__ == "__main__":
-    """
+
+    from dateutil.relativedelta import relativedelta
+
     DATE = datetime(2017, 3, 11, 0)
-    variable = 'TMP:2 m'
+    variable = 'TSOIL:0-0 m'
 
-    timer1 = datetime.now()
-    data = get_hrrr_variable(DATE, variable)
+    DATE = datetime(2016, 1, 15)
+    eDATE = datetime(2017, 1, 15)
+    
+    DATES = np.array([DATE + relativedelta(months=x) for x in range(12)])
 
-    plt.figure(1)
-    plt.pcolormesh(data['lon'], data['lat'], data['value'], cmap="Spectral_r")
-    plt.colorbar()
-    plt.title('%s, Valid: %s' % (variable, data['valid']))
-    plt.xlabel('Value at KSLC: %s' % pluck_hrrr_point(data))
-    plt.savefig('example.png')
-    plt.show(block=False)
-
-    print ""
-    print 'timer single map:', datetime.now() - timer1
-    """
-
-    # Time Series (25 seconds to make a 5 day time series on 8 processors)
-    timer2 = datetime.now()
-    START = datetime(2016, 3, 1)
-    END = datetime(2016, 4, 1)
-    dates, data = point_hrrr_time_series(START, END, variable='SOILW:0.04', lat=40.5, lon=-113.5, fxx=0, model='hrrr', field='prs')
-    fig, ax = plt.subplots(1)
-    plt.plot(dates, data-273.15) # convert degrees K to degrees C
-    plt.title('4 cm layer soil moisture at SLC')
-    plt.ylabel('Fractional Soil Moisture')
-    plt.ylim([0,.6])
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
-    plt.savefig('CUAHSI_soil_moisture_2016.png')
-    plt.show(block=False)
-
-    print 'timer time series:', datetime.now() - timer2
+    for D in DATES:
+        data = get_hrrr_variable_multi(D, variable, next=18, fxx=0, model='hrrr', field='prs', removeFile=False)

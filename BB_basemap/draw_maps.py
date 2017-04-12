@@ -191,6 +191,24 @@ def draw_CONUS_HRRR_map(res='i', area_thresh=2000):
                 lat_0=38.5, lon_0=-97.5)
     return m
 
+def draw_midwest_map(res='i', return_domain_boundaires=False, area_thresh=2000):
+    """
+    Draw a basemap of midwest
+    """
+    bot_left_lat  = 34
+    bot_left_lon  = -104.3
+    top_right_lat = 47
+    top_right_lon = -80
+
+    m = Basemap(resolution=res, projection='cyl', area_thresh=area_thresh, \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
+
+
 if __name__ == "__main__":
 
     print 'drawing Utah map...',
