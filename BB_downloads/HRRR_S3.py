@@ -4,6 +4,15 @@
 """
 Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
 Requires cURL
+
+Contents:
+    get_hrrr_variable()       - Returns dict of sinlge HRRR variable
+    get_hrrr_variable_multi() - Returns dict of multiple HRRR variables 
+    pluck_hrrr_point()        - Returns valid time and plucked value from lat/lon
+    points_for_multipro()     - Feeds variables from multiprocessing for timeseries
+    point_hrrr_time_series()  - Returns HRRR time serience (main function)
+    get_hrrr_pollywog()       - Returns vector of the HRRR pollywog
+
 """
 
 
@@ -267,14 +276,16 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
     x, y = np.where(c == np.min(c))
     # 4) Value of the variable at that location
     plucked = H['value'][x[0], y[0]]
+    valid = H['valid']
     print "requested lat: %s lon: %s" % (lat, lon)
     print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
 
-    return plucked
+    # Returns the valid time and the plucked value
+    return [valid, plucked]
 
 def points_for_multipro(multi_vars):
     """
-    Need to feed a bunch of variables to these function for multiprocessing
+    Need to feed a bunch of variables to these functions for multiprocessing
     """
     DATE = multi_vars[0]
     VAR = multi_vars[1]
@@ -288,7 +299,6 @@ def points_for_multipro(multi_vars):
     value = pluck_hrrr_point(H, LAT, LON)
 
     return value
-
 
 def point_hrrr_time_series(start, end, variable='TMP:2 m',
                            lat=40.771, lon=-111.965,
@@ -324,10 +334,56 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
     cpu_count = multiprocessing.cpu_count() - reduce_CPUs
     p = multiprocessing.Pool(cpu_count)
     timer_MP = datetime.now()
-    D = p.map(points_for_multipro, multi_vars)
+    ValidValue = p.map(points_for_multipro, multi_vars)
+    p.close()
     print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
 
-    return [np.array(date_list), np.array(D)]
+    # Convert to numpy array so the columns can be indexed
+    ValidValue = np.array(ValidValue)
+    
+    valid = ValidValue[:, 0] # First returned is the valid datetime
+    value = ValidValue[:, 1] # Second returned is the value at that datetime
+
+    return valid, value
+
+
+def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
+    """
+    Creates a vector of a variable's value for each hour in a HRRR model 
+    forecast initialized from a specific time.
+    
+    John Horel named these pollywogs because when you plot the series of a 
+    forecast variable with the analysis hour being a circle, the lines look 
+    like pollywogs.   O----
+
+    input:
+        DATE           - datetime for the pollywog head
+        variable       - The name of the variable in the HRRR .idx file
+        lat            - latitude
+        lon            - longitude
+        forecast_limit - the last hour of the pollywog, default all 18 hours.
+                         but maybe you are only interested in the first, say,
+                         the first 5 forecast hours, then you would set to 5.
+    output:
+        valid date, pollywog vector   - A vector with the data for the forecast
+    """
+    pollywog = np.array([])
+    valid_dates = np.array([])
+    
+    forecasts = range(forecast_limit+1)
+    for fxx in forecasts:
+        try:
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            Vdate, plucked = pluck_hrrr_point(H, lat, lon)
+            pollywog = np.append(pollywog, plucked)
+            valid_dates = np.append(valid_dates, Vdate)
+        except:
+            # If hour isn't available, fill with nan, and date is next hour
+            pollywog = np.append(pollywog, np.nan)
+            valid_dates = np.append(valid_dates, valid_dates[-1]+timedelta(hours=1))
+
+    return valid_dates, pollywog
+
 
 if __name__ == "__main__":
     """
