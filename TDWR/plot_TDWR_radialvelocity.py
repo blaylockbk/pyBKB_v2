@@ -31,7 +31,7 @@ v = 'TV0'
 ctable = 'NWSVelocity'
 date = '20170414'
 path = '/uufs/chpc.utah.edu/common/home/horel-group4/gslso3s/data/TDWR/%s/%s/' % (date, v)
-out_dir = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/TDWR/Dust_%s/' % (date)
+out_dir = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/TDWR/Dust_20170414/%s/' % (v)
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
@@ -56,6 +56,9 @@ def plot_tdwr(scan):
     data = f.map_data(datadict['data']) # I'm confident this maps the data to floats with units of m/s
     data = ma.array(data)
     data[np.isnan(data)] = ma.masked
+
+    # Convert knots to m/s
+    data = data * .5144
 
     # Grab azimuths and calculate a range based on number of gates
     az = np.array(datadict['start_az'] + [datadict['end_az'][-1]])

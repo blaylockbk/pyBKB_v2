@@ -163,12 +163,10 @@ if __name__=='__main__':
     # List of file names we want to make plots for
     somelist = []
     #for i in os.listdir('./17-19_June/'):
-    v = 'TR0'
-    tdwr_dir = '/uufs/chpc.utah.edu/common/home/horel-group4/gslso3s/data/TDWR/20170413/%s/' % v
-    for i in os.listdir(tdwr_dir):    
+    for i in os.listdir(path):
         if i[0:10]=='Level3_SLC' and i[-4:]=='nids': # get the file name of a TDWR file for all files
             somelist.append(i)
-            
+
     # We have a lot of plotting to do, so run on many processors. Whahahahah!
     # Could speed up the process by drawing basemap once.
     num_proc = multiprocessing.cpu_count()
