@@ -28,7 +28,8 @@ the first version.
 ## Color maps
 My personal color map convention and preferences.
 Read this article before using python colormaps: http://matplotlib.org/users/colormaps.html
-|Variable          | Code                   | Suggested Range|
+
+|Variable          | Code                   | Suggested Range |
 |------------------|------------------------|---|
 |Air Temperature   | `cmap='Spectral_r'`    |   |
 |Dew Point         | `cmap='BrBG'`          |   |
