@@ -33,8 +33,6 @@ Read this article before using python colormaps: http://matplotlib.org/users/col
 |------------------|------------------------|---|
 |Air Temperature   | `cmap='Spectral_r'`    |   |
 |Dew Point         | `cmap='BrBG'`          |   |
-
-
 |Relative Humidity | `cmap='BrBG'`          | [0, 100] %|
 |Sea Level Pressure|`cmap='viridis'`        |[976, 1040] hPa|
 |Wind Gust         |`from BB_cmap.my_cmap import cmap_gust` ||
@@ -48,6 +46,7 @@ Read this article before using python colormaps: http://matplotlib.org/users/col
 
 ## HRRR Variable names
 Commonly used HRRR variable names needed for indexing 
+
 |Variable             | HRRR code |
 |---------------------|-----------|
 |2 m Temperature      | `TMP:2 m` |
