@@ -7,3 +7,5 @@ get_token.py
 *.out
 *.nc
 *.grib2
+
+!baloon.png
