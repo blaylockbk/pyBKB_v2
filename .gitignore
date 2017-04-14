@@ -8,4 +8,4 @@ get_token.py
 *.nc
 *.grib2
 
-!baloon.png
+!balloon.png
