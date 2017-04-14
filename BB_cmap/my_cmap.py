@@ -27,6 +27,9 @@ plt.colorbar()
 '''
 # Wind Gusts (similar to College of Dupage HRRR map)
 def cmap_gust():
+    """"
+    Suggested ranges: vmin=0, vmax=35 [m/s]
+    """
     num_sections = 4
     sections = np.linspace(0, 1, num_sections)
     cdict = {'red': ((sections[0], 1.0, 1.0),
