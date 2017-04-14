@@ -37,7 +37,7 @@ Read this article before using python colormaps: http://matplotlib.org/users/col
 |Sea Level Pressure|`cmap='viridis'`        |[976, 1040] hPa|
 |Wind Gust         |`from BB_cmap.my_cmap import cmap_gust` ||
 |                  |`cmap=cmap_gust()`|[0, 35] m/s|
-|Terrain           |`from BB_cmap.terrain_colormap import terrain_cmap_256()` ||
+|Terrain           |`from BB_cmap.terrain_colormap import terrain_cmap_256()` |(mask known water points to -99)|
 |                  |`cmap=terrain_cmap_256()`||
 |Reflectivity      |`from MetPy_BB.plots import ctables`||
 |                  |`ctable = 'NWSReflectivity'`||
