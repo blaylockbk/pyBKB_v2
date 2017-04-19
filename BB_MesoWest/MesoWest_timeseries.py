@@ -57,7 +57,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, v
     """
     Get MesoWest Time Series:
     Makes a time series query from the MesoWest API for a single station.
-    
+
     Note: Put all print statements under "if verbose==True:" because some of my 
     cgi scripts cannot deal with printed statements.
 
@@ -84,7 +84,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, v
         + '&vars=' + variables \
         + '&obtimezone=' + tz \
         + '&output=json'
-    
+
     try:
         # Just try everything first.
         # If it doens't work, return an error message with the URL for
