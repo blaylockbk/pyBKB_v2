@@ -48,11 +48,12 @@ Read this article before using python colormaps: http://matplotlib.org/users/col
 ## HRRR Variable names
 Commonly used HRRR variable names needed for indexing 
 
-|Variable             | HRRR code |
-|---------------------|-----------|
-|2 m Temperature      | `TMP:2 m` |
-|2 m RH               | `RH:2 m`  |
-|10 m Wind Speed (max)| `WIND:10 m`|
-|10 m Wind Gust       | `GUST:surface`|
-|Sea Level Pressure   | `MSLMA:mean sea level`|
-|Topography           | `HGT:surface`|
+|Variable              | HRRR code |
+|----------------------|-----------|
+|2 m Temperature       | `TMP:2 m` |
+|2 m RH                | `RH:2 m`  |
+|10 m Wind Speed (max) | `WIND:10 m`|
+|10 m Wind Gust        | `GUST:surface`|
+|Sea Level Pressure    | `MSLMA:mean sea level`|
+|Topography            | `HGT:surface`|
+|Simulated Reflectivity| `REFC:entire atmosphere`|
