@@ -2,7 +2,7 @@
 # March 14, 2017                                           It's Pi Day!! (3.14)
 
 """
-Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
+Get data from a HRRR grib2 file on the NOMADS HRRR HTTP Archive
 Requires cURL
 
 Contents:
@@ -61,11 +61,11 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
 
     # URL for the grib2 idx file
     fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+                % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
 
     # URL for the grib2 file (located on PANDO S3 archive)
     nomadfile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+                % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
 
     try:
         try:
@@ -99,7 +99,7 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
                     print 'range:', rangestart, rangeend
                 byte_range = str(rangestart) + '-' + str(rangeend)
                 # 2) When the byte range is discovered, use cURL to download.
-                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
+                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, nomadfile))
             gcnt += 1
 
         # 3) Get data from the file
@@ -131,7 +131,7 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
 
 
     except:
-        print " ! Could not get the file:", pandofile
+        print " ! Could not get the file:", nomadfile
         print " ! Is the variable right?", variable
         print " ! Does the file exist?", fileidx
         return {'value' : None,
@@ -187,12 +187,13 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
     print "Hour %s out file: %s" % (DATE.hour, outfile)
 
     # URL for the grib2 idx file
-    fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
 
     # URL for the grib2 file (located on PANDO S3 archive)
-    pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    nomadfile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
+                % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+
     try:
         try:
             # ?? Ignore ssl certificate (else urllib2.openurl wont work).
@@ -224,7 +225,7 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
                 byte_range = str(rangestart) + '-' + str(rangeend)
 
                 # 2) When the byte range is discovered, use cURL to download.
-                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
+                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, nomadfile))
             gcnt += 1
 
         return_this = {'msg':np.array([])}
@@ -245,7 +246,7 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
         return return_this
 
     except:
-        print " ! Could not get the file:", pandofile
+        print " ! Could not get the file:", nomadfile
         print " ! Is the variable right?", variable
         print " ! Does the file exist?", fileidx
         return {'value' : None,
@@ -340,7 +341,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 
     # Convert to numpy array so the columns can be indexed
     ValidValue = np.array(ValidValue)
-    
+
     valid = ValidValue[:, 0] # First returned is the valid datetime
     value = ValidValue[:, 1] # Second returned is the value at that datetime
 
@@ -349,11 +350,11 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 
 def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     """
-    Creates a vector of a variable's value for each hour in a HRRR model 
+    Creates a vector of a variable's value for each hour in a HRRR model
     forecast initialized from a specific time.
-    
-    John Horel named these pollywogs because when you plot the series of a 
-    forecast variable with the analysis hour being a circle, the lines look 
+
+    John Horel named these pollywogs because when you plot the series of a
+    forecast variable with the analysis hour being a circle, the lines look
     like pollywogs.   O----
 
     input:
@@ -368,21 +369,61 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
         valid date, pollywog vector   - A vector with the data for the forecast
     """
     pollywog = np.array([])
-    valid_dates = np.array([])
-    
-    forecasts = range(forecast_limit+1)
-    for fxx in forecasts:
+    valid_dates = np.array([DATE + timedelta(hours=x) for x in range(0, forecast_limit+1)])
+
+    for fxx in range(len(valid_dates)):
         try:
             H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
             Vdate, plucked = pluck_hrrr_point(H, lat, lon)
             pollywog = np.append(pollywog, plucked)
-            valid_dates = np.append(valid_dates, Vdate)
         except:
             # If hour isn't available, fill with nan, and date is next hour
             pollywog = np.append(pollywog, np.nan)
-            valid_dates = np.append(valid_dates, valid_dates[-1]+timedelta(hours=1))
 
-    return valid_dates, pollywog
+    return [valid_dates, pollywog]
+
+def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
+    """
+    Creates a vector of a variable's value for each hour in a HRRR model
+    forecast initialized from a specific time. FOR MULTIPLE LOCATIONS. Requires
+    a dictionary of sites which includes the keys, 'latitude' and 'longitude'.
+
+    input:
+        DATE           - datetime for the pollywog head
+        variable       - The name of the variable in the HRRR .idx file
+        location_dic   - Dictionary of locations that include the 'latitude'
+                         and 'longitude'.
+                         location_dic = {'name':{'latitude':###,'longitude':###}}
+        forecast_limit - the last hour of the pollywog, default all 18 hours.
+                         but maybe you are only interested in the first, say,
+                         the first 5 forecast hours, then you would set to 5.
+    output:
+        dictionary   - Valid times, and values for each station key
+    """
+    # Create a vector of times
+    valid_dates = np.array([DATE + timedelta(hours=x) for x in range(0, forecast_limit+1)])
+
+    # Intialzie dicitonary to store data with the valid_dates. Each station 
+    # will also be a key, and the value is empty until we fill it.
+    return_this = {'DATETIME':valid_dates}
+    for l in location_dic:
+        return_this[l] = np.array([])
+
+
+    for fxx in range(len(valid_dates)):
+        try:
+            # Get the HRRR file
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            # For each station, pluck the value and store it
+            for l in location_dic:
+                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'])
+                return_this[l] = np.append(return_this[l], plucked)
+        except:
+            # If hour isn't available, fill with nan, and date is next hour
+            for l in location_dic:
+                return_this[l] = np.append(return_this[l], np.nan)
+
+    return return_this
 
 
 if __name__ == "__main__":
@@ -407,14 +448,14 @@ if __name__ == "__main__":
 
     # Time Series (25 seconds to make a 5 day time series on 8 processors)
     timer2 = datetime.now()
-    START = datetime(2016, 3, 1)
-    END = datetime(2016, 4, 1)
+    START = datetime(2017, 4, 24)
+    END = datetime(2017, 4, 24, 8)
     dates, data = point_hrrr_time_series(START, END, variable='SOILW:0.04', lat=40.5, lon=-113.5, fxx=0, model='hrrr', field='prs')
     fig, ax = plt.subplots(1)
     plt.plot(dates, data-273.15) # convert degrees K to degrees C
     plt.title('4 cm layer soil moisture at SLC')
     plt.ylabel('Fractional Soil Moisture')
-    plt.ylim([0,.6])
+    plt.ylim([0, .6])
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%d\n%Y'))
     plt.savefig('CUAHSI_soil_moisture_2016.png')
     plt.show(block=False)

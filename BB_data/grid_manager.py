@@ -31,6 +31,31 @@ def pluck_point(stn_lat, stn_lon, grid_lat, grid_lon):
 
     return latlon_idx
 
+def pluck_point_new(stn_lat, stn_lon, grid_lat, grid_lon, return_c=False):
+    """
+    From the grid, get the data for the point nearest the MesoWest station
+    Figure out the nearest lat/lon in the HRRR domain for the station location
+    Input:
+        stn_lat, stn_lon - The latitude and longitude of the station
+        grid_lat, grid_lon - The 2D arrays for both latitude and longitude
+    Output:
+        The index of the flattened array
+    """
+
+    abslat = np.abs(grid_lat-stn_lat)
+    abslon = np.abs(grid_lon-stn_lon)
+
+    # Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
+    c = np.maximum(abslon, abslat)
+
+    # The index of the minimum maxima (which is the nearest lat/lon)
+    latlon_idx = np.where(np.min(c)==c)
+
+    if return_c == False:
+        return latlon_idx
+    else:
+        return [latlon_idx, c]
+
 
 def cut_data(bl_lat, tr_lat, bl_lon, tr_lon, lat, lon, buff=0):
     """
