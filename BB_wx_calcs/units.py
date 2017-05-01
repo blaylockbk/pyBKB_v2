@@ -1,6 +1,3 @@
-import numpy as np
-
-
 # --- Temperature -------------------------------------------------------------
 def K_to_C(T_K):
     """
@@ -30,3 +27,17 @@ def CtoF(C):
     converts Celsius to Fahrenheit
     """
     return C*9/5.+32
+
+# --- Wind --------------------------------------------------------------------
+def mps_to_MPH(mps):
+    """
+    Convert m/s to miles per hour, MPH
+    """
+    return mps * 2.2369
+
+# --- Precipitation -----------------------------------------------------------
+def mm_to_inches(mm):
+    """
+    Convert mm to inches
+    """
+    return mm * 0.0394

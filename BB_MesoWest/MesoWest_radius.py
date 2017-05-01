@@ -57,7 +57,7 @@ def get_mesowest_radius(attime, within,
 
     URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token=' + token \
         + '&attime=' + attime \
-        + '&within=' + within \
+        + '&within=' + str(within) \
         + '&obtimezone=' + tz \
         + extra \
         + '&vars=' + variables

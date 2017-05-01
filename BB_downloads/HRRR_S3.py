@@ -6,13 +6,14 @@ Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
 Requires cURL
 
 Contents:
-    get_hrrr_variable()       - Returns dict of sinlge HRRR variable
-    get_hrrr_variable_multi() - Returns dict of multiple HRRR variables 
-    pluck_hrrr_point()        - Returns valid time and plucked value from lat/lon
-    points_for_multipro()     - Feeds variables from multiprocessing for timeseries
-    point_hrrr_time_series()  - Returns HRRR time serience (main function)
-    get_hrrr_pollywog()       - Returns vector of the HRRR pollywog
-
+    get_hrrr_variable()            - Returns dict of sinlge HRRR variable
+    get_hrrr_variable_multi()      - Returns dict of multiple HRRR variables 
+    pluck_hrrr_point()             - Returns valid time and plucked value from lat/lon
+    points_for_multipro()          - Feeds variables from multiprocessing for timeseries
+    point_hrrr_time_series()       - Returns HRRR time serience (main function)
+    point_hrrr_time_series_multi() - Returns dictionary of the HRRR timeseris for multiple stations
+    get_hrrr_pollywog()            - Returns vector of the HRRR pollywog
+    get_hrrr_pollywog_multi()      - Returns dictionary of the HRRR pollywog for multiple stations
 """
 
 
@@ -353,6 +354,63 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 
     return valid, value
 
+def point_hrrr_time_series_multi(start, end, location_dic,
+                                 variable='TMP:2 m',
+                                 fxx=0, model='hrrr', field='sfc',
+                                 reduce_CPUs=2):
+    """
+    Produce a time series of HRRR data for a specified variable at a lat/lon
+    location. Use multiprocessing to speed this up :)
+    Input:
+        start - datetime begining time
+        end - datetime ending time
+        location_dic - a dictionary {'name':{'latitude':xxx, 'longitude':xxx}}
+        variable - the desired variable string from a line in the .idx file.
+                   Refer https://api.mesowest.utah.edu/archive/HRRR/
+        fxx - forecast hour
+        model - model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
+        field - field type. Choose one: ['sfc', 'prs']
+        reduce_CPUs - How many CPUs do you not want to use? Default is to use
+                      all except 2, to be nice to others using the computer.
+                      If you are working on a wx[1-4] you can safely reduce 0.
+    """
+
+    # 1) Create a range of dates
+    base = start
+    hours = (end-start).days * 24 + (end-start).seconds / 3600
+    date_list = [base + timedelta(hours=x) for x in range(0, hours)]
+
+    # 2) Intialzie dicitonary to store data with the valid_dates. Each station 
+    #    will also be a key, and the value is empty until we fill it.
+    return_this = {'DATETIME':date_list}
+    for l in location_dic:
+        return_this[l] = np.array([])
+
+    # 3) Createand inputs for multiprocessing
+    #    the get_hrrr_variable and pluck_point functions.
+    #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]
+    for l in location_dic:
+        lat = location_dic[l]['latitude']
+        lon = location_dic[l]['longitude']
+        multi_vars = [[d, variable, lat, lon, fxx, model, field] for d in date_list]
+
+        # 2) Use multiprocessing to get the plucked values from each map.
+        cpu_count = multiprocessing.cpu_count() - reduce_CPUs
+        p = multiprocessing.Pool(cpu_count)
+        timer_MP = datetime.now()
+        ValidValue = p.map(points_for_multipro, multi_vars)
+        p.close()
+        print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
+
+        # Convert to numpy array so the columns can be indexed
+        ValidValue = np.array(ValidValue)
+
+        valid = ValidValue[:, 0] # First returned is the valid datetime
+        value = ValidValue[:, 1] # Second returned is the value at that datetime
+
+        return_this[l] = np.append(return_this[l], value)
+
+    return return_this
 
 def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     """
@@ -376,7 +434,7 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     """
     pollywog = np.array([])
     valid_dates = np.array([])
-    
+
     forecasts = range(forecast_limit+1)
     for fxx in forecasts:
         try:
@@ -391,6 +449,48 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
 
     return valid_dates, pollywog
 
+def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
+    """
+    Creates a vector of a variable's value for each hour in a HRRR model
+    forecast initialized from a specific time. FOR MULTIPLE LOCATIONS. Requires
+    a dictionary of sites which includes the keys, 'latitude' and 'longitude'.
+
+    input:
+        DATE           - datetime for the pollywog head
+        variable       - The name of the variable in the HRRR .idx file
+        location_dic   - Dictionary of locations that include the 'latitude'
+                         and 'longitude'.
+                         location_dic = {'name':{'latitude':###,'longitude':###}}
+        forecast_limit - the last hour of the pollywog, default all 18 hours.
+                         but maybe you are only interested in the first, say,
+                         the first 5 forecast hours, then you would set to 5.
+    output:
+        dictionary   - Valid times, and values for each station key
+    """
+    # Create a vector of times
+    valid_dates = np.array([DATE + timedelta(hours=x) for x in range(0, forecast_limit+1)])
+
+    # Intialzie dicitonary to store data with the valid_dates. Each station 
+    # will also be a key, and the value is empty until we fill it.
+    return_this = {'DATETIME':valid_dates}
+    for l in location_dic:
+        return_this[l] = np.array([])
+
+
+    for fxx in range(len(valid_dates)):
+        try:
+            # Get the HRRR file
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            # For each station, pluck the value and store it
+            for l in location_dic:
+                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'])
+                return_this[l] = np.append(return_this[l], plucked)
+        except:
+            # If hour isn't available, fill with nan, and date is next hour
+            for l in location_dic:
+                return_this[l] = np.append(return_this[l], np.nan)
+
+    return return_this
 
 if __name__ == "__main__":
     """

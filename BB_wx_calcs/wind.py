@@ -40,7 +40,11 @@ def wind_uv_to_spd(U, V):
       U = west / east direction(wind from the west is positive, from the east is negative)
       V = south / noth direction(wind from the south is positive, from the north is negative)
     """
-    WSPD = np.sqrt(np.square(U) + np.square(V))
+    try:
+        WSPD = np.sqrt(np.square(U) + np.square(V))
+    except:
+        # why didn't numpy work???
+        WSPD = (U*U + V*V)**(.5)
     return WSPD
 
 
@@ -79,6 +83,8 @@ def angle_between(v1, v2):
         else:
             return np.rad2deg(np.pi)
     return np.rad2deg(angle)
+
+
 
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
