@@ -195,8 +195,8 @@ def draw_midwest_map(res='i', return_domain_boundaires=False, area_thresh=2000):
     """
     Draw a basemap of midwest
     """
-    bot_left_lat  = 30.5
-    bot_left_lon  = -104.3
+    bot_left_lat  = 28
+    bot_left_lon  = -102
     top_right_lat = 47
     top_right_lon = -80
 

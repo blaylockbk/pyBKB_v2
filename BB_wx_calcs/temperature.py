@@ -25,6 +25,13 @@ def KtoF(K):
     convert Kelvin to Fahrenheit
     """
     return (K-273.15)*9/5.+32
+
+def KtoC(K):
+    """
+    convert Kelvin to Celsius
+    """
+    return (K-273.15)
+
 def CtoF(C):
     """
     converts Celsius to Fahrenheit

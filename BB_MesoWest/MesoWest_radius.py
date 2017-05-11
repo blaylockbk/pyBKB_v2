@@ -34,7 +34,8 @@ PM_25_concentration,air_temp,pressure'
 
 def get_mesowest_radius(attime, within,
                         extra='&radius=kslc,30',
-                        variables=default_vars):
+                        variables=default_vars,
+                        verbose=True):
     """
     Gets data nearest a time for all stations.
     https://synopticlabs.org/api/mesonet/reference/
@@ -62,76 +63,87 @@ def get_mesowest_radius(attime, within,
         + extra \
         + '&vars=' + variables
 
-    # Open URL and read JSON content. Convert JSON string to some python
-    # readable format.
-    f = urllib2.urlopen(URL)
-    data = f.read()
-    data = json.loads(data)
+    try:
+        # Open URL and read JSON content. Convert JSON string to some python
+        # readable format.
+        f = urllib2.urlopen(URL)
+        data = f.read()
+        data = json.loads(data)
 
-    # Store the data we will return in this new dictionary
-    return_this = {'URL': URL,
-                   'NAME': np.array([]),
-                   'STID': np.array([]),
-                   'LAT': np.array([]),
-                   'LON': np.array([]),
-                   'ELEVATION': np.array([]),  # Note: Elevation is in feet.
-                   'DATETIME': np.array([])
-                  }
+        # Store the data we will return in this new dictionary
+        return_this = {'URL': URL,
+                       'NAME': np.array([]),
+                       'STID': np.array([]),
+                       'LAT': np.array([]),
+                       'LON': np.array([]),
+                       'ELEVATION': np.array([]),  # Note: Elevation is in feet.
+                       'DATETIME': np.array([])
+                      }
 
-    # Create a new key for each possible variable
-    for v in data['UNITS'].keys():
-        return_this[str(v)] = np.array([])
-
-        # Since some observation times between variables for the same station
-        # *could* be different, I will store the datetimes from each variable
-        # with a similar name as the variable.
-        return_this[str(v) + '_DATETIME'] = np.array([])
-
-    for i in range(0, len(data['STATION'])):
-        stn = data['STATION'][i]  # this represents the station
-
-        # Store basic metadata for each station in the dictionary.
-        return_this['NAME'] = np.append(return_this['NAME'], str(stn['NAME']))
-        return_this['STID'] = np.append(return_this['STID'], str(stn['STID']))
-        return_this['LAT'] = np.append(return_this['LAT'],
-                                       float(stn['LATITUDE']))
-        return_this['LON'] = np.append(return_this['LON'],
-                                       float(stn['LONGITUDE']))
-        return_this['ELEVATION'] = np.append(return_this['ELEVATION'],
-                                             float(stn['ELEVATION']))
-
-        # Dynamically store data from each available variable.
+        # Create a new key for each possible variable
         for v in data['UNITS'].keys():
+            return_this[str(v)] = np.array([])
 
-            key_name = str(v)  # Same as the API variable name
-            set_num = 0        # Always get the first set: value_1 or value_1d
-            # May need to write some exceptions to this rule
+            # Since some observation times between variables for the same station
+            # *could* be different, I will store the datetimes from each variable
+            # with a similar name as the variable.
+            return_this[str(v) + '_DATETIME'] = np.array([])
 
+        for i in range(0, len(data['STATION'])):
+            stn = data['STATION'][i]  # this represents the station
+
+            # Store basic metadata for each station in the dictionary.
+            return_this['NAME'] = np.append(return_this['NAME'], str(stn['NAME']))
+            return_this['STID'] = np.append(return_this['STID'], str(stn['STID']))
+            return_this['LAT'] = np.append(return_this['LAT'],
+                                           float(stn['LATITUDE']))
+            return_this['LON'] = np.append(return_this['LON'],
+                                           float(stn['LONGITUDE']))
             try:
-                # If value exists, then append with the data
-                grab_this_set = str(stn['SENSOR_VARIABLES']
-                                    [key_name].keys()[set_num])
-                variable_data = float(stn['OBSERVATIONS']
-                                      [grab_this_set]['value'])
-                date_data = MWdate_to_datetime(stn['OBSERVATIONS']
-                                               [grab_this_set]['date_time'])
-
-                return_this[key_name] = \
-                    np.append(return_this[key_name], variable_data)
-                return_this[key_name + '_DATETIME'] = \
-                    np.append(return_this[key_name + '_DATETIME'], date_data)
-
+                return_this['ELEVATION'] = np.append(return_this['ELEVATION'],
+                                                    float(stn['ELEVATION']))
             except:
-                # If it doesn't exist, then append with np.nan
-                return_this[key_name] = \
-                    np.append(return_this[key_name], np.nan)
-                return_this[key_name + '_DATETIME'] = \
-                    np.append(return_this[key_name + '_DATETIME'], np.nan)
+                return_this['ELEVATION'] = np.append(return_this['ELEVATION'], np.nan)
 
-    return return_this
+            # Dynamically store data from each available variable.
+            for v in data['UNITS'].keys():
 
+                key_name = str(v)  # Same as the API variable name
+                set_num = 0        # Always get the first set: value_1 or value_1d
+                # May need to write some exceptions to this rule
+
+                try:
+                    # If value exists, then append with the data
+                    grab_this_set = str(stn['SENSOR_VARIABLES']
+                                        [key_name].keys()[set_num])
+                    variable_data = float(stn['OBSERVATIONS']
+                                        [grab_this_set]['value'])
+                    date_data = MWdate_to_datetime(stn['OBSERVATIONS']
+                                                [grab_this_set]['date_time'])
+
+                    return_this[key_name] = \
+                        np.append(return_this[key_name], variable_data)
+                    return_this[key_name + '_DATETIME'] = \
+                        np.append(return_this[key_name + '_DATETIME'], date_data)
+
+                except:
+                    # If it doesn't exist, then append with np.nan
+                    return_this[key_name] = \
+                        np.append(return_this[key_name], np.nan)
+                    return_this[key_name + '_DATETIME'] = \
+                        np.append(return_this[key_name + '_DATETIME'], np.nan)
+
+        return return_this
+    except:
+        # If it doens't work, then return the URL for debugging.
+        if verbose==True:
+            print 'Errors loading:', URL
+        return 'ERROR'
 
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
 
     a = get_mesowest_radius(datetime(2016, 4, 4), '10', extra='&radius=kslc,7')
+    b = get_mesowest_radius(datetime(2017, 5, 10), 15,
+                            extra='&radius=%s,%s,60' % (28.675, -80.742),
+                            variables='wind_speed,wind_direction')

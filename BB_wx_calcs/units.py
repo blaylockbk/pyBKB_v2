@@ -28,6 +28,12 @@ def CtoF(C):
     """
     return C*9/5.+32
 
+def KtoC(K):
+    """
+    convert Kelvin to Celsius
+    """
+    return (K-273.15)
+
 # --- Wind --------------------------------------------------------------------
 def mps_to_MPH(mps):
     """

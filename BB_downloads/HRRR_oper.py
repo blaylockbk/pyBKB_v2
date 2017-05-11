@@ -256,7 +256,7 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
                 'anlys' : None,
                 'msg' : None}
 
-def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
+def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
     """
     Pluck the value from the nearest lat/lon location in the HRRR grid.
     Input:
@@ -278,8 +278,9 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
     # 4) Value of the variable at that location
     plucked = H['value'][x[0], y[0]]
     valid = H['valid']
-    print "requested lat: %s lon: %s" % (lat, lon)
-    print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
+    if verbose is True:
+        print "requested lat: %s lon: %s" % (lat, lon)
+        print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
 
     # Returns the valid time and the plucked value
     return [valid, plucked]
@@ -348,7 +349,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
     return valid, value
 
 
-def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
+def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18, verbose=True):
     """
     Creates a vector of a variable's value for each hour in a HRRR model
     forecast initialized from a specific time.
@@ -373,7 +374,7 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
 
     for fxx in range(len(valid_dates)):
         try:
-            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc', verbose=verbose)
             Vdate, plucked = pluck_hrrr_point(H, lat, lon)
             pollywog = np.append(pollywog, plucked)
         except:
@@ -382,7 +383,7 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
 
     return [valid_dates, pollywog]
 
-def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
+def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18, verbose=True):
     """
     Creates a vector of a variable's value for each hour in a HRRR model
     forecast initialized from a specific time. FOR MULTIPLE LOCATIONS. Requires
@@ -413,10 +414,10 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
     for fxx in range(len(valid_dates)):
         try:
             # Get the HRRR file
-            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc', verbose=verbose)
             # For each station, pluck the value and store it
             for l in location_dic:
-                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'])
+                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'], verbose=verbose)
                 return_this[l] = np.append(return_this[l], plucked)
         except:
             # If hour isn't available, fill with nan, and date is next hour
