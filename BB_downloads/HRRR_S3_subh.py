@@ -1,11 +1,15 @@
 # Brian Blaylock
-# March 14, 2017                                           It's Pi Day!! (3.14)
+# May 15, 2017                                        Expecting some rain today
 
 """
 Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
 Requires cURL
 
+Special Case for Subhourly files
+
 Contents:
+    get_hrrr_variable
+
     get_hrrr_variable()            - Returns dict of sinlge HRRR variable
     get_hrrr_variable_multi()      - Returns dict of multiple HRRR variables 
     pluck_hrrr_point()             - Returns valid time and plucked value from lat/lon
@@ -29,10 +33,31 @@ import matplotlib.dates as mdates
 import multiprocessing
 
 
-def get_hrrr_variable(DATE, variable, 
-                      fxx=0,
-                      model='hrrr',
-                      field='sfc',
+DATE = datetime(2017, 5, 15, 0)
+model = 'hrrr'
+field = 'subh'
+FXX = range(0,19)
+
+VARS = ['REFC:entire atmosphere', 'GUST:surface', 'UGRD:80 m above ground',
+        'VGRD:80 m above ground', 'TMP:2 m above ground', 'DPT:2 m above ground',
+        'UGRD:10 m above ground', 'VGRD:10 m above ground', 'PRES:surface']
+FCST = ['anl'] + range(15, 1081, 15)
+
+# Build the files
+for fxx in FXX:
+# URL for the grib2 idx file
+    fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    
+    # URL for the grib2 file (located on PANDO S3 archive)
+    pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
+                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    print "IDX File", fileidx
+    for FSCT
+    print "look for", 
+# 
+
+def get_hrrr_variable(DATE, variable,
                       removeFile=True,
                       value_only=False,
                       verbose=True,
@@ -62,7 +87,7 @@ def get_hrrr_variable(DATE, variable,
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    outfile = '%stemp_%04d%02d%02d%02d.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour)
+    outfile = '%stemp_subh_%04d%02d%02d%02d.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour)
 
     if verbose is True:
         print outfile
@@ -77,9 +102,9 @@ def get_hrrr_variable(DATE, variable,
 
     try:
         try:
-            # ?? Ignore ssl certificate (else urllib2.openurl wont work). 
+            # ?? Ignore ssl certificate (else urllib2.openurl wont work).
             #    Depends on your version of python.
-            #    See here: 
+            #    See here:
             #    http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
@@ -87,7 +112,7 @@ def get_hrrr_variable(DATE, variable,
             idxpage = urllib2.urlopen(fileidx, context=ctx)
         except:
             idxpage = urllib2.urlopen(fileidx)
-        
+
         lines = idxpage.readlines()
 
         # 1) Find the byte range for the variable. Need to first find where the
