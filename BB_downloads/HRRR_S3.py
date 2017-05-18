@@ -14,6 +14,10 @@ Contents:
     point_hrrr_time_series_multi() - Returns dictionary of the HRRR timeseris for multiple stations
     get_hrrr_pollywog()            - Returns vector of the HRRR pollywog
     get_hrrr_pollywog_multi()      - Returns dictionary of the HRRR pollywog for multiple stations
+
+    The difference between a time series and a pollywog is that:
+        - a time series is for the analysis hours, f00, for any length of time.
+        - a pollywog is the full forecast cycle, i.e. f00-f18
 """
 
 
@@ -274,23 +278,29 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
     Return:
         value from pluked location
     """
-    # 1) Compute the abosulte difference between the grid lat/lon and the point
-    abslat = np.abs(H['lat']-lat)
-    abslon = np.abs(H['lon']-lon)
+    try:
+        # 1) Compute the abosulte difference between the grid lat/lon and the point
+        abslat = np.abs(H['lat']-lat)
+        abslon = np.abs(H['lon']-lon)
 
-    # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
-    c = np.maximum(abslon, abslat)
+        # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
+        c = np.maximum(abslon, abslat)
 
-    # 3) The index of the minimum maxima (which is the nearest lat/lon)
-    x, y = np.where(c == np.min(c))
-    # 4) Value of the variable at that location
-    plucked = H['value'][x[0], y[0]]
-    valid = H['valid']
-    print "requested lat: %s lon: %s" % (lat, lon)
-    print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
+        # 3) The index of the minimum maxima (which is the nearest lat/lon)
+        x, y = np.where(c == np.min(c))
+        # 4) Value of the variable at that location
+        plucked = H['value'][x[0], y[0]]
+        valid = H['valid']
+        print "requested lat: %s lon: %s" % (lat, lon)
+        print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
 
-    # Returns the valid time and the plucked value
-    return [valid, plucked]
+        # Returns the valid time and the plucked value
+        return [valid, plucked]
+    except:
+        print "\n------------------------------------!"
+        print " !> ERROR <! ERROR in pluck_hrrr_point()"
+        print "------------------------------------!\n"
+        return [np.nan, np.nan]
 
 def points_for_multipro(multi_vars):
     """
@@ -306,7 +316,7 @@ def points_for_multipro(multi_vars):
     print 'working on', multi_vars
     H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD)
     value = pluck_hrrr_point(H, LAT, LON)
-
+    del H # does this help prevent multiprocessing from hanging??
     return value
 
 def point_hrrr_time_series(start, end, variable='TMP:2 m',
@@ -374,6 +384,9 @@ def point_hrrr_time_series_multi(start, end, location_dic,
         reduce_CPUs - How many CPUs do you not want to use? Default is to use
                       all except 2, to be nice to others using the computer.
                       If you are working on a wx[1-4] you can safely reduce 0.
+    Output:
+        a dictinary of the data for the requested variable and the stations
+        and has the keys ['DATETIME', 'stid1', 'stnid2', 'stnid3']
     """
 
     # 1) Create a range of dates
