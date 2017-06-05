@@ -268,7 +268,7 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
                 'msg' : None}
 
 
-def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
+def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
     """
     Pluck the value from the nearest lat/lon location in the HRRR grid.
     Input:
@@ -291,8 +291,9 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965):
         # 4) Value of the variable at that location
         plucked = H['value'][x[0], y[0]]
         valid = H['valid']
-        print "requested lat: %s lon: %s" % (lat, lon)
-        print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
+        if verbose == True:
+            print "requested lat: %s lon: %s" % (lat, lon)
+            print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
 
         # Returns the valid time and the plucked value
         return [valid, plucked]
@@ -313,9 +314,11 @@ def points_for_multipro(multi_vars):
     FXX = multi_vars[4]
     MODEL = multi_vars[5]
     FIELD = multi_vars[6]
-    print 'working on', multi_vars
-    H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD)
-    value = pluck_hrrr_point(H, LAT, LON)
+    VERBOSE = multi_vars[7]
+    if VERBOSE == True:
+        print 'working on', multi_vars
+    H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD, verbose=VERBOSE)
+    value = pluck_hrrr_point(H, LAT, LON, verbose=VERBOSE)
     del H # does this help prevent multiprocessing from hanging??
     return value
 
@@ -368,7 +371,8 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 def point_hrrr_time_series_multi(start, end, location_dic,
                                  variable='TMP:2 m',
                                  fxx=0, model='hrrr', field='sfc',
-                                 reduce_CPUs=2):
+                                 reduce_CPUs=2,
+                                 verbose=True):
     """
     Produce a time series of HRRR data for a specified variable at a lat/lon
     location. Use multiprocessing to speed this up :)
@@ -387,6 +391,8 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     Output:
         a dictinary of the data for the requested variable and the stations
         and has the keys ['DATETIME', 'stid1', 'stnid2', 'stnid3']
+        
+        *The DATETIME returned is the valid time.
     """
 
     # 1) Create a range of dates
@@ -394,9 +400,12 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     hours = (end-start).days * 24 + (end-start).seconds / 3600
     date_list = [base + timedelta(hours=x) for x in range(0, hours)]
 
+    # Remember to add the fxx to the date list to get vaild date
+    valid_dates = [D+timedelta(hours=fxx) for D in date_list]
+
     # 2) Intialzie dicitonary to store data with the valid_dates. Each station 
     #    will also be a key, and the value is empty until we fill it.
-    return_this = {'DATETIME':date_list}
+    return_this = {'DATETIME':valid_dates}
     for l in location_dic:
         return_this[l] = np.array([])
 
@@ -406,7 +415,7 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     for l in location_dic:
         lat = location_dic[l]['latitude']
         lon = location_dic[l]['longitude']
-        multi_vars = [[d, variable, lat, lon, fxx, model, field] for d in date_list]
+        multi_vars = [[d, variable, lat, lon, fxx, model, field, verbose] for d in date_list]
 
         # 2) Use multiprocessing to get the plucked values from each map.
         cpu_count = multiprocessing.cpu_count() - reduce_CPUs

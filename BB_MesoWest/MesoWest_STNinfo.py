@@ -9,6 +9,7 @@ Get basic metadata for a list of station IDs
 import json
 import urllib2
 from get_token import my_token # returns my personal token
+import time
 
 import numpy as np
 
@@ -31,6 +32,16 @@ def get_station_info(stationIDs):
         - Elevation
         - URL
     """
+    
+    tz_list = {'America/New_York': 5,
+               'America/Indiana/Indianapolis': 5,
+               'America/Chicago': 6,
+               'America/Denver': 7,
+               'America/Phoenix': 7,      # no daylight savings
+               'America/Los_Angeles': 8,
+               'America/Anchorage': 9,
+               'America/Adak': 10,
+               'Pacific/Honolulu': 10}    # no daylight savings
 
     # Check that the input is a list of stations.
     if type(stationIDs) != list:
@@ -56,6 +67,7 @@ def get_station_info(stationIDs):
         lat = np.array([])
         lon = np.array([])
         time_zone = np.array([])
+        tz = np.array([])
 
         for i in data['STATION']:
             name = np.append(name, str(i['NAME']))
@@ -63,13 +75,15 @@ def get_station_info(stationIDs):
             lat = np.append(lat, float(i['LATITUDE']))
             lon = np.append(lon, float(i['LONGITUDE']))
             time_zone = np.append(time_zone, str(i['TIMEZONE']))
+            tz = np.append(tz, tz_list[str(i['TIMEZONE'])])
 
         data_dict = {'URL': URL,
                      'NAME': name,
                      'STNID': stnid,
                      'LAT': lat,
                      'LON': lon,
-                     'TIME_ZONE': time_zone
+                     'TIME_ZONE': time_zone,
+                     'UTC Offset': tz
                     }
 
         return data_dict
