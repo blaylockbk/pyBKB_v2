@@ -322,6 +322,31 @@ def points_for_multipro(multi_vars):
     del H # does this help prevent multiprocessing from hanging??
     return value
 
+def points_for_multipro2(multi_vars):
+    """
+    Need to feed a bunch of variables to these functions for multiprocessing
+    With the location_dic as an input
+    """
+    DATE = multi_vars[0]
+    LOC_DIC = multi_vars[1]
+    VAR = multi_vars[2]
+    FXX = multi_vars[3]
+    MODEL = multi_vars[4]
+    FIELD = multi_vars[5]
+    VERBOSE = multi_vars[6]
+    if VERBOSE == True:
+        print 'working on', multi_vars
+
+    values = {'DATETIME':DATE}
+
+    # Download the HRRR field once, and pluck values from it at locations
+    H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD, verbose=VERBOSE)
+    for l in LOC_DIC.keys():
+        value = pluck_hrrr_point(H, LOC_DIC[l]['latitude'], LOC_DIC[l]['longitude'], verbose=VERBOSE)
+        values[l] = value[1] # only need to store the value, and not the date
+    del H # does this help prevent multiprocessing from hanging??
+    return values
+
 def point_hrrr_time_series(start, end, variable='TMP:2 m',
                            lat=40.771, lon=-111.965,
                            fxx=0, model='hrrr', field='sfc',
@@ -411,29 +436,37 @@ def point_hrrr_time_series_multi(start, end, location_dic,
 
     # 3) Create and inputs for multiprocessing
     #    the get_hrrr_variable and pluck_point functions.
-    #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]
+    #    Each processor needs these: [DATE, location_dic, variable, fxx, model, field]
+
+    multi_vars = [[d, location_dic, variable, fxx, model, field, verbose] for d in date_list]
+
+    # 2) Use multiprocessing to get the plucked values from each map.
+    cpu_count = multiprocessing.cpu_count() - reduce_CPUs
+    p = multiprocessing.Pool(cpu_count)
+    timer_MP = datetime.now()
+    ValidValue = p.map(points_for_multipro2, multi_vars)
+    p.close()
+    print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
+
+    #!!!!!!!!!!!!!!!!!!!!!!! NEED TO REPACKAGE THE RETURNED VALUES FROM MULTIPRO
+    # Convert to numpy array so the columns can be indexed
+    ValidValue = np.array(ValidValue)
+
     for l in location_dic:
-        lat = location_dic[l]['latitude']
-        lon = location_dic[l]['longitude']
-        multi_vars = [[d, variable, lat, lon, fxx, model, field, verbose] for d in date_list]
+        return_this[l] = np.array([ValidValue[i][l] for i in range(len(ValidValue))])
+    return return_this
+    """
+    # Convert to numpy array so the columns can be indexed
+    ValidValue = np.array(ValidValue)
 
-        # 2) Use multiprocessing to get the plucked values from each map.
-        cpu_count = multiprocessing.cpu_count() - reduce_CPUs
-        p = multiprocessing.Pool(cpu_count)
-        timer_MP = datetime.now()
-        ValidValue = p.map(points_for_multipro, multi_vars)
-        p.close()
-        print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
+    valid = ValidValue[:, 0] # First returned is the valid datetime
+    value = ValidValue[:, 1] # Second returned is the value at that datetime
 
-        # Convert to numpy array so the columns can be indexed
-        ValidValue = np.array(ValidValue)
-
-        valid = ValidValue[:, 0] # First returned is the valid datetime
-        value = ValidValue[:, 1] # Second returned is the value at that datetime
-
-        return_this[l] = np.append(return_this[l], value)
+    return_this[l] = np.append(return_this[l], value)
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     return return_this
+    """
 
 def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     """

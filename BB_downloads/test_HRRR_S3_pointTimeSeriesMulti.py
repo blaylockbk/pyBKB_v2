@@ -17,6 +17,7 @@ from BB_downloads.HRRR_S3 import point_hrrr_time_series_multi
 
 start = datetime(2017, 6, 1)
 end = datetime(2017, 6, 3)
+
 location_dic = {'WBB':{'latitude':40.76623,
                       'longitude':-111.84755},
                'KSLC':{'latitude':40.77069,
