@@ -28,7 +28,14 @@ import matplotlib.dates as mdates
 import multiprocessing
 
 
-def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFile=True, value_only=False, verbose=True):
+def get_hrrr_variable(DATE, variable,
+                      fxx=0,
+                      model='hrrr',
+                      field='sfc',
+                      removeFile=True,
+                      value_only=False,
+                      verbose=True,
+                      outDIR='./'):
     """
     Uses cURL to grab just one variable from a HRRR grib2 file on the MesoWest
     HRRR archive.
@@ -54,7 +61,7 @@ def get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc', removeFi
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    outfile = './tempOper_%04d%02d%02d%02d.grib2' % (DATE.year, DATE.month, DATE.day, DATE.hour)
+    outfile = '%stempOper_%04d%02d%02d%02d.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour)
 
     if verbose is True:
         print outfile

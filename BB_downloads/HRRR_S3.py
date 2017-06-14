@@ -33,7 +33,7 @@ import matplotlib.dates as mdates
 import multiprocessing
 
 
-def get_hrrr_variable(DATE, variable, 
+def get_hrrr_variable(DATE, variable,
                       fxx=0,
                       model='hrrr',
                       field='sfc',
@@ -391,7 +391,7 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     Output:
         a dictinary of the data for the requested variable and the stations
         and has the keys ['DATETIME', 'stid1', 'stnid2', 'stnid3']
-        
+
         *The DATETIME returned is the valid time.
     """
 
@@ -403,13 +403,13 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     # Remember to add the fxx to the date list to get vaild date
     valid_dates = [D+timedelta(hours=fxx) for D in date_list]
 
-    # 2) Intialzie dicitonary to store data with the valid_dates. Each station 
+    # 2) Intialzie dicitonary to store data with the valid_dates. Each station
     #    will also be a key, and the value is empty until we fill it.
     return_this = {'DATETIME':valid_dates}
     for l in location_dic:
         return_this[l] = np.array([])
 
-    # 3) Createand inputs for multiprocessing
+    # 3) Create and inputs for multiprocessing
     #    the get_hrrr_variable and pluck_point functions.
     #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]
     for l in location_dic:
