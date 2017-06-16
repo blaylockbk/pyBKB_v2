@@ -683,7 +683,7 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
 
     return return_this
 
-def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False):
+def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False, reduce_CPUs=2):
     """
     Have you ever seen a Hovmoller plot? This "HRRR Hovmoller" will read kind
     of like one of those.
@@ -707,7 +707,8 @@ def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=
                                                fxx=f,
                                                verbose=False,
                                                field='sfc',
-                                               area_stats=area_stats)
+                                               area_stats=area_stats,
+                                               reduce_CPUs=reduce_CPUs)
 
     # Number of observations (hours in the time series)
     num = len(data[0]['DATETIME'])
