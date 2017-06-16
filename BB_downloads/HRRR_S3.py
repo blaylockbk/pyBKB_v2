@@ -7,7 +7,7 @@ Requires cURL
 
 Contents:
     get_hrrr_variable()            - Returns dict of sinlge HRRR variable
-    get_hrrr_variable_multi()      - Returns dict of multiple HRRR variables 
+    get_hrrr_variable_multi()      - Returns dict of multiple HRRR variables
     pluck_hrrr_point()             - Returns valid time and plucked value from lat/lon
     points_for_multipro()          - Feeds variables from multiprocessing for timeseries
     point_hrrr_time_series()       - Returns HRRR time serience (main function)
@@ -47,6 +47,7 @@ def get_hrrr_variable(DATE, variable,
 
     Input:
         DATE - the datetime(year, month, day, hour) for the HRRR file you want
+               This must be in UTC, obviouslly.
         variable - a string describing the variable you are looking for.
                    Refer to the .idx files here: https://api.mesowest.utah.edu/archive/HRRR/
                    You want to put the variable short name and the level information
@@ -57,6 +58,7 @@ def get_hrrr_variable(DATE, variable,
         removeFile - True will remove the grib2 file after downloaded. False will not.
         value_only - Only return the values. Fastest return speed if set to True, when all you need is the value.
                      Return Time .75-1 Second if False, .2 seconds if True.
+        verbose - prints some stuff out
     """
     # Model direcotry names are named differently than the model name.
     if model == 'hrrr':
@@ -66,24 +68,53 @@ def get_hrrr_variable(DATE, variable,
     elif model == 'hrrrAK':
         model_dir = 'alaska'
 
-    outfile = '%stemp_%04d%02d%02d%02d.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour)
+
+    # Temp file name has to be very unique, else when we use multiprocessing we
+    # might accidentally delete files before we are done with them.
+    outfile = '%stemp_%04d%02d%02d%02d_f%02d_%s.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour, fxx, variable[:3])
 
     if verbose is True:
         print outfile
 
-    # URL for the grib2 idx file
-    fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
-
-    # URL for the grib2 file (located on PANDO S3 archive)
-    pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    # Dear User,
+    # Only HRRR files for the previous day have been transfered to Pando.
+    # That means if you are requesting data for today, you need to get it from
+    # the NOMADS website. Good news, it's an easy fix. All we need to do is 
+    # redirect you to the NOMADS URLs. I'll check that the date you are
+    # requesting is not for today's date. If it is, then I'll send you to
+    # NOMADS. Deal? :)
+    #                                                    -Sincerely, Brian
+    UTC = datetime.utcnow() # the current date in UTC
+    if DATE < datetime(UTC.year, UTC.month, UTC.day):
+        # Get HRRR from Pando
+        if verbose is True:
+            print "Oh, good, you requested a date that should be on Pando."
+        # URL for the grib2.idx file
+        fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                    % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+        # URL for the grib2 file (located on PANDO S3 archive)
+        pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
+                    % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+    else:
+        # Get HRRR from NOMADS
+        if verbose is True:
+            print "\n-----------------------------------------------------------------------"
+            print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
+            print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
+            print "-----------------------------------------------------------------------\n"
+        # URL for the grib2 idx file
+        fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                    % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+        # URL for the grib2 file (located on NOMADS server)
+        pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
+                    % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
 
     try:
+        # 0) Read in the grib2.idx file
         try:
-            # ?? Ignore ssl certificate (else urllib2.openurl wont work). 
+            # ?? Ignore ssl certificate (else urllib2.openurl wont work).
             #    Depends on your version of python.
-            #    See here: 
+            #    See here:
             #    http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
@@ -91,7 +122,7 @@ def get_hrrr_variable(DATE, variable,
             idxpage = urllib2.urlopen(fileidx, context=ctx)
         except:
             idxpage = urllib2.urlopen(fileidx)
-        
+
         lines = idxpage.readlines()
 
         # 1) Find the byte range for the variable. Need to first find where the
@@ -114,11 +145,14 @@ def get_hrrr_variable(DATE, variable,
                 os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
             gcnt += 1
 
-        # 3) Get data from the file
+        # 3) Get data from the file, using pygrib
         grbs = pygrib.open(outfile)
         if value_only is True:
             value = grbs[1].values
             # (Remove the temporary file)
+            #    ?? Is it possible to push the data straight from curl to ??
+            #    ?? pygrib, without writing/removing a temp file? and     ??
+            #    ?? would that speed up this process?                     ??
             if removeFile is True:
                 os.system('rm -f %s' % (outfile))
             return {'value': value}
@@ -141,7 +175,6 @@ def get_hrrr_variable(DATE, variable,
                     'anlys': anlysDATE,
                     'msg':msg}
 
-
     except:
         print " ! Could not get the file:", pandofile
         print " ! Is the variable right?", variable
@@ -152,7 +185,6 @@ def get_hrrr_variable(DATE, variable,
                 'valid' : None,
                 'anlys' : None,
                 'msg' : None}
-
 
 
 def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='sfc', removeFile=True):
@@ -299,9 +331,85 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
         return [valid, plucked]
     except:
         print "\n------------------------------------!"
-        print " !> ERROR <! ERROR in pluck_hrrr_point()"
+        print " !> ERROR <! ERROR in pluck_hrrr_point() %s" % (H['msg'])
         print "------------------------------------!\n"
         return [np.nan, np.nan]
+
+def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
+    """
+    Pluck the value from the nearest lat/lon location in the HRRR grid.
+    Input:
+        H        - is a dictionary as returned from get_hrrr_variable
+        half_box - is the number of grid boxes to +/- from center lat/lon
+                   For the HRRR model, 5 reprsents a 30kmx30km box
+                   5 for the number of grids in each direction from the center
+                   point (so we get a 10x10 grid box) and multiply by 3km for
+                   size of each grid box.
+        lat      - is the center of the box. Default is KSLC
+        lon      - is the desired longitude location you want. Default is KSLC
+    Return:
+        Dictionary of the stats around each point.
+    """
+    if verbose is True:
+        print "half_box is set to %s, so your box will be %s-km2 centered at %s %s" % (half_box, half_box*2*3, lat, lon)
+
+    try:
+        # 1) Compute the abosulte difference between the grid lat/lon and the point
+        abslat = np.abs(H['lat']-lat)
+        abslon = np.abs(H['lon']-lon)
+
+        # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
+        c = np.maximum(abslon, abslat)
+
+        # 3) The index of the minimum maxima (which is the nearest lat/lon)
+        x, y = np.where(c == np.min(c))
+        xidx = x[0]
+        yidx = y[0]
+
+        if verbose is True:
+            print 'hrrr latlon:', H['lat'][x[0], y[0]], H['lon'][x[0], y[0]]
+            print 'requested:', lat, lon
+
+        # 4) Get desired data box and perform statistics
+        box = H['value'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box]
+
+        p = np.percentile(box, [1, 5, 10, 90, 95, 99])
+
+        return_this = {'half box': half_box,
+                       'center': [lat, lon],
+                       'valid':H['valid'],
+                       'box center':H['value'][x[0], y[0]],
+                       'min':np.nanmin(box),
+                       'p1':p[0],
+                       'p5':p[1],
+                       'p10':p[2],
+                       'mean':np.nanmean(box),
+                       'p90':p[3],
+                       'p95':p[4],
+                       'p99':p[5],
+                       'max':np.nanmax(box),
+                      }
+
+        # Returns the valid time and the plucked value
+        return return_this
+    except:
+        print "\n------------------------------------!"
+        print " !> ERROR <! ERROR in hrrr_area_stats. Returning a nan value."
+        print "------------------------------------!\n"
+        return {'half box': half_box,
+                'center': [lat, lon],
+                'valid':np.nan,
+                'box center':np.nan,
+                'min':np.nan,
+                'p1':np.nan,
+                'p5':np.nan,
+                'p10':np.nan,
+                'mean':np.nan,
+                'p90':np.nan,
+                'p95':np.nan,
+                'p99':np.nan,
+                'max':np.nan,
+               }
 
 def points_for_multipro(multi_vars):
     """
@@ -333,23 +441,35 @@ def points_for_multipro2(multi_vars):
     FXX = multi_vars[3]
     MODEL = multi_vars[4]
     FIELD = multi_vars[5]
-    VERBOSE = multi_vars[6]
+    STATS = multi_vars[6]
+    VERBOSE = multi_vars[7]
     if VERBOSE == True:
         print 'working on', multi_vars
+        if STATS != False:
+            print 'NOTICE! Getting time series for Area Statistics for a %s-km2 box centerd at the location' % (STATS*2*3)
 
     values = {'DATETIME':DATE}
 
     # Download the HRRR field once, and pluck values from it at locations
     H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD, verbose=VERBOSE)
     for l in LOC_DIC.keys():
-        value = pluck_hrrr_point(H, LOC_DIC[l]['latitude'], LOC_DIC[l]['longitude'], verbose=VERBOSE)
-        values[l] = value[1] # only need to store the value, and not the date
+        if STATS is False:
+            value = pluck_hrrr_point(H, LOC_DIC[l]['latitude'], LOC_DIC[l]['longitude'],
+                                     verbose=VERBOSE)
+            values[l] = value[1] # only need to store the value, and not the date
+        else:
+            value = hrrr_area_stats(H, half_box=STATS,
+                                    lat=LOC_DIC[l]['latitude'],
+                                    lon=LOC_DIC[l]['longitude'],
+                                    verbose=VERBOSE)
+            values[l] = value
     del H # does this help prevent multiprocessing from hanging??
     return values
 
 def point_hrrr_time_series(start, end, variable='TMP:2 m',
                            lat=40.771, lon=-111.965,
                            fxx=0, model='hrrr', field='sfc',
+                           verbose=True,
                            reduce_CPUs=2):
     """
     Produce a time series of HRRR data for a specified variable at a lat/lon
@@ -375,7 +495,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
     base = start
     hours = (end-start).days * 24 + (end-start).seconds / 3600
     date_list = [base + timedelta(hours=x) for x in range(0, hours)]
-    multi_vars = [[d, variable, lat, lon, fxx, model, field] for d in date_list]
+    multi_vars = [[d, variable, lat, lon, fxx, model, field, verbose] for d in date_list]
 
     # 2) Use multiprocessing to get the plucked values from each map.
     cpu_count = multiprocessing.cpu_count() - reduce_CPUs
@@ -387,7 +507,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 
     # Convert to numpy array so the columns can be indexed
     ValidValue = np.array(ValidValue)
-    
+
     valid = ValidValue[:, 0] # First returned is the valid datetime
     value = ValidValue[:, 1] # Second returned is the value at that datetime
 
@@ -396,11 +516,12 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
 def point_hrrr_time_series_multi(start, end, location_dic,
                                  variable='TMP:2 m',
                                  fxx=0, model='hrrr', field='sfc',
+                                 area_stats=False,
                                  reduce_CPUs=2,
                                  verbose=True):
     """
-    Produce a time series of HRRR data for a specified variable at a lat/lon
-    location. Use multiprocessing to speed this up :)
+    Produce a time series of HRRR data for a specified variable at multiple
+    lat/lon locations. Use multiprocessing to speed this up :)
     Input:
         start - datetime begining time
         end - datetime ending time
@@ -410,6 +531,14 @@ def point_hrrr_time_series_multi(start, end, location_dic,
         fxx - forecast hour
         model - model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
         field - field type. Choose one: ['sfc', 'prs']
+        area_stats - default is False (does not return area statistics)
+                     or, if you want the statistics for an area around a point,
+                     set to a number that represents the number of grid
+                     points around the point (length of half the box).
+                     The number will be the number of grid points to +/- from
+                     the location lat/lon point. To convert the number to the
+                     size of the box in km2, multiply by 6 (ie. if you set this
+                     to 5, then you will get a 30x30 km2 box centered at lat/lon)
         reduce_CPUs - How many CPUs do you not want to use? Default is to use
                       all except 2, to be nice to others using the computer.
                       If you are working on a wx[1-4] you can safely reduce 0.
@@ -438,7 +567,7 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     #    the get_hrrr_variable and pluck_point functions.
     #    Each processor needs these: [DATE, location_dic, variable, fxx, model, field]
 
-    multi_vars = [[d, location_dic, variable, fxx, model, field, verbose] for d in date_list]
+    multi_vars = [[d, location_dic, variable, fxx, model, field, area_stats, verbose] for d in date_list]
 
     # 2) Use multiprocessing to get the plucked values from each map.
     cpu_count = multiprocessing.cpu_count() - reduce_CPUs
@@ -448,25 +577,31 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     p.close()
     print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
 
-    #!!!!!!!!!!!!!!!!!!!!!!! NEED TO REPACKAGE THE RETURNED VALUES FROM MULTIPRO
     # Convert to numpy array so the columns can be indexed
     ValidValue = np.array(ValidValue)
 
+    # REPACKAGE THE RETURNED VALUES FROM MULTIPROCESSING so that each key value
+    # is the station name, and contains the time sereis for that station.
     for l in location_dic:
-        return_this[l] = np.array([ValidValue[i][l] for i in range(len(ValidValue))])
+        num = range(len(ValidValue))
+        if area_stats is False:
+            return_this[l] = np.array([ValidValue[i][l] for i in num])
+        else:
+            return_this[l] = {'valid':np.array([ValidValue[i][l]['valid'] for i in num]),
+                              'min':np.array([ValidValue[i][l]['min'] for i in num]),
+                              'p1':np.array([ValidValue[i][l]['p1'] for i in num]),
+                              'p5':np.array([ValidValue[i][l]['p5'] for i in num]),
+                              'p10':np.array([ValidValue[i][l]['p10'] for i in num]),
+                              'mean':np.array([ValidValue[i][l]['mean'] for i in num]),
+                              'p90':np.array([ValidValue[i][l]['p90'] for i in num]),
+                              'p95':np.array([ValidValue[i][l]['p95'] for i in num]),
+                              'p99':np.array([ValidValue[i][l]['p99'] for i in num]),
+                              'max':np.array([ValidValue[i][l]['max'] for i in num]),
+                              'box center':np.array([ValidValue[i][l]['box center'] for i in num])
+                             }
+
     return return_this
-    """
-    # Convert to numpy array so the columns can be indexed
-    ValidValue = np.array(ValidValue)
 
-    valid = ValidValue[:, 0] # First returned is the valid datetime
-    value = ValidValue[:, 1] # Second returned is the value at that datetime
-
-    return_this[l] = np.append(return_this[l], value)
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    return return_this
-    """
 
 def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     """
@@ -547,6 +682,61 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
                 return_this[l] = np.append(return_this[l], np.nan)
 
     return return_this
+
+def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False):
+    """
+    Have you ever seen a Hovmoller plot? This "HRRR Hovmoller" will read kind
+    of like one of those.
+    I plot the HRRR forecast hour on the y-axis increasing from f00-f18, then 
+    I plot the vaild time on the x-axis across the bottom. It helps you see how
+    the forecasts are changing over time
+
+    start - a python datetime object
+    end   - a python datetime object
+    location_dic - Dictionary of locations that include the 'latitude' and 'longitude'.
+                   location_dic = {'name':{'latitude':###,'longitude':###}}
+
+    Returns a 2D array
+    """
+    data = {}
+    for f in range(19):
+        sOffset = start - timedelta(hours=f)
+        eOffset = end - timedelta(hours=f)
+        data[f] = point_hrrr_time_series_multi(sOffset, eOffset, location_dic,
+                                               variable=variable,
+                                               fxx=f,
+                                               verbose=False,
+                                               field='sfc',
+                                               area_stats=area_stats)
+
+    # Number of observations (hours in the time series)
+    num = len(data[0]['DATETIME'])
+    dates = data[0]['DATETIME']
+
+    # Organize into Hovmoller array
+    # matplotlib.pyplot.confourf requires a 2d array of the dates/fxx to plot
+    # matplotlib.pyplot.pcolormesh requers a 1d array of the dates/fxx with size +1 for the limits
+    #                              (otherwise it'll cut off the last row and column)
+    hovmoller = {'fxx_2d':np.array([np.ones(num)*i for i in range(19)]),
+                 'valid_2d':np.array([data[0]['DATETIME'] for i in range(19)]),
+                 'fxx_1d+':range(20),
+                 'valid_1d+':np.append(dates, dates[-1]+timedelta(hours=1))}
+
+    if area_stats is False:
+        # Returns a dictionary like hovmoller['WBB'] = 2D array
+        for l in location_dic:
+            hovmoller[l] = np.array([data[i][l] for i in range(19)])
+
+    else:
+        # NEED To repackage the statistical data with an extra layer
+        # i.e. >> hovmoller[station id][area statistic]
+        # i.e. >> hovmoller['WBB']['max'] = 2D array
+        for l in location_dic:
+            hovmoller[l] = {}
+            for s in data[0][l]:
+                hovmoller[l][s] = np.array([data[i][l][s] for i in range(19)])
+
+    return hovmoller
 
 if __name__ == "__main__":
     """
