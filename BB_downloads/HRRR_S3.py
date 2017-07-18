@@ -179,12 +179,12 @@ def get_hrrr_variable(DATE, variable,
         print " ! Could not get the file:", pandofile
         print " ! Is the variable right?", variable
         print " ! Does the file exist?", fileidx
-        return {'value' : None,
-                'lat' : None,
-                'lon' : None,
-                'valid' : None,
-                'anlys' : None,
-                'msg' : None}
+        return {'value' : np.nan,
+                'lat' : np.nan,
+                'lon' : np.nan,
+                'valid' : np.nan,
+                'anlys' : np.nan,
+                'msg' : np.nan}
 
 
 def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='sfc', removeFile=True):
@@ -292,12 +292,12 @@ def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='
         print " ! Could not get the file:", pandofile
         print " ! Is the variable right?", variable
         print " ! Does the file exist?", fileidx
-        return {'value' : None,
-                'lat' : None,
-                'lon' : None,
-                'valid' : None,
-                'anlys' : None,
-                'msg' : None}
+        return {'value' : np.nan,
+                'lat' : np.nan,
+                'lon' : np.nan,
+                'valid' : np.nan,
+                'anlys' : np.nan,
+                'msg' : np.nan}
 
 
 def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
@@ -334,6 +334,33 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
         print " !> ERROR <! ERROR in pluck_hrrr_point() %s" % (H['msg'])
         print "------------------------------------!\n"
         return [np.nan, np.nan]
+
+def hrrr_subset(H, half_box=9, lat=40.771, lon=-111.965):
+    """
+    Cut up the HRRR data based on a center point and the half box surrounding
+    the point.
+    half_box - number of gridpoints half the size the box surrounding the center point.
+    """
+    # 1) Compute the abosulte difference between the grid lat/lon and the point
+    abslat = np.abs(H['lat']-lat)
+    abslon = np.abs(H['lon']-lon)
+
+    # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
+    c = np.maximum(abslon, abslat)
+
+    # 3) The index of the minimum maxima (which is the nearest lat/lon)
+    x, y = np.where(c == np.min(c))
+    xidx = x[0]
+    yidx = y[0]
+
+    print 'x:%s, y:%s' % (xidx, yidx)
+
+    subset = {'lat': H['lat'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box],
+              'lon': H['lon'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box],
+              'value': H['value'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box]}
+
+    return subset
+
 
 def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
     """
@@ -465,6 +492,7 @@ def points_for_multipro2(multi_vars):
             values[l] = value
     del H # does this help prevent multiprocessing from hanging??
     return values
+
 
 def point_hrrr_time_series(start, end, variable='TMP:2 m',
                            lat=40.771, lon=-111.965,
@@ -683,7 +711,7 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
 
     return return_this
 
-def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False, reduce_CPUs=2):
+def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False, fxx=range(19), reduce_CPUs=2):
     """
     Have you ever seen a Hovmoller plot? This "HRRR Hovmoller" will read kind
     of like one of those.
@@ -695,11 +723,13 @@ def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=
     end   - a python datetime object
     location_dic - Dictionary of locations that include the 'latitude' and 'longitude'.
                    location_dic = {'name':{'latitude':###,'longitude':###}}
+    area_stats - a half box you want to calculate statistics for, with point at center of the box
+    fxx - a list of forecast times
 
     Returns a 2D array
     """
     data = {}
-    for f in range(19):
+    for f in fxx:
         sOffset = start - timedelta(hours=f)
         eOffset = end - timedelta(hours=f)
         data[f] = point_hrrr_time_series_multi(sOffset, eOffset, location_dic,
@@ -718,15 +748,15 @@ def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=
     # matplotlib.pyplot.confourf requires a 2d array of the dates/fxx to plot
     # matplotlib.pyplot.pcolormesh requers a 1d array of the dates/fxx with size +1 for the limits
     #                              (otherwise it'll cut off the last row and column)
-    hovmoller = {'fxx_2d':np.array([np.ones(num)*i for i in range(19)]),
-                 'valid_2d':np.array([data[0]['DATETIME'] for i in range(19)]),
-                 'fxx_1d+':range(20),
+    hovmoller = {'fxx_2d':np.array([np.ones(num)*i for i in fxx]),
+                 'valid_2d':np.array([data[0]['DATETIME'] for i in fxx]),
+                 'fxx_1d+':fxx+[fxx[-1]+1],
                  'valid_1d+':np.append(dates, dates[-1]+timedelta(hours=1))}
 
     if area_stats is False:
         # Returns a dictionary like hovmoller['WBB'] = 2D array
         for l in location_dic:
-            hovmoller[l] = np.array([data[i][l] for i in range(19)])
+            hovmoller[l] = np.array([data[i][l] for i in fxx])
 
     else:
         # NEED To repackage the statistical data with an extra layer
@@ -735,7 +765,7 @@ def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=
         for l in location_dic:
             hovmoller[l] = {}
             for s in data[0][l]:
-                hovmoller[l][s] = np.array([data[i][l][s] for i in range(19)])
+                hovmoller[l][s] = np.array([data[i][l][s] for i in fxx])
 
     return hovmoller
 

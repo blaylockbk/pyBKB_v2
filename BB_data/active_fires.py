@@ -5,9 +5,11 @@
 Functions for getting data on active fires
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import urllib2
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter, HourLocator
 
 def get_fires(DATE=datetime.now(), min_size=1000, AK=False, HI=False):
     """
@@ -76,3 +78,41 @@ def get_fires(DATE=datetime.now(), min_size=1000, AK=False, HI=False):
 
 if __name__ == "__main__":
     F = get_fires()
+
+    # =======================================
+    # Plot fire size over time
+    date = datetime(2016, 6, 15)
+    eDate = datetime(2016, 11, 15)
+    fire = 'PIONEER'
+    size = []
+    dates = []
+    containment = []
+    while date < eDate:
+        try:
+            F = get_fires(DATE=date)
+            if fire in F.keys():
+                size.append(F[fire]['area'])
+                dates.append(date)
+                if F[fire]['percent contained'] != 'Not Reported':
+                    containment.append(float(F[fire]['percent contained']))
+                else:
+                    containment.append(np.nan)
+            print date
+        except:
+            size.append(np.nan)
+            dates.append(date)
+            containment.append(np.nan)
+        date += timedelta(days=1)
+        
+    fig, ax1 = plt.subplots()
+    ax1.bar(dates, containment, 1, color='r', zorder=1)
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('Percent Contained (%)')
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Burned Acres')
+    ax2.plot(dates, size, 'darkorange', linewidth=4, zorder=2)
+    fig.tight_layout()
+    plt.title(fire)
+    dateFmt = DateFormatter('%b %d\n%Y')
+    ax2.xaxis.set_major_formatter(dateFmt)
+    plt.show()

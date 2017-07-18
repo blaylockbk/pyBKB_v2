@@ -97,3 +97,16 @@ def TempRH_to_dwpt_2(Temp, RH):
     Td = p1*p2+p3-p4
 
     return Td
+
+def PresTempSpecHumid_to_RH(pres, temp, specific_humidity):
+    """
+    Convert specific humidity to relative humidity
+    Source:
+        https://earthscience.stackexchange.com/questions/2360/how-do-i-convert-specific-humidity-to-relative-humidity
+
+    pres - pressure in hPa
+    temp - temerature in C
+    specific_humidity in kg/kg
+    """
+    RH = 0.263*pres*100*specific_humidity*(np.exp((17.67*(temp+273.15-273.15))/(temp+273.15-29.65)))**-1
+    return RH
