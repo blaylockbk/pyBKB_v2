@@ -1,0 +1,250 @@
+Universe = vanilla
+Requirements = HAS_SINGULARITY == True
+request_memory = 4 GB
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-blaylockbk:latest/"
+Executable = OSG_HRRR_run_this.sh
+Error = log/job.err.$(Cluster)-$(Process)
+Output = log/job.out.$(Cluster)-$(Process)
+Log = log/job.log.$(Cluster)
+ShouldTransferFiles = YES
+when_to_transfer_output = ON_EXIT
+
+Arguments = TMP:2_m 1 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 2 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 3 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 4 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 5 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 6 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 7 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 8 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 9 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 10 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 11 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = TMP:2_m 12 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 1 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 2 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 3 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 4 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 5 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 6 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 7 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 8 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 9 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 10 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 11 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = DPT:2_m 12 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 1 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 2 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 3 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 4 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 5 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 6 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 7 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 8 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 9 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 10 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 11 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = Wind:10_m 12 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 1 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 2 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 3 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 4 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 5 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 6 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 7 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 8 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 9 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 10 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 11 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = GUST:surface 12 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 1 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 2 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 3 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 4 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 5 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 6 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 7 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 8 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 9 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 10 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 11 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
+
+Arguments = REFC:entire 12 0 0
+transfer_input_files = OSG_HRRR_composite_hourlybymonth.py, HRRR_S3.py
+Queue 1
