@@ -6,6 +6,7 @@ get_token.py
 *.pyc
 *.out
 *.nc
+*.nc4
 *.grib2
 
 !balloon.png

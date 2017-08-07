@@ -16,6 +16,7 @@ import re
 import numpy as np
 import multiprocessing
 from scipy.io import netcdf
+from netCDF4 import Dataset
 import sys
 
 from HRRR_S3 import get_hrrr_variable
@@ -38,6 +39,7 @@ def get_HRRR_value(getthisDATE):
 
 start_timer = datetime.now()
 
+
 # =============================================================================
 # Input arguments (dates should represents the valid time)
 variable = sys.argv[1].replace('_', ' ')
@@ -45,9 +47,9 @@ month = int(sys.argv[2])
 hour = int(sys.argv[3])
 fxx = int(sys.argv[4])
 sDATE = datetime(2015, 4, 18, hour)
-eDATE = datetime(2017, 7, 28, hour)
+eDATE = datetime(2017, 8, 1, hour)
 # =============================================================================
-
+print variable, month, hour, fxx
 # Range of dates for the desired Hour and Month (e.g. all 0100 UTC for the month of January)
 # request dates is the file we want from the Pando archive, an we will account
 # for the offset with the fxx argument.
@@ -74,21 +76,21 @@ lon = H['lon'].copy()
 
 # Create the NetCDF file if it hasn't been created yet
 if created_NC is False:
-    f = netcdf.NetCDFFile('OSG_HRRR_%s_m%02d_h%02d_f%02d.nc' % (var_name, month, hour, fxx), 'w')
+    f = Dataset('OSG_HRRR_%s_m%02d_h%02d_f%02d.nc' % (var_name, month, hour, fxx), 'w')
     f.createDimension('x', np.shape(H['value'])[0])
     f.createDimension('y', np.shape(H['value'])[1])
     f.createDimension('d', 1)   # Date
     f.createDimension('D', 16)   # Date
     f.createDimension('T', 14)   # Timer
     f.createDimension('p', 6)   # Percentile categories
-    nc_count = f.createVariable('count', 'i', ('d'))
-    nc_cores = f.createVariable('cores', 'i', ('d'))
-    nc_timer = f.createVariable('timer', 'c', ('T')) # 'c' if for character, T is the dimension which has 14 characters
-    nc_maxH = f.createVariable('max_'+var_name, float, ('x', 'y'))
-    nc_minH = f.createVariable('min_'+var_name, float, ('x', 'y'))
-    nc_meanH = f.createVariable('mean_'+var_name, float, ('x', 'y'))
-    nc_perC = f.createVariable('percent_compute', 'i', ('p'))
-    nc_perH = f.createVariable('percentile', float, ('p', 'x', 'y'))
+    nc_count = f.createVariable('count', 'i', ('d'), zlib=True, complevel=1)
+    nc_cores = f.createVariable('cores', 'i', ('d'), zlib=True, complevel=1)
+    nc_timer = f.createVariable('timer', 'c', ('T'), zlib=True, complevel=1) # 'c' if for character, T is the dimension which has 14 characters
+    nc_maxH = f.createVariable('max_'+var_name, float, ('x', 'y'), zlib=True, complevel=1)
+    nc_minH = f.createVariable('min_'+var_name, float, ('x', 'y'), zlib=True, complevel=1)
+    nc_meanH = f.createVariable('mean_'+var_name, float, ('x', 'y'), zlib=True, complevel=1)
+    nc_perC = f.createVariable('percent_compute', 'i', ('p'), zlib=True, complevel=1)
+    nc_perH = f.createVariable('percentile', float, ('p', 'x', 'y'), zlib=True, complevel=1)
     created_NC = True
 
 """
@@ -148,14 +150,14 @@ nc_perH[:, :, :] = perH
 
 f.history = 'HRRR Hourly Max/Min/Mean Climatology for %s, Month: %s, Hour:%s, fxx:%s' % (var_name, month, hour, fxx)
 
-latH = f.createVariable('latitude', float, ('x', 'y'))
-lonH = f.createVariable('longitude', float, ('x', 'y'))
+latH = f.createVariable('latitude', float, ('x', 'y'), zlib=True, complevel=1)
+lonH = f.createVariable('longitude', float, ('x', 'y'), zlib=True, complevel=1)
 latH[:] = H['lat']
 lonH[:] = H['lon']
 
-begD = f.createVariable('Begin Date', 'c', ('D'))
-endD = f.createVariable('End Date', 'c', ('D'))
-begD[:] = validDATES[0].strftime('%Y-%m-%d-%H:00'))
-endD[:] = validDATES[-1].strftime('%Y-%m-%d-%H:00'))
+begD = f.createVariable('Begin Date', 'c', ('D'), zlib=True, complevel=1)
+endD = f.createVariable('End Date', 'c', ('D'), zlib=True, complevel=1)
+begD[:] = validDATES[0].strftime('%Y-%m-%d-%H:00')
+endD[:] = validDATES[-1].strftime('%Y-%m-%d-%H:00')
 
 f.close()
