@@ -9,7 +9,7 @@ import os
 
 path = 'hourly_by_month'
 
-var = 'TMP_2_m'
+var = 'TMP_surface'
 #var = 'WIND_10_m'
 #var = 'REFC_entire'
 

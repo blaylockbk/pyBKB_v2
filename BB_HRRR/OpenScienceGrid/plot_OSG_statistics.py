@@ -24,15 +24,17 @@ for month in range(1,13):
         plt.cla()
         
         # open a file
-        var = 'TMP:2 m'
-        var = 'WIND:10 m'
+        #var = 'TMP:2 m'
+        #var = 'WIND:10 m'
         #var = 'REFC:entire'
+        var = 'TMP:surface'
         variable = var.replace(":", '_').replace(' ', '_')
         fxx = 0
 
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group/archive/HRRR/OSG_hourbymonth_stats_20150418-2017731/%s/' % (variable)
         FILE = 'OSG_HRRR_%s_m%02d_h%02d_f%02d.nc' % (var.replace(':', '_').replace(' ', '_'), month, hour, fxx)
         print FILE
-        nc = Dataset(FILE, 'r')
+        nc = Dataset(DIR+FILE, 'r')
 
         lat = nc.variables['latitude'][:]
         lon = nc.variables['longitude'][:]
@@ -44,15 +46,16 @@ for month in range(1,13):
         cores = nc.variables['cores'][:]
         percentiles = nc.variables['percent_compute'][:]
 
-        STAT = {'MAX': nc.variables['max_%s' % (variable)][:],
-                'MIN': nc.variables['min_%s' % (variable)][:],
-                'MEAN': nc.variables['mean_%s' % (variable)][:],
-                'P01': nc.variables['percentile'][0][:],
-                'P05': nc.variables['percentile'][1][:],
-                'P10': nc.variables['percentile'][2][:],
-                'P90': nc.variables['percentile'][3][:],
+        STAT = {
+                #'MAX': nc.variables['max_%s' % (variable)][:],
+                #'MIN': nc.variables['min_%s' % (variable)][:],
+                #'MEAN': nc.variables['mean_%s' % (variable)][:],
+                #'P01': nc.variables['percentile'][0][:],
+                #'P05': nc.variables['percentile'][1][:],
+                #'P10': nc.variables['percentile'][2][:],
+                #'P90': nc.variables['percentile'][3][:],
                 'P95': nc.variables['percentile'][4][:],
-                'P99': nc.variables['percentile'][5][:]
+                #'P99': nc.variables['percentile'][5][:]
                 }
         
         nSTAT = 'P95'
@@ -61,7 +64,7 @@ for month in range(1,13):
         m.drawstates()
         m.drawcoastlines()
         m.drawcountries()
-        if var == 'TMP:2 m':
+        if var == 'TMP:2 m' or var == 'TMP:surface':
             m.pcolormesh(x, y, STAT[nSTAT], vmax=310, vmin=265, cmap='Spectral_r')
             cb = plt.colorbar(orientation='horizontal', shrink=.9, pad=.05)
             cb.set_label('2 m Temperature (K)')
@@ -77,6 +80,7 @@ for month in range(1,13):
 
         plt.title('HRRR Composite: %s Month:%s, Hour:%s, fxx:%s\nBegin: %s, End:%s\nCount:%s, Cores:%s\nTimer: %s\n' % (nSTAT, month, hour, fxx, sDATE, eDATE, count, cores, timer))
 
-        plt.savefig('figs/OSG_%s_%s_m%02d_h%02d_f%02d.png' % (nSTAT, var.replace(':', '_').replace(' ', '_'), month, hour, fxx), bbox_inches='tight', dpi=300)
+        SAVEDIR = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/HRRR/OSG/Map_TMPsurface_p95/'
+        plt.savefig(SAVEDIR+'OSG_%s_%s_m%02d_h%02d_f%02d.png' % (nSTAT, var.replace(':', '_').replace(' ', '_'), month, hour, fxx), bbox_inches='tight', dpi=150)
 
         nc.close()
