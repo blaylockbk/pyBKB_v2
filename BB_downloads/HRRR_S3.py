@@ -25,6 +25,7 @@ import os
 import pygrib
 from datetime import datetime, timedelta
 import urllib2
+from ftplib import FTP
 import ssl
 import re
 import numpy as np
@@ -96,19 +97,96 @@ def get_hrrr_variable(DATE, variable,
         pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
                     % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
     else:
-        # Get HRRR from NOMADS
-        if verbose is True:
+        # Get operational HRRR from NOMADS
+        if model == 'hrrr':
+            if verbose is True:
+                print "\n-----------------------------------------------------------------------"
+                print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
+                print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
+                print "-----------------------------------------------------------------------\n"
+            # URL for the grib2 idx file
+            fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                        % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+            # URL for the grib2 file (located on NOMADS server)
+            pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
+                        % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+        # or, get experiemtnal HRRR from ESRL
+        elif model == 'hrrrX':
             print "\n-----------------------------------------------------------------------"
-            print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
-            print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
+            print "!! Need to download today's Experimental HRRRfrom ESRL via FTP !!"
+            print "!! Have to get the full file, and then will have to sift through each field"
             print "-----------------------------------------------------------------------\n"
-        # URL for the grib2 idx file
-        fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                    % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
-        # URL for the grib2 file (located on NOMADS server)
-        pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                    % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+            import sys
+            sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/')
+            from BB_MesoWest.get_token import get_ESRL_credentials
+            user, password = get_ESRL_credentials()
+            ESRL_file = datetime.strftime(DATE, '%y%j%H00')+ '%02d00' % (fxx)
+            ftp = FTP('gsdftp.fsl.noaa.gov')
+            ftp.login(user, password)
+            ftp.cwd('hrrr/conus/wrftwo')
 
+            # What is the initalized hour and forecast?
+            hour = ESRL_file[5:7]
+            forecast = ESRL_file[9:11]
+
+            # Save the file similar to the standard hrrr file naming convention
+            # except insert an X to represent that this is the experimental version
+            OUTDIR = './'
+            NEWFILE = 'hrrrX.t%sz.wrfsfcf%s.grib2' % (hour, forecast)
+            if os.path.isfile(OUTDIR+NEWFILE):
+                print "looks like that file already exists", OUTDIR+NEWFILE
+            else:
+                print "Downloading:", OUTDIR+NEWFILE
+                ftp.retrbinary('RETR '+ ESRL_file, open(OUTDIR+NEWFILE, 'wb').write)
+                ftp.quit()
+                print "Finished Downloading"
+                os.system('wgrib2 ' + OUTDIR+NEWFILE + ' -t -var -lev -ftime > ' + OUTDIR+NEWFILE+'.idx' )
+            idxpage = open(OUTDIR+NEWFILE+'.idx')
+            lines = idxpage.readlines()
+            gcnt = 0
+            for g in lines:
+                expr = re.compile(variable)
+                if expr.search(g):
+                    if verbose is True:
+                        print 'matched a variable', g
+                    parts = g.split(':')
+                    number = int(parts[0])
+                    if verbose is True:
+                        print 'grib field number:', number
+                gcnt += 1
+            # 3) Get data from the file, using pygrib
+            grbs = pygrib.open(OUTDIR+NEWFILE)
+            if value_only is True:
+                value = grbs[number].values
+                # (Remove the temporary file)
+                #    ?? Is it possible to push the data straight from curl to ??
+                #    ?? pygrib, without writing/removing a temp file? and     ??
+                #    ?? would that speed up this process?                     ??
+                if removeFile is True:
+                    os.system('rm -f %s' % (OUTDIR+NEWFILE))
+                    os.system('rm -f %s' % (OUTDIR+NEWFILE+'.idx'))
+                return {'value': value}
+
+            else:
+                value, lat, lon = grbs[number].data()
+                validDATE = grbs[number].validDate
+                anlysDATE = grbs[number].analDate
+                msg = str(grbs[number])
+
+                # 4) Remove the temporary file
+                if removeFile == True:
+                    os.system('rm -f %s' % (OUTDIR+NEWFILE))
+                    os.system('rm -f %s' % (OUTDIR+NEWFILE+'.idx'))
+
+                # 5) Return some import stuff from the file
+                return {'model':model,
+                        'value': value,
+                        'lat': lat,
+                        'lon': lon,
+                        'valid': validDATE,
+                        'anlys': anlysDATE,
+                        'msg': msg}
+                                        
     try:
         # 0) Read in the grib2.idx file
         try:

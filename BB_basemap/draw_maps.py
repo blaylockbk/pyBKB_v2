@@ -175,21 +175,21 @@ def draw_CONUS_cyl_map(res='i', return_domain_boundaires=False):
         return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
 
-def draw_HRRRwest(res='i', return_domain_boundaires=False):
+def draw_HRRRwest(res='i', return_domain_boundaires=False, area_thresh=2000):
     """
     Draw a custom basemap for HRRR West
     """
-    m = Basemap(resolution=res, projection='lcc', \
+    m = Basemap(resolution=res, projection='lcc', area_thresh=area_thresh, \
                 width=1800*1800, height=1060*3000, \
                 lat_1=38.5, lat_2=38.5, \
                 lat_0=38.5, lon_0=-112)
     return m
 
-def draw_HRRReast(res='i', return_domain_boundaires=False):
+def draw_HRRReast(res='i', return_domain_boundaires=False, area_thresh=2000):
     """
     Draw a custom basemap for HRRR West
     """
-    m = Basemap(resolution=res, projection='lcc', \
+    m = Basemap(resolution=res, projection='lcc', area_thresh=area_thresh, \
                 width=1800*1800, height=1060*3000, \
                 lat_1=38.5, lat_2=38.5, \
                 lat_0=38.5, lon_0=-84)
