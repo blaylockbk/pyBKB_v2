@@ -46,14 +46,14 @@ def rerun_in_serial(inputs):
     # If the file still doesn't exist (i.e. scp didn't didn't fine the file), then run the statistics locally
     if not os.path.isfile(DIR+FILE):
         print "Can't get", variable, month, day, hour, "from OSG. Running the statistics locally."
-        SCRIPTPATH = '/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/BB_HRRR/OpenScienceGrid/daily_30/'
+        SCRIPTDIR = '/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/OpenScienceGrid/OSG_daily_30/'
         SCRIPT = 'OSG_HRRR_composite_daily30.py %s %s %s %s %s' % (var.replace(' ', '_'), month, day, hour, 0)
-        os.system('python %s' % (SCRIPTPATH + SCRIPT))
+        os.system('python %s' % (SCRIPTDIR + SCRIPT))
     
 if __name__ == '__main__':
 
     OSGpath = 'daily_30'
-    var = 'DPT:2 m'
+    var = 'WIND:10 m'
     variable = var.replace(':', '_').replace(' ', '_')
 
     months = range(1,13)
@@ -69,42 +69,3 @@ if __name__ == '__main__':
 
     for i in args:
         rerun_in_serial(i)
-
-'''
-for month in range(1, 13):
-    for day in range(1, 32):
-        for hour in range(0,24):
-            try:
-                name = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (var, month, day, hour)
-                if not os.path.isfile(name):
-                    os.system('scp blaylockbk@login.osgconnect.net:~/%s/%s .' % (OSGpath, name))
-                else:
-                    print 'already have', name
-            except:
-                print "can't get", var, month, day, hour, "from OSG"
-
-
-# Rerun locally if it doesn't exist:
-for month in range(1, 13):
-    for day in range(1, 32):
-        for hour in range(0,24):
-            name = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (var, month, day, hour)
-            if os.path.isfile(name) is False:
-                print name, 'not available'
-                os.system('python /uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/BB_HRRR/OpenScienceGrid/daily_30/OSG_HRRR_composite_daily30.py REFC:entire %s %s %s %s' % (month, day, hour, 0))
-
-
-# Run for WIND:10_m
-var='WIND_2_m'
-timer = datetime.now()
-for month in range(1, 13):
-    for day in range(1, 32):
-        for hour in range(0,24):
-            name = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (var, month, day, hour)
-            if os.path.isfile(name) is False:
-                print name, 'not available'
-                os.system('python /uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/BB_HRRR/OpenScienceGrid/daily_30/OSG_HRRR_composite_daily30.py WIND:10_m %s %s %s %s' % (month, day, hour, 0))
-
-print ''
-print datetime.now() - timer
-'''

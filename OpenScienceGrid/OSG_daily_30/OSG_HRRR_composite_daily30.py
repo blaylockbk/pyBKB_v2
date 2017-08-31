@@ -53,7 +53,7 @@ eDATE = datetime(2017, 8, 1, hour)
 percentiles = [0, 1, 2, 3, 4, 5, 10, 25, 33, 50, 66, 75, 90, 95, 96, 97, 98, 99, 100]
 
 # Create the separate latlon hdf5 file?
-create_latlon_h5 = True
+create_latlon_h5 = False
 # =============================================================================
 
 # Fix the variable name for saving purposes

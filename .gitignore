@@ -8,5 +8,6 @@ get_token.py
 *.nc
 *.nc4
 *.grib2
+*.h5
 
 !balloon.png
