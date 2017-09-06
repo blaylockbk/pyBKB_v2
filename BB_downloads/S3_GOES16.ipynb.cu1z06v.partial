@@ -1,0 +1,350 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from datetime import datetime\n",
+    "import itertools\n",
+    "from tempfile import NamedTemporaryFile\n",
+    "\n",
+    "import boto3\n",
+    "import botocore\n",
+    "from botocore.client import Config\n",
+    "from netCDF4 import Dataset\n",
+    "\n",
+    "class GOESArchiveDownloader(object):\n",
+    "    def __init__(self):\n",
+    "        s3 = boto3.resource('s3', config=Config(signature_version=botocore.UNSIGNED, user_agent_extra='Resource'))\n",
+    "        self._bucket = s3.Bucket('goesingest')\n",
+    "\n",
+    "    def _get_iter(self, start, product):\n",
+    "        prod_prefix = str(product)\n",
+    "        start_marker = product.with_start_time(start)\n",
+    "        print(prod_prefix, start_marker)\n",
+    "        return self._bucket.objects.filter(Marker=start_marker, Prefix=str(product))\n",
+    "        \n",
+    "    def get_next(self, time, product):\n",
+    "        return next(iter(self._get_iter(time, product)))\n",
+    "\n",
+    "    def get_range(self, start, end, product):\n",
+    "        end_key = product.with_start_time(end)\n",
+    "\n",
+    "        # Get a list of files that have the proper prefix up to the hour\n",
+    "        return list(itertools.takewhile(lambda obj: obj.key <= end_key, self._get_iter(start, product)))\n",
+    "\n",
+    "\n",
+    "class GOESProduct(object):\n",
+    "    def __init__(self, **kwargs):\n",
+    "        self.sector = 'conus'\n",
+    "        self.satellite = 'goes16'\n",
+    "        self.typ = 'ABI'\n",
+    "        self.channel = 1\n",
+    "        self.mode = 3\n",
+    "        self.__dict__.update(kwargs)\n",
+    "\n",
+    "    def __str__(self):\n",
+    "        env = 'OR'\n",
+    "        sat = {'goes16': 'G16', 'goes17': 'G17'}[self.satellite]\n",
+    "\n",
+    "        if self.typ == 'ABI':\n",
+    "            sector = {'conus': 'C', 'meso1': 'M1', 'meso2': 'M2', 'full': 'F'}[self.sector]\n",
+    "            prod_id = 'ABI-L1b-Rad{sector}-M{mode}C{channel:02d}'.format(sector=sector,\n",
+    "                                                                         mode=self.mode,\n",
+    "                                                                         channel=self.channel)\n",
+    "        elif self.typ == 'GLM':\n",
+    "            prod_id = 'GLM-L2-LCFA'\n",
+    "        else:\n",
+    "            raise ValueError('Unhandled data type: {}'.format(self.typ))\n",
+    "        return '{env}_{prodid}_{sat}'.format(env=env, prodid=prod_id, sat=sat)\n",
+    "\n",
+    "    __repr__ = __str__\n",
+    "\n",
+    "    def with_start_time(self, time):\n",
+    "        return str(self) + '_s{time:%Y%j%H%M%S}'.format(time=time)\n",
+    "\n",
+    "\n",
+    "def netcdf_from_s3(s3obj):\n",
+    "    # Download the data and open (in memory) with netCDF\n",
+    "    with NamedTemporaryFile(suffix='.nc') as temp:\n",
+    "        # Create a temporary netCDF file to work around bug in netCDF C 4.4.1.1\n",
+    "        # We shouldn't actually need any file on disk.\n",
+    "        nc_temp = Dataset(temp.name, 'w').close()\n",
+    "        return Dataset(temp.name, memory=s3obj.get()['Body'].read())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "arc = GOESArchiveDownloader()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "OR_ABI-L1b-RadF-M3C02_G16 OR_ABI-L1b-RadF-M3C02_G16_s2017165120000\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651200383_e20171651211150_c20171651211195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651215383_e20171651226150_c20171651226196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651230383_e20171651241150_c20171651241193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651245383_e20171651256150_c20171651256193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651300383_e20171651311150_c20171651311191.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651315383_e20171651326150_c20171651326193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651330383_e20171651341150_c20171651341187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651345384_e20171651356150_c20171651356192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651400384_e20171651411150_c20171651411187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651415384_e20171651426150_c20171651426196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651430384_e20171651441150_c20171651441194.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651445384_e20171651456150_c20171651456185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651500384_e20171651511150_c20171651511197.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651515384_e20171651526150_c20171651526193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651530384_e20171651541150_c20171651541193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651545384_e20171651556150_c20171651556191.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651600384_e20171651611151_c20171651611191.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651615384_e20171651626151_c20171651626193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651630384_e20171651641151_c20171651641196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651645384_e20171651656151_c20171651656195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651700384_e20171651711151_c20171651711194.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651715384_e20171651726151_c20171651726187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651730384_e20171651741151_c20171651741192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651745384_e20171651756151_c20171651756184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651800381_e20171651811148_c20171651811191.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651815381_e20171651826148_c20171651826184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651830381_e20171651841148_c20171651841186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651845381_e20171651856148_c20171651856186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651900381_e20171651911148_c20171651911185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651915381_e20171651926148_c20171651926193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651930381_e20171651941148_c20171651941185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171651945382_e20171651956148_c20171651956185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652000382_e20171652011148_c20171652011188.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652015382_e20171652026148_c20171652026186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652030382_e20171652041148_c20171652041184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652045382_e20171652056148_c20171652056187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652100382_e20171652111148_c20171652111185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652115382_e20171652126148_c20171652126181.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652130382_e20171652141148_c20171652141186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652145382_e20171652156148_c20171652156182.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652200382_e20171652211148_c20171652211186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652215382_e20171652226149_c20171652226188.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652230382_e20171652241149_c20171652241184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652245382_e20171652256149_c20171652256185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652300382_e20171652311148_c20171652311193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652315382_e20171652326149_c20171652326183.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652330382_e20171652341148_c20171652341192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171652345382_e20171652356149_c20171652356183.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660000382_e20171660011148_c20171660011187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660015382_e20171660026149_c20171660026182.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660030382_e20171660041149_c20171660041185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660045382_e20171660056149_c20171660056185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660100382_e20171660111149_c20171660111189.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660115382_e20171660126149_c20171660126185.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660130382_e20171660141149_c20171660141184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660145382_e20171660156149_c20171660156183.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660200382_e20171660211149_c20171660211190.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660215382_e20171660226149_c20171660226184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660230382_e20171660241149_c20171660241184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660245382_e20171660256149_c20171660256184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660300382_e20171660311149_c20171660311182.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660315382_e20171660326149_c20171660326187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660330382_e20171660341149_c20171660341192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660345382_e20171660356149_c20171660356188.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660400382_e20171660411149_c20171660411184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660415382_e20171660426149_c20171660426186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660430382_e20171660441149_c20171660441182.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660445382_e20171660456149_c20171660456184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660500382_e20171660511149_c20171660511184.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660515382_e20171660526149_c20171660526186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660530382_e20171660541149_c20171660541188.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660545382_e20171660556149_c20171660556182.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660600384_e20171660611151_c20171660611193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660615384_e20171660626151_c20171660626195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660630384_e20171660641151_c20171660641195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660645384_e20171660656151_c20171660656189.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660700384_e20171660711151_c20171660711193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660715384_e20171660726151_c20171660726195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660730384_e20171660741151_c20171660741191.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660745384_e20171660756151_c20171660756195.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660800384_e20171660811151_c20171660811196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660815384_e20171660826151_c20171660826186.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660830384_e20171660841151_c20171660841197.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660845384_e20171660856151_c20171660901140.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660900384_e20171660911151_c20171660926457.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660915384_e20171660926151_c20171660926196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660930384_e20171660941151_c20171660941193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171660945384_e20171660956151_c20171660956193.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661000384_e20171661011151_c20171661011192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661015384_e20171661026151_c20171661026187.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661030384_e20171661041151_c20171661041192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661045384_e20171661056151_c20171661056190.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661100384_e20171661111151_c20171661111192.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661115384_e20171661126151_c20171661126198.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661130384_e20171661141151_c20171661141196.nc'),\n",
+       " s3.ObjectSummary(bucket_name='goesingest', key='OR_ABI-L1b-RadF-M3C02_G16_s20171661145384_e20171661156151_c20171661156192.nc')]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "arc.get_range(datetime(2017, 6, 14, 12), datetime(2017, 6, 15, 12), GOESProduct(typ='ABI', channel=2, sector='full'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "OR_ABI-L1b-RadC-M3C02_G16 OR_ABI-L1b-RadC-M3C02_G16_s2017193100000\n"
+     ]
+    }
+   ],
+   "source": [
+    "obj = arc.get_next(datetime(2017, 7, 12, 10, 0, 0), GOESProduct(typ='ABI', channel=2, sector='conus'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "180104214"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "obj.size"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "nc = netcdf_from_s3(obj)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['_FillValue',\n",
+       " 'long_name',\n",
+       " 'standard_name',\n",
+       " '_Unsigned',\n",
+       " 'sensor_band_bit_depth',\n",
+       " 'valid_range',\n",
+       " 'scale_factor',\n",
+       " 'add_offset',\n",
+       " 'units',\n",
+       " 'resolution',\n",
+       " 'coordinates',\n",
+       " 'grid_mapping',\n",
+       " 'cell_methods',\n",
+       " 'ancillary_variables']"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nc.variables['Rad']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with open('test-goes.nc', 'wb') as outf:\n",
+    "    outf.write(obj.get()['Body'].read())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "import cartopy.crs as ccrs\n",
+    "import cartopy.feature as cfeature\n",
+    "\n",
+    "data = nc.variables['Rad'][:]\n",
+    "state_boundaries = cfeature.NaturalEarthFeature(category='cultural',\n",
+    "                                                name='admin_1_states_provinces_lakes',\n",
+    "                                                scale='50m', facecolor='none')\n",
+    "\n",
+    "fig = plt.figure(figsize=(10,10))\n",
+    "proj_var = nc.variables['goes_imager_projection']\n",
+    "globe = ccrs.Globe(semimajor_axis=proj_var.semi_major_axis, semiminor_axis=proj_var.semi_minor_axis)\n",
+    "proj = ccrs.Geostationary(central_longitude=proj_var.longitude_of_projection_origin,\n",
+    "                          satellite_height=proj_var.perspective_point_height, globe=globe)\n",
+    "ax = fig.add_subplot(1, 1, 1, projection=proj)\n",
+    "\n",
+    "x = nc.variables['x'][:] * proj_var.perspective_point_height\n",
+    "y = nc.variables['y'][:] * proj_var.perspective_point_height\n",
+    "ax.imshow(data, extent=(x.min(), x.max(), y.min(), y.max()), cmap='Greys', origin='upper')\n",
+    "ax.coastlines('10m', color='tab:blue')\n",
+    "ax.set_extent([-95, -78, 30, 45])\n",
+    "ax.add_feature(state_boundaries, edgecolor='tab:red')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python [conda env:py36]",
+   "language": "python",
+   "name": "conda-env-py36-py"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
