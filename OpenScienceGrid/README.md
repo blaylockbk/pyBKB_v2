@@ -9,9 +9,9 @@ Summer/Fall 2017*
 ## Introduction
 The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system. This should not be confused with High Performance Computing (HPC) systems.
 
-I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
+There are TBs of weather data generated every day, and much of this data isn't being used. If this "Big Data" could be analysed in more I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
 
-The OSG is most useful if your job can be written in an embarrasingly parallel way.
+The OSG is most useful if your job can be written in an embarrasingly parallel ways.
 
 ## OSG Limits
 |Maximum Storage|Maximum Files|
@@ -19,6 +19,8 @@ The OSG is most useful if your job can be written in an embarrasingly parallel w
 |   102,400 MB  |   500,000   |
 
 When I run my statistics, I reach 600% of my allotted storage, but only 5% of my allotted number of files. As soon as I can get the files transfered to my local computing center (Utah Center for High Performance Computing), then I remove the files from the OSG.
+
+Note: when you're trying to produce terabytes of data, there are going to be some complications.
 
 ## Specificaitons to my job
 I calculate statistics from the HRRR model for the last 3 years of data that we store in an [object-storage archive](http://hrrr.chpc.utah.edu). The HRRR model covers the contiguous United States with 3 km grid spacing with a size of 1059x1799 pixels, resulting in 1.9 million grid points. There are 136 different meteorological variables with an analysis hour and 18 forecast hours. That is a lot of data that needs to be sifted through. I am focusing on the analysis hours at the moment.
@@ -116,9 +118,27 @@ I didn't calculate as many statistics as I had before, only computing the mean, 
 
 I origianally stored the statistics data in NetCDF files, but these filese were so bloated it would have been too much data to store in memory. I used compression level=1 which reduced a 180 MB file to a 65 MB file. I later changed to HDF5 which has reduced the file sizes substantially. This was a smart move especially after I doubled the number of calculated statistics. The file size as HDF5 with the 20 statistics was about the same size as the NetCDF file with the 9 statistics.
 
+# OSG Data Processing Statistics
+Below shows how the number of core and number of samples used to complete each calculation relates to the computation time. Note: This does not include the file transfer time between the OSG node, to the OSG head, to the CHPC file server.
+
+#### Does using multiprocessing speedup the calculation time?
+My scripts utilize python's multiprocessing module to download all the HRRR files that are needed as quickly as possible. But it turns out that the number of processors are not well correlated to the speed to calculations are done.
+<img src='./figs/cores_counts_timer/TMP_2_m_CoresTimer.png'> 
+Yes, downloding with multiprocessors will speed up the average computation time, but only if you are dealing with less than 12 cores. I think what happens is that the downloading saturates the network bandwidth when eight or more files are being downloaded.
+
+#### Is the calculation time limited by the sample size?
+I would expect the anser to this is "probably, yes", but 90 samples are not that many to worry about when you are calculating percentiles, and so the computation time between calculating percentiles for 30 or 90 samples isn't that great. If there were 1000 sample, then maybe there would be a differnce.
+<img src='./figs/cores_counts_timer/TMP_2_m_CountTimer.png'> 
+
+#### How many samples are available each day?
+There has only been one lead year for the dates available in the HRRR archive, which has 30 samples. Other hours that have two years of data have 60 samples. For days where 3 years of data are avialbe, we have 90 samples. There are some occasional drop-outs that are unexplained. In some cases there are files missing from the archive. But more often, the OSG node must have had a difficult time downloading all the files.
+<img src='./figs/cores_counts_timer/TMP_2_m_count.png'> 
+
 # Post Processing
 ## Plot Maps
-A map of the statistical data
+A map of the statistical data: 
+
+Video: [Rolling 30-day maximum 10 m Wind Speed](https://youtu.be/f9DEyuOeERY)
 
 ## Time Series
 It is much more efficient to store each statistical value as a key in the HDF5 file. My original method was to store the calculated percentiles as a 3D array, but that wasn't efficient to pluck values from. Using the 32 cores on meso4, I could create a time series from a point in 30 seconds with my new HDF5 storage order, whereas before with the 3D array it took 33 minutes to generate the same timeseries!

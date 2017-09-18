@@ -9,5 +9,8 @@ get_token.py
 *.nc4
 *.grib2
 *.h5
+*.npy
+
+geotiff_goes16FD
 
 !balloon.png
