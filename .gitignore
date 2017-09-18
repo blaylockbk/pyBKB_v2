@@ -11,6 +11,4 @@ get_token.py
 *.h5
 *.npy
 
-geotiff_goes16FD
-
 !balloon.png
