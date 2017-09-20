@@ -9,7 +9,10 @@ Summer/Fall 2017*
 ## Introduction
 The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system. This should not be confused with High Performance Computing (HPC) systems.
 
-There are TBs of weather data generated every day, and much of this data isn't being used. If this "Big Data" could be analysed in more I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
+OSG Home Page: https://www.opensciencegrid.org/  
+OSG Status and Statistics: http://display.grid.iu.edu/
+
+There are TBs of weather data generated every day, and much of this data isn't being used. If this "Big Data" could be analysed in more itelligent way, we could learn a lot. I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
 
 The OSG is most useful if your job can be written in an embarrasingly parallel ways.
 
