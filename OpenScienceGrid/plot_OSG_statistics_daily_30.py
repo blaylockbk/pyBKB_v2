@@ -59,7 +59,7 @@ def plot_OSG_map(args):
     # Build a dictionary of the statistic values
     STAT = {'mean' : h['mean'].value}
     for p in range(len(percentiles)):
-        STAT['p'+str(percentiles[p])] = h['percentile value'][p]
+        STAT['p'+str(percentiles[p])] = h[statistic]
     
     m.drawstates()
     m.drawcoastlines()
@@ -128,12 +128,12 @@ if __name__ == '__main__':
     
     #   mean, p0, p1, p2, p3, p4, p5, p10, p15, p25, p33, p50,
     #   p66, p75, p90, p95, p96, p97, p98, p99, p100
-    statistic = 'p90'
+    statistic = 'p95'
     
-    var = 'DPT:2 m'
+    #var = 'DPT:2 m'
     #var = 'REFC:entire'
     #var = 'TMP:2 m'
-    #var = 'WIND:10 m'
+    var = 'WIND:10 m'
     
     variable = var.replace(':', '_').replace(' ', '_')
 
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
 
     # Plot maps
-    if False:
+    if True:
         # Create a list to iterate over. 
         # statistic options:
         
@@ -163,7 +163,7 @@ if __name__ == '__main__':
         p.close()
 
     # Plot timeseries: HTS is the HRRR-statistic Time Series
-    if True:
+    if False:
         
         
         '''
@@ -254,7 +254,7 @@ if __name__ == '__main__':
         plt.savefig(SAVEDIR + stn[0]+'_'+variable+'_p90p10.png')
 
     # Plot Compute statistics
-    if True:         
+    if False:         
         # Multiprocessing :)
         cores = [[DIR+'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % \
                 (variable, month, day, hour), 'cores'] \

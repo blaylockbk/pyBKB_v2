@@ -10,7 +10,10 @@ Summer/Fall 2017*
 The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system. This should not be confused with High Performance Computing (HPC) systems.
 
 OSG Home Page: https://www.opensciencegrid.org/  
-OSG Status and Statistics: http://display.grid.iu.edu/
+OSG Status and Statistics: http://display.grid.iu.edu/  
+OSG Help Desk: https://support.opensciencegrid.org/support/home  
+My OSG Public: http://stash.osgconnect.net/+blaylockbk/
+
 
 There are TBs of weather data generated every day, and much of this data isn't being used. If this "Big Data" could be analysed in more itelligent way, we could learn a lot. I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
 
@@ -43,7 +46,7 @@ In the future, when there are 2 or 3 years of additional HRRR data, this method 
 ## File Transfer between OSG and CHPC
 Data Transfer of large files is somewhat cumbersome. I use the scp command to move files form OSG to the CHPC, my home institution's computing facility. One of the downsides of producing such large files on the OSG is that the transfer rate of those files to CHPC is very slow and it takes a long time to move the bulk of files.
 
-With each variable statistics I run on the OSG, I produce 8,784 files (one file for each hour of the year including leap year) that ammount to about 700 GB. Transfering those files one at a time can take over a day over scp. However, I am now utilizing multiprocessing to transfer those files in about 3 hours using 32 cores. I think the limiting factor of the transfer time is a function of the write speed of the disk and the bandwidth of the network.
+With each variable statistics I run on the OSG, I produce 8,784 files (one file for each hour of the year including leap year) that ammount to about 700 GB (~80 MB per file). Transfering those files one at a time can take over a day over scp. However, I am now utilizing multiprocessing to transfer those files in about 3 hours using 32 cores. I think the limiting factor of the transfer time is a function of the write speed of the disk and the bandwidth of the network.
 
 Even with the added transfer time, transfering files from the OSG is much faster than running the statistics on my home instituion. For example, the same job at CHPC, on the wx4 node with 8 cores, took 7.5 days to complete.
 
