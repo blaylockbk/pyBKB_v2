@@ -10,7 +10,7 @@ def terrain_cmap_256():
     """
     Custom terrain colormap with 256 distinct colors.
     """
-    C = np.array([[0, 0, 255], 
+    C = np.array([[0, 125, 255], 
                   [2, 97, 0],  # Alternativley [0, 0, 255], for blue at sealevel
                   [2, 97, 0],
                   [3, 97, 0],
