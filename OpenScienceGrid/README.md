@@ -37,6 +37,8 @@ The calculated statistics include the 30-day running mean and percentiles [0, 1,
 
 The Latitude and Longitude for the grid is stored in a separate HDF5 file. There is no need to have every node return these values when they are known.
 
+Need to download thousands of files and compute statistics for them. This is difficult on single prcocessor computers. Multiprocessing to utlize our 32 cores on meso4 was good, to a point. The OSG provides access to many more resources and completes our job quickly.
+
 ### Example
 Statistics for July 1st at 00z are calculated using the 00z data for the 15 days before and after July 1st, using all the available years (2015-2017). The data values are downloaded from the HRRR archive, and stored. This requires the OSG nodes to have at least 6 MB of memory. This download process is used using all the available processors on the OSG node which reduced the download time. Numpy funcitons are then used to calculate the mean and the percentiles. Those statistics are returned in an HDF5 file along with the number of cores on the node, the time it took to calculate the statistics, and the number of data values used to calculte the statistic. If only 2 years of data are used, then there are about 60 samples. If 3 years of data are avaiale, then there are about 90 samples. I am sifting through TONS of data. Each variable for each hour is about 1MB in GRIB2 format, that is downloaded from the Pando archive.
 
@@ -49,6 +51,8 @@ Data Transfer of large files is somewhat cumbersome. I use the scp command to mo
 With each variable statistics I run on the OSG, I produce 8,784 files (one file for each hour of the year including leap year) that ammount to about 700 GB (~80 MB per file). Transfering those files one at a time can take over a day over scp. However, I am now utilizing multiprocessing to transfer those files in about 3 hours using 32 cores. I think the limiting factor of the transfer time is a function of the write speed of the disk and the bandwidth of the network.
 
 Even with the added transfer time, transfering files from the OSG is much faster than running the statistics on my home instituion. For example, the same job at CHPC, on the wx4 node with 8 cores, took 7.5 days to complete.
+
+Currently working with OSG and CHPC to have files transfered via Globus.
 
 ## OSG Tips
 The OSG appears to run faster in the early morning. Maybe less people are on it.
@@ -199,6 +203,17 @@ The time series can be generated on a single processer. The speed of these list 
            (variable, month, day, hour), STAT, ROW, COL) \
            for month in months for day in range(1,days[month-1]+1) for hour in hours]
     # HTS is the 'HRRR-statistic Time Series'
+
+# Why do we need the OSG for calculating HRRR statistics?
+Bottomline: OSG provides lots of computers needed for the high througput computations.
+
+This is nice for these brute-force percentile computations when they need to be
+re-run. For example, if you ran these calculation every week or every month, on 
+your own computer it would take over 7 days. On OSG it only takes several hours.
+However, you can get away from doing this for more simple calculations (i.e. sum, mean, max, min, RMSE)
+that can be calculated by only hold one value in memory (no sorting required, like there is for the percentile calculation).
+For these rolling statistics, you could save values and update the data without
+requiring the throughput OSG provides.
 
 -----------
 -----------

@@ -11,7 +11,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter, HourLocator
 
-def get_fires(DATE=datetime.now(), min_size=1000, AK=False, HI=False):
+import sys
+sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
+from BB_basemap.draw_maps import draw_CONUS_cyl_map
+
+def get_fires(DATE=datetime.now(), min_size=1000, max_size=3000000, AK=False, HI=False):
     """
     Returns a dictionary of fires and information from this webpage:
     https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_2016-06-01.txt
@@ -53,7 +57,7 @@ def get_fires(DATE=datetime.now(), min_size=1000, AK=False, HI=False):
         line = fires[F]
 
         # Skip small acreage and Alaska and Hawaii
-        if line[7] < min_size:
+        if line[7] < min_size or line[7] > max_size:
             continue
         elif AK is False and line[6] == 'Alaska':
             continue
@@ -75,19 +79,13 @@ def get_fires(DATE=datetime.now(), min_size=1000, AK=False, HI=False):
                                    }
     return return_this
 
-
-if __name__ == "__main__":
-    F = get_fires()
-
+def plot_fire_size_date_range(sDATE=datetime(2016, 6, 15), eDATE=datetime(2016, 11, 15), fire='PIONEER'):
     # =======================================
     # Plot fire size over time
-    date = datetime(2016, 6, 15)
-    eDate = datetime(2016, 11, 15)
-    fire = 'PIONEER'
     size = []
     dates = []
     containment = []
-    while date < eDate:
+    while sDATE< eDATE:
         try:
             F = get_fires(DATE=date)
             if fire in F.keys():
@@ -102,7 +100,7 @@ if __name__ == "__main__":
             size.append(np.nan)
             dates.append(date)
             containment.append(np.nan)
-        date += timedelta(days=1)
+        sDATE+= timedelta(days=1)
         
     fig, ax1 = plt.subplots()
     ax1.bar(dates, containment, 1, color='r', zorder=1)
@@ -116,3 +114,44 @@ if __name__ == "__main__":
     dateFmt = DateFormatter('%b %d\n%Y')
     ax2.xaxis.set_major_formatter(dateFmt)
     plt.show()
+
+def map_fires_date_range(sDATE, eDATE):
+    """
+    Make a map for every day showing the location and relative size of
+    the active fires.
+    """
+    # Make map object
+    m = draw_CONUS_cyl_map()
+
+
+    # Get daily fire data
+    days = (eDATE-sDATE).days
+    DATES = [sDATE+timedelta(days=i) for i in range(days)]
+    for D in DATES:
+        try:
+            FIRES = get_fires(D, min_size=0, max_size=500000)    
+            m.drawstates(linewidth=0.2)
+            m.drawcountries()
+            m.arcgisimage(service='World_Shaded_Relief', dpi=1500)    
+            # Plot each fire on map
+            for F in FIRES:
+                if F == 'URL' or F == 'DATE':
+                    continue
+                x, y = m(FIRES[F]['longitude'], FIRES[F]['latitude'])
+                m.scatter(x, y, s=FIRES[F]['area']/300, c='orangered',edgecolors='none')
+                #plt.text(x+.1, y+.1, F, fontsize=7)
+            # Save figure
+            plt.title(D.strftime('%Y-%b-%d'))
+            SAVEDIR='/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/fires/'
+            plt.savefig(SAVEDIR+D.strftime('%Y-%m-%d')+'.png', bbox_inches='tight')
+            plt.clf(); plt.cla()
+            print "plotted", D
+        except:
+            print ">>>>> SKIPPED", D
+            pass
+
+if __name__ == "__main__":
+    
+    sDATE = datetime(2017, 1, 1)
+    eDATE = datetime(2017, 10, 13)
+    map_fires_date_range(sDATE, eDATE)

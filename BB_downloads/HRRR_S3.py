@@ -409,7 +409,7 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
         return [valid, plucked]
     except:
         print "\n------------------------------------!"
-        print " !> ERROR <! ERROR in pluck_hrrr_point() %s" % (H['msg'])
+        print " !> ERROR <! ERROR in pluck_hrrr_point() %s" % (H['msg']), lat, lon
         print "------------------------------------!\n"
         return [np.nan, np.nan]
 
@@ -609,7 +609,7 @@ def point_hrrr_time_series(start, end, variable='TMP:2 m',
     timer_MP = datetime.now()
     ValidValue = p.map(points_for_multipro, multi_vars)
     p.close()
-    print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
+    print "f%02d: finished multiprocessing in %s on %s processers" % (fxx, datetime.now()-timer_MP, cpu_count)
 
     # Convert to numpy array so the columns can be indexed
     ValidValue = np.array(ValidValue)
@@ -746,7 +746,7 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
 
     return valid_dates, pollywog
 
-def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
+def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18, verbose=True):
     """
     Creates a vector of a variable's value for each hour in a HRRR model
     forecast initialized from a specific time. FOR MULTIPLE LOCATIONS. Requires
@@ -789,7 +789,11 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18):
 
     return return_this
 
-def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=False, fxx=range(19), reduce_CPUs=2):
+def get_hrrr_hovmoller(start, end, location_dic,
+                       variable='TMP:2 m',
+                       area_stats=False,
+                       fxx=range(19),
+                       reduce_CPUs=2):
     """
     Have you ever seen a Hovmoller plot? This "HRRR Hovmoller" will read kind
     of like one of those.
@@ -846,6 +850,7 @@ def get_hrrr_hovmoller(start, end, location_dic, variable='TMP:2 m', area_stats=
                 hovmoller[l][s] = np.array([data[i][l][s] for i in fxx])
 
     return hovmoller
+
 
 if __name__ == "__main__":
     """

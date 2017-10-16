@@ -17,6 +17,42 @@ import numpy as np
 token = my_token()
 
 
+def get_MW_location_dict(STID):
+    """
+    Return a location dictionary in the form
+    location_dic = {'name':{'latitude':##.#,
+                            'longitude':##.#,
+                            'elevation':##,}}
+    Input: 
+        STID - a string of mesowest station IDs separated by a comma
+               (i.e 'wbb,ukbkb,mtmet')
+    """
+    # The API request URL
+    URL = 'http://api.mesowest.net/v2/stations/metadata?&token=' + token \
+        + '&stid=' + STID
+
+    # Open URL, read the content, and convert JSON to python readable form.
+
+    f = urllib2.urlopen(URL)
+    data = f.read()
+    data = json.loads(data)
+
+    location_dict = {}
+
+    for i in data['STATION']:
+        stid = i['STID']
+        lat = i['LATITUDE']
+        lon = i['LONGITUDE']
+        name = i['NAME']
+        elev = i['ELEVATION']
+        
+        location_dict[str(stid)] = {'latitude':float(lat),
+                               'longitude':float(lon),
+                               'name':str(name),
+                               'elevation':float(elev)}
+    return location_dict
+
+
 def get_station_info(stationIDs):
     """
     Get the metadata info for a list of stations and return it as a dictionary.
