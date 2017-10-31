@@ -12,19 +12,25 @@ The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a [High Throu
 OSG Home Page: https://www.opensciencegrid.org/  
 OSG Status and Statistics: http://display.grid.iu.edu/  
 OSG Help Desk: https://support.opensciencegrid.org/support/home  
-My OSG Public: http://stash.osgconnect.net/+blaylockbk/
+My OSG Public: http://stash.osgconnect.net/+blaylockbk/  
+Globus File Transfer: http://www.globus.org
 
 
 There are TBs of weather data generated every day, and much of this data isn't being used. If this "Big Data" could be analysed in more itelligent way, we could learn a lot. I am using the system to compute statistics of HRRR data over the last 2.5 years stored in the CHPC Pando archive system. The archive is currently 35TB, and growing every day.
 
 The OSG is most useful if your job can be written in an embarrasingly parallel ways.
 
-## OSG Limits
-|Maximum Storage|Maximum Files|
-|---------------|-------------| 
-|   102,400 MB  |   500,000   |
+## [OSG Storage Types and Limits](https://support.opensciencegrid.org/support/solutions/articles/12000002985-storage-solutions-on-osg-home-local-scratch-stash-and-public)
 
-When I run my statistics, I reach 600% of my allotted storage, but only 5% of my allotted number of files. As soon as I can get the files transfered to my local computing center (Utah Center for High Performance Computing), then I remove the files from the OSG.
+|Directory|Maximum Storage|Maximum Files|
+|-------------------|---------------|-------------| 
+|home (long term)   |   102,400 MB  |   500,000   |
+
+- local-scratch (short term): fast writing. Files deleted after 30 days
+- stash (medium term): slower than local-scratch. No disk quota. Use the Globus transfer service.
+- public: publically accessable files at http://stash.osgconnect.net/+blaylockbk
+
+When I run my statistics in the home space, I reach 600% of my allotted storage, but only 5% of my allotted number of files. As soon as I can get the files transfered to my local computing center (Utah Center for High Performance Computing), then I remove the files from the OSG. My next plan is to submit my jobs in the stash directory and then transfer the files via globus.
 
 Note: when you're trying to produce terabytes of data, there are going to be some complications.
 

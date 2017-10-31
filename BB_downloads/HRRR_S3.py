@@ -777,10 +777,10 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18, ver
     for fxx in range(len(valid_dates)):
         try:
             # Get the HRRR file
-            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc', verbose=verbose)
             # For each station, pluck the value and store it
             for l in location_dic:
-                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'])
+                Vdate, plucked = pluck_hrrr_point(H, location_dic[l]['latitude'], location_dic[l]['longitude'], verbose=verbose)
                 return_this[l] = np.append(return_this[l], plucked)
         except:
             # If hour isn't available, fill with nan, and date is next hour
