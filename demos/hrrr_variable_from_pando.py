@@ -170,7 +170,7 @@ def get_multiple_variables_multiple_days():
     days = (eDATE-sDATE).days
     DATES = [sDATE + timedelta(days=d) for d in range(days)]
 
-    variables = ['TMP:2 m', 'DPT:2 m', 'UGRD:10 m', 'UGRD:10 m']       # Must be part of a line in the .idx file
+    variables = ['TMP:2 m', 'DPT:2 m', 'UGRD:10 m', 'VGRD:10 m']       # Must be part of a line in the .idx file
 
     for variable in variables:
         for DATE in DATES:
