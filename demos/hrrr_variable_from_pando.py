@@ -4,12 +4,7 @@
 # updated: October 31, 2017               Happy Halloween
 
 """
-Download a single variable from the HRRR archive using cURL
-
-Steps:
-    1) Read the lines from the Metadata .idx file
-    2) Identify the byte range for the variable of interest
-    3) Download the byte range using cURL.
+Download a single variable from the HRRR archive using cURL.
 """
 
 import commands
@@ -20,7 +15,6 @@ import os
 import urllib2
 
 
-
 def download_HRRR_variable_from_pando(DATE, variable,
                                       hours=range(0, 24),
                                       fxx=[0],
@@ -29,8 +23,9 @@ def download_HRRR_variable_from_pando(DATE, variable,
                                       outdir='./'):
     """
     Download a partial grib2 file from the Pando archive (http://hrrr.chpc.utah.edu)
-    by specifying the variable you wish to download. These single variable
-    grib2 files are about 1 MB in size.
+    by specifying the variable you wish to download. These single-variable
+    grib2 files are about 1 MB in size. If you don't need the full grib2 file,
+    retrieving only the variables you need can save you a lot in disk space.
     
     Input:
         DATE     - a python date object for the date you want to download
@@ -129,7 +124,7 @@ def download_HRRR_variable_from_pando(DATE, variable,
                 gcnt += 1
 
 # =============================================================================
-#   Example Usage: Modify these parameters
+#   Example Usage: Modify date and variable parameters
 # =============================================================================
 def get_single_variable_single_day():
     # Download single variable from single day
