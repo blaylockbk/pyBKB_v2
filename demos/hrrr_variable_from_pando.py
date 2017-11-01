@@ -85,11 +85,25 @@ def download_HRRR_variable_from_pando(DATE, variable,
                     % (model_dir, field, DATE.strftime('%Y%m%d'), model, h, field, f)
 
             # 1) Open the Metadata URL and read the lines
+            #    Remember, we are ignoring the certificate.
             try:
-                idxpage = urllib2.urlopen(idxfile)
+                try:
+                    idxpage = urllib2.urlopen(idxfile)
+                except:
+                    # Depending on your version of urllib2, you may need to
+                    # ignore the ssl certificate before urllib2.openurl will work.
+                    # My Python 2.7.11 needs to do this, but my Python 2.7.3 does not.
+                    # https://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2/28048260#28048260
+                    print ">>going to ignore the ssl certificate"
+                    import ssl
+                    ctx = ssl.create_default_context()
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
+                    idxpage = urllib2.urlopen(idxfile, context=ctx)
                 lines = idxpage.readlines()
             except:
                 print "\n   ERROR!!! Does the .idx file exist: %s \n" % idxfile
+                print "If is does, then something is wrong with urllib2.urlopen"
                 continue
             
             # Check if the variable requested is in the .idx file.
