@@ -128,8 +128,10 @@ def download_HRRR_variable_from_pando(DATE, variable,
                         continue
                 gcnt += 1
 
-if __name__=='__main__':
-
+# =============================================================================
+#   Example Usage
+# =============================================================================
+def get_single_variable_single_day():
     # Download single variable from single day
     DATE = date(2017, 3, 10)   # Model run date
 
@@ -143,8 +145,8 @@ if __name__=='__main__':
                                       outdir='./')
 
 
-
-    # Download single variable from date range
+def get_single_variable_multiple_days():
+    # Download single variable from a date range
     sDATE = date(2017, 3, 10)   # Start date
     eDATE = date(2017, 3, 13)   # End date (exclusive)
     days = (eDATE-sDATE).days
@@ -161,7 +163,7 @@ if __name__=='__main__':
                                           outdir='./')
 
 
-
+def get_multiple_variables_multiple_days():
     # Download multiple variables from date range
     sDATE = date(2017, 3, 10)   # Start date
     eDATE = date(2017, 3, 13)   # End date (exclusive)
@@ -178,3 +180,19 @@ if __name__=='__main__':
                                               model='hrrr',
                                               field='sfc',
                                               outdir='./')
+
+
+if __name__=='__main__':
+
+    get_single_variable_single_day()
+    #get_single_variable_multiple_days()
+    #get_multiple_variables_multiple_days()
+    
+
+
+
+    
+
+
+
+    
