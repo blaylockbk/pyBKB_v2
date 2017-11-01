@@ -129,7 +129,7 @@ def download_HRRR_variable_from_pando(DATE, variable,
                 gcnt += 1
 
 # =============================================================================
-#   Example Usage
+#   Example Usage: Modify these parameters
 # =============================================================================
 def get_single_variable_single_day():
     # Download single variable from single day
