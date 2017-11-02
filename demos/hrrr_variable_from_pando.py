@@ -4,7 +4,8 @@
 # updated: October 31, 2017               Happy Halloween
 
 """
-Download a single variable from the HRRR archive using cURL.
+Download a single HRRR variable from the Pando archive using cURL.
+More Information at: https://hrrr.chpc.utah.edu
 """
 
 import commands
@@ -39,6 +40,9 @@ def download_HRRR_variable_from_pando(DATE, variable,
                    field using cURL.
                    Check this URL for a sample of variable names you can match:
                    https://api.mesowest.utah.edu/archive/HRRR/oper/sfc/20170725/hrrr.t01z.wrfsfcf00.grib2.idx
+                   String must be unique enough to only occure once in the .idx
+                   file, else it will download the last instance. Thus, include
+                   both the varibale abbreviation and the surface.
         hours    - a list of hours to download, within range(24).
         fxx      - a list of forecast hours to download, within range(19).
         model    - a string specifying the model you want to download.
@@ -137,6 +141,17 @@ def download_HRRR_variable_from_pando(DATE, variable,
                         continue
                 gcnt += 1
 
+            """
+            Note: If you don't give the variable string a unique enough name,
+                  it will only grab the last instance of that variable.
+                  For example, there are many 'TMP' varibles at different levels.
+                  If you set variable='TMP' it will download all the
+                  fields that match TMP (i.e TMP:500 mb, TMP:700 mb) and
+                  overwrite the file with the last instance. That is why you
+                  need to also specify the variable abreviation and surface
+                  when you name the variable string.
+            """
+
 # =============================================================================
 #   Example Usage: Modify date and variable parameters
 # =============================================================================
@@ -155,14 +170,19 @@ def get_single_variable_single_day():
 
 
 def get_single_variable_multiple_days():
-    # Download single variable from a date range
+    # === User modify variable and date range =================================
+    # date range
     sDATE = date(2017, 3, 10)   # Start date
     eDATE = date(2017, 3, 13)   # End date (exclusive)
+    # variable string (must be part of line in .idx file)
+    variable = 'TMP:2 m'
+    # =========================================================================
+
+    # Create list of all dates
     days = (eDATE-sDATE).days
     DATES = [sDATE + timedelta(days=d) for d in range(days)]
 
-    variable = 'TMP:2 m'       # Must be part of a line in the .idx file
-
+    # Loop through main function for all dates
     for DATE in DATES:
         download_HRRR_variable_from_pando(DATE, variable,
                                           hours=range(0, 24),
@@ -173,15 +193,19 @@ def get_single_variable_multiple_days():
 
 
 def get_multiple_variables_multiple_days():
-    # Download multiple variables from date range
+    # === User modify variable and date range =================================
+    # date range
     sDATE = date(2017, 3, 10)   # Start date
     eDATE = date(2017, 3, 13)   # End date (exclusive)
+    # variable list (must be part of line in .idx file)
+    variables = ['TMP:2 m', 'DPT:2 m', 'UGRD:10 m', 'VGRD:10 m']
+    # =========================================================================
+
+    # Create list of all dates
     days = (eDATE-sDATE).days
     DATES = [sDATE + timedelta(days=d) for d in range(days)]
 
-    # Variable strings must be part of a line in the .idx file
-    variables = ['TMP:2 m', 'DPT:2 m', 'UGRD:10 m', 'VGRD:10 m']
-
+    # Loop through main function for all dates and all variables
     for variable in variables:
         for DATE in DATES:
             download_HRRR_variable_from_pando(DATE, variable,
@@ -192,8 +216,62 @@ def get_multiple_variables_multiple_days():
                                               outdir='./')
 
 
+
+def fast_dwnld_with_multithreading():
+    # Fast download of HRRR grib2 files (single variable) with multithreading
+    from queue import Queue 
+    from threading import Thread
+
+    def worker():
+        # This is where the main download function is run.
+        # Change the hour and fxx parameters here if needed.
+        while True:
+            item = q.get()
+            # Unpack the date and variable from the item sent to this worker
+            iDATE, ivar = item
+            download_HRRR_variable_from_pando(iDATE, ivar,
+                                              hours=range(0, 24),
+                                              fxx=[0],
+                                              model='hrrr',
+                                              field='sfc',
+                                              outdir='./')
+            q.task_done()
+
+    # ===== User Modify the Variables and date range ==========================
+    variables = ['TMP:2 m', 'DPT:2 m'] # List of variable strings
+    sDATE = date(2017, 3, 10)          # Start date
+    eDATE = date(2017, 3, 13)          # End date (exclusive)
+    # =========================================================================
+
+    # Create list of dates to request
+    days = (eDATE-sDATE).days
+    DATES = [sDATE + timedelta(days=d) for d in range(days)]
+
+    # Make a list of inputs to send to the worker
+    input_list = [[d, v] for d in DATES for v in variables]
+
+    # Multithreadding using the worker
+    num_of_threads = 8
+    q = Queue()
+    for i in range(num_of_threads):
+        t = Thread(target=worker)
+        t.daemon = True
+        t.start()
+
+    # Run each item through the threads
+    for item in input_list:
+        q.put(item)
+
+    q.join() # block until all tasks are done
+
 if __name__=='__main__':
 
-    get_single_variable_single_day()
+    from datetime import datetime
+    timer = datetime.now()
+
+    #get_single_variable_single_day()
     #get_single_variable_multiple_days()
     #get_multiple_variables_multiple_days()
+    fast_dwnld_with_multithreading()
+
+    print datetime.now()-timer   
