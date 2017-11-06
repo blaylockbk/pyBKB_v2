@@ -1,20 +1,17 @@
-# Brian Blaylock
-# March 10, 2017
-# updated: July 26, 2017
-# updated: October 31, 2017               Happy Halloween
-
-"""
-Download a single HRRR variable from the Pando archive using cURL.
-More Information at: https://hrrr.chpc.utah.edu
-"""
-
-import commands
-import re
-from StringIO import StringIO
-from datetime import date, timedelta
-import os
-import urllib2
-
+# Brian Blaylock 
+# March 10, 2017 
+# updated: July 26, 2017 
+# updated: October 31, 2017               Happy Halloween 
+""" 
+Download a single variable from the HRRR archive using cURL. 
+More information at: https://hrrr.chpc.utah.edu 
+""" 
+import commands 
+import re 
+from StringIO import StringIO 
+from datetime import date, timedelta 
+import os 
+import urllib2 
 
 def download_HRRR_variable_from_pando(DATE, variable,
                                       hours=range(0, 24), fxx=[0],
@@ -85,11 +82,12 @@ def download_HRRR_variable_from_pando(DATE, variable,
         for f in fxx:
 
             # Rename the downloaded file based on the info from above
-            # e.g. HRRRfromPando_20170310_h00_f00_TMP_2_m.grib2
             if more_vars == 0:
+                # e.g. HRRRfromPando_20170310_h00_f00_TMP_2_m.grib2
                 outfile = '%s/%sfromPando_%s_h%02d_f%02d_%s.grib2' \
                        % (outdir, model.upper(), DATE.strftime('%Y%m%d'), h, f, variable.replace(':', '_').replace(' ', '_'))
             else:
+                # e.g. HRRRfromPando_20170310_h00_f00_TMP_2_m-and-5.grib2 (if more_vars=5)
                 outfile = '%s/%sfromPando_%s_h%02d_f%02d_%s-and-%s.grib2' \
                        % (outdir, model.upper(), DATE.strftime('%Y%m%d'), h, f, variable.replace(':', '_').replace(' ', '_'), more_vars)
 
@@ -170,142 +168,3 @@ def download_HRRR_variable_from_pando(DATE, variable,
             """
 
 
-
-# =============================================================================
-#   Example Usage: Modify date and variable parameters
-# =============================================================================
-def get_single_variable_single_day():
-    # Download single variable from single day
-    DATE = date(2017, 3, 10)   # Model run date
-
-    variable = 'TMP:2 m'       # Must be part of a line in the .idx file              
-
-    download_HRRR_variable_from_pando(DATE, variable,
-                                      hours=range(0, 24),
-                                      fxx=[0],
-                                      model='hrrr',
-                                      field='sfc',
-                                      more_vars=0,
-                                      outdir='./')
-
-def get_adjacent_variable_single_day():
-    # Download single variable from single day
-    DATE = date(2017, 3, 10)   # Model run date
-
-    variable = 'HGT:500 mb'       # Must be part of a line in the .idx file              
-
-    download_HRRR_variable_from_pando(DATE, variable,
-                                      hours=range(0, 24),
-                                      fxx=[0],
-                                      model='hrrr',
-                                      field='sfc',
-                                      more_vars=4,
-                                      outdir='./')
-
-def get_single_variable_multiple_days():
-    # === User modify variable and date range =================================
-    # date range
-    sDATE = date(2017, 3, 10)   # Start date
-    eDATE = date(2017, 3, 13)   # End date (exclusive)
-    # variable string (must be part of line in .idx file)
-    variable = 'TMP:2 m'
-    # =========================================================================
-
-    # Create list of all dates
-    days = (eDATE-sDATE).days
-    DATES = [sDATE + timedelta(days=d) for d in range(days)]
-
-    # Loop through main function for all dates
-    for DATE in DATES:
-        download_HRRR_variable_from_pando(DATE, variable,
-                                          hours=range(0, 24),
-                                          fxx=[0],
-                                          model='hrrr',
-                                          field='sfc',
-                                          outdir='./')
-
-
-def get_multiple_variables_multiple_days():
-    # === User modify variable and date range =================================
-    # date range
-    sDATE = date(2017, 3, 10)   # Start date
-    eDATE = date(2017, 3, 13)   # End date (exclusive)
-    # variable list (must be part of line in .idx file)
-    variables = ['TMP:2 m', 'DPT:2 m', 'UGRD:10 m', 'VGRD:10 m']
-    # =========================================================================
-
-    # Create list of all dates
-    days = (eDATE-sDATE).days
-    DATES = [sDATE + timedelta(days=d) for d in range(days)]
-
-    # Loop through main function for all dates and all variables
-    for variable in variables:
-        for DATE in DATES:
-            download_HRRR_variable_from_pando(DATE, variable,
-                                              hours=range(0, 24),
-                                              fxx=[0],
-                                              model='hrrr',
-                                              field='sfc',
-                                              outdir='./')
-
-
-
-def fast_dwnld_with_multithreading():
-    # Fast download of HRRR grib2 files (single variable) with multithreading
-    from queue import Queue 
-    from threading import Thread
-
-    def worker():
-        # This is where the main download function is run.
-        # Change the hour and fxx parameters here if needed.
-        while True:
-            item = q.get()
-            # Unpack the date and variable from the item sent to this worker
-            iDATE, ivar = item
-            download_HRRR_variable_from_pando(iDATE, ivar,
-                                              hours=range(0, 24),
-                                              fxx=[0],
-                                              model='hrrr',
-                                              field='sfc',
-                                              outdir='./')
-            q.task_done()
-
-    # ===== User Modify the Variables and date range ==========================
-    variables = ['TMP:2 m', 'DPT:2 m'] # List of variable strings
-    sDATE = date(2017, 3, 10)          # Start date
-    eDATE = date(2017, 3, 13)          # End date (exclusive)
-    # =========================================================================
-
-    # Create list of dates to request
-    days = (eDATE-sDATE).days
-    DATES = [sDATE + timedelta(days=d) for d in range(days)]
-
-    # Make a list of inputs to send to the worker
-    input_list = [[d, v] for d in DATES for v in variables]
-
-    # Multithreadding using the worker
-    num_of_threads = 8
-    q = Queue()
-    for i in range(num_of_threads):
-        t = Thread(target=worker)
-        t.daemon = True
-        t.start()
-
-    # Run each item through the threads
-    for item in input_list:
-        q.put(item)
-
-    q.join() # block until all tasks are done
-
-if __name__=='__main__':
-
-    from datetime import datetime
-    timer = datetime.now()
-
-    #get_single_variable_single_day()
-    get_adjacent_variable_single_day()
-    #get_single_variable_multiple_days()
-    #get_multiple_variables_multiple_days()
-    #fast_dwnld_with_multithreading()
-
-    print datetime.now()-timer   
