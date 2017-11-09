@@ -178,6 +178,9 @@ def get_hrrr_variable(DATE, variable,
                     os.system('rm -f %s' % (OUTDIR+NEWFILE))
                     os.system('rm -f %s' % (OUTDIR+NEWFILE+'.idx'))
 
+                # !) Alaska lontitude field is weird,
+                lon = -abs(lon)
+
                 # 5) Return some import stuff from the file
                 return {'model':model,
                         'value': value,

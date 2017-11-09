@@ -221,6 +221,55 @@ that can be calculated by only hold one value in memory (no sorting required, li
 For these rolling statistics, you could save values and update the data without
 requiring the throughput OSG provides.
 
+# Using a DAGMan Workflow
+Documentation: ['https://support.opensciencegrid.org/support/solutions/articles/5000639932-dagman-namd-example'](DAGMan on OSG)
+
+We use DAGMan to manage our workflow. DAGMan is a Directed Acyclic Graph Manager used to manage workflow of many jobs. DAGMan will help manage the resubmission of jobs that terminate early due to preemtion. "DAGMan tracks which jobs were terminated prematurely, 
+and allows you to resubmit ther terminated jobs with one command." 
+
+It is best to run a DAGMan file from a local disk, such as `/local-scratch/<username>`.
+
+### General Workflow
+|DAGMan files|Description|
+|--------------------|-|
+| `write_dagman.py`  |This python script writes the `splice_dag.dag` file, which sets the JOB, VARS, and RETRY for every job|
+| `splice_dag.dag`   |A list of jobs to run. Each JOB points to the dagman.submit file.|
+| `dagman.submit`    |The job submittion file. Contains variable `$(variable_name)` for each variable in the `splice_dag.dag` input file.|
+|`globus_transfer.sh`|Attempt to automate a globus transfer of files to CHPC.|
+|`dag.dag`           |This is the final file you submit via `condor_submit_dag dag.dag`|
+
+
+|Script files|Description|
+|-------------------|-|
+| `../daily_30/OSG_HRRR_composite_daily30.py`|Python script that performs percentile calculations for each job submitted.|
+| `../daily_30/HRRR_S3.py`|Contains some functions used by the main script above.|
+
+<center><img src='./DAGMan/OSG_DAGMan.PNG' width='80%' alt="DAGMan Workflow"></center>
+
+### DAGMan job file
+
+We need a DAGMan file to submit many jobs to the OSG. The Python Script `write_dagman.py` creates a DAGMan file called `splice_dag.dag` by looping through a set of input variables to creates a unique job for each case. The file is in the form:
+
+    JOB <unique job ID> <dagman submit file>
+    VARS <uniue job ID> <space separated list of variables>
+    RETRY <unique job ID> <number of times to retry>
+
+Example (two jobs shown):
+
+    JOB DPT_2_m.0 dagman.submit
+    VARS DPT_2_m.0 osg_python_script="OSG_HRRR_composite_daily30.py" hrrr_s3_script="HRRR_S3.py" var="DPT:2_m" month="1" day="1" hour="0" fxx="0"
+    RETRY DPT_2_m.0 10
+    JOB DPT_2_m.1 dagman.submit
+    VARS DPT_2_m.1 osg_python_script="OSG_HRRR_composite_daily30.py" hrrr_s3_script="HRRR_S3.py" var="DPT:2_m" month="1" day="1" hour="1" fxx="0"
+    RETRY DPT_2_m.1 10
+    ...
+
+The variables listed in the `splice_dag.dag` file will be used as inputs for the submit process in the dgaman.submit file for each job.
+
+### Submit a DAGMan Job
+
+Submit a DAGman task using the command: `condor_submit_dag`
+
 -----------
 -----------
 # Old discussion of first attempt statistics

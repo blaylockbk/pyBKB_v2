@@ -1,0 +1,4 @@
+SPLICE utah_1 /local-scratch/blaylockbk/dagman_example/splice_dag.dag
+JOB utah_1_noop2 /local-scratch/blaylockbk/dagman_example/splice_dag.dag NOOP
+SCRIPT POST utah_1_noop2 /local-scratch/blaylockbk/globus_transfer.sh
+PARENT utah_1 CHILD utah_1_noop2
