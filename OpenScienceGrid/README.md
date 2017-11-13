@@ -270,6 +270,37 @@ The variables listed in the `splice_dag.dag` file will be used as inputs for the
 
 Submit a DAGman task using the command: `condor_submit_dag`
 
+## Globus Transfer
+I am transfering the data from OSG to CHPC with Globus. This was a little tricky to get everything set up just right. I am transfering from the **osgconnect#stash** endpoint to the **University of Utah - CHPC DTN04 Endpoint** endpoint. Transfers can be done with the online application rather easily (simialar to WinSCP transfers). But you can be most efficient if you script it out and have it done automatically.
+
+- On OSG, load some modules: `module load python/2.7` and `module load globus-cli`
+- Login to Globus on the command line: `globus login`, and follow steps to authenticate online.
+    - https://docs.globus.org/cli/examples/
+- Need to know the endpoint UUID found here: https://www.globus.org/app/endpoints
+
+Run the following script `globus_transfer.sh` within the `dag.dag` DAGMan file:
+
+    #!/bin/bash
+    module load python/2.7
+    module load globus-cli
+
+    # Move every .h5 file from the /local-scratch/blaylock directory to my stash directory
+    mv *.h5 ~/stash/fromScratch/
+
+    # https://docs.globus.org/cli/examples/
+    # Endpoint IDs found from 'globus endpoint search Tutorial'
+    # On Globus transfer dashboard, https://www.globus.org/app/transfer,
+    # click on "Endpoints" and, the name, and copy the UUID.
+    ep1=####################################    # OSG Stash Endpoint (Never Expires)
+    ep2=####################################    # UofU Endpoint (Expires every 3 months)
+                                                # Must login to globus to reactivate.
+    
+    # recursively transfer the /stash/fromScratch/ folder from the OSG endpoint to the CHPC endpoint
+    globus transfer $ep1:~/stash/fromScratch $ep2:/~/../horel-group2/blaylock/ --recursive --label "CLI single folder"
+
+
+
+
 -----------
 -----------
 # Old discussion of first attempt statistics
