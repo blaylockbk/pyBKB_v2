@@ -14,7 +14,7 @@ mv *.h5 ~/stash/fromScratch/
 # On Globus transfer dashboard, https://www.globus.org/app/transfer,
 # click on "Endpoints" and, the name, and copy the UUID.
 ep1=9a8e5a67-6d04-11e5-ba46-22000b92c6ec    # OSG Stash Endpoint (Never Expires)
-ep2=e26201e5-6d04-11e5-ba46-22000b92c6ec    # UofU Endpoint (Expires every 10 days)
+ep2=219793b8-c8b7-11e7-9586-22000a8cbd7d    # UofU Endpoint (Expires every 3 months)
                                             # Must login to globus to reactivate.
 
 # recursively transfer the godata folder from one endpoint to another
