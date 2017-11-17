@@ -9,13 +9,13 @@ University of Utah
 Summer/Fall 2017*
 
 ## Introduction
-Weather data are collected and generated at an increasing rate, so much that novel compute strategies are requred to analyse the unprecedented voluminous "Big Data". The weather community will continue to face "Big Data" challenges with the continued and accelerated production of massive data sets of future—high resolution numerical weather prediction, ensemble numerical weather prediction, satellite data like the new GOES-16 with higher temporal, spatial, and spectral resolution than its predecessors, radar data, internet of things, and forthcoming technology.
+Weather data are collected and generated at an increasing rate, so much that novel compute strategies are required to analyze this unprecedented voluminous "Big Data". The weather community will face "Big Data" challenges with the continued and accelerated production of massive data sets (i.e. ensemble and high resolution numerical weather prediction; higher temporal, spatial, and spectral satellite data like GOES-16; weather radar, internet of things, and forthcoming technology).
 
-Terabytes of weather data are collected and generated every day by in-situ and remotely sensed observations and gridded model simulations. Much of this data is used few times or not used at all because the large amount of data is expensive to archive for extended periods of time (i.e. the HRRR model is not offically archvied)and traditional analysis methods cannot process "Big Weather Data."
+Terabytes of weather data are collected and generated every day by gridded model simulations and in-situ and remotely sensed observations. Much of this data is used few times or not used at all because this much data is expensive to archive for extended periods of time (i.e. the HRRR model is not officially archived) and traditional analysis methods cannot process "Big Weather Data."
 
-Scientists in many diciplines use grid and cloud computing infrastructors to manage workflows for processing these massive datasets<sup>1</sup>. The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a distributed [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system capable of allocating many compute resources from over 100 sites for resesearchers.<sup>5,6</sup>. Researchers submit jobs to a queue through Condor, a schedular that farms out the jobs to opportunistic, idle compute resources on the OSG when they become avialble. HTC computing should not be confused with High Performance Computing (HPC) systems where few jobs are highly optimized and completed in a short amount of time.  With HTC, more that can be learned from "Big Weather Data" if this data could be archived and analysed in more itelligent way.
+Scientists in many disciplines use grid and cloud computing infrastructures to manage workflows for processing these massive datasets<sup>1</sup>. The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a distributed [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system capable of allocating many compute resources from over 100 sites for researchers<sup>5,6</sup>. Researchers submit jobs to a queue through Condor, a scheduler that farms out the submitted jobs to opportunistic, idle compute resources on the OSG when they become available. HTC computing should not be confused with High Performance Computing (HPC) systems where few jobs are highly optimized and completed in a short amount of time.  With HTC, more can be learned from "Big Weather Data" if this data could be archived and analyzed in more intelligent way.
 
-When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend you want to bake a world-record sized cake. With HPC you would build a giant oven and bake the giant cake at once. With HTC you would bake thousands of small cakes in normal sized oven. All the baked cakes would be brought to the smae place and assembled together into the world's largest cake. For this particular case, the HTC method of creating the largest cake is the more practical solution.
+When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend you want to bake a world-record sized cake. With HPC you would build a giant oven and bake the giant cake at once. With HTC you would bake thousands of small cakes in a normal sized oven. All the baked cakes would be brought to the same place and assembled together into the world's largest cake. For this cake example, the HTC method of creating the largest cake is the more practical solution.
 
 - [OSG Home Page](https://www.opensciencegrid.org/)
 - [OSG Status and Statistics](http://display.grid.iu.edu/)
@@ -23,39 +23,39 @@ When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend yo
 - [My OSG Public](http://stash.osgconnect.net/+blaylockbk/)
 - [Globus File Transfer](http://www.globus.org)
 
-Here, I describe how the OSG system is used to efficiently compute percentile statistics of key variables from the High Resolution Rapid Refresh (HRRR) model over a three year period (2015-2018). The HRRR data is archived on the University of Utah Center for High Performance Computing's Pando archive system<sup>2</sup>. Our HRRR archive is currently over 60 TB (February 2018), and grows by over 100 GB every day.
+This document describes how the OSG system is used to efficiently compute percentile statistics of key variables from the High Resolution Rapid Refresh (HRRR) model over a three-year period (2015-2018). The HRRR data is archived on the University of Utah Center for High Performance Computing's Pando archive system<sup>2</sup>. Our HRRR archive is currently over 60 TB (February 2018), and grows by over 100 GB every day.
 
 ## About the OSG
-The Open Science Grid is a worldwide consortium of computing resourses<sup>5,6</sup>. Members of the consortium make their idle computing resources available to other researchers, many who would otherwise not have access to such facilities<sup>3</sup>. OSG has been used by researchers in particle physics, astronomy <sup>1</sup>, chemistry, and other science disciplines etc.
+The Open Science Grid is a worldwide consortium of computing resources<sup>5,6</sup>. Members of the consortium make their idle computing resources available to other researchers, many who would otherwise not have access to such facilities<sup>3</sup>. OSG has been used by researchers in particle physics, astronomy <sup>1</sup>, chemistry, and other science disciplines etc.
 
-The OSG is most useful at answering research questions that can be formulated and answered with "[embarasingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" computation workflows. While OSG provisions many compute resources, each queued task works independent of each other. There is no shared file system. For this reason, some computation are not appropriate for the OSG like workflows that rely on Message Passing Interface (MPI)<sup>4</sup>.
+The OSG is most useful at answering research questions that can be formulated and answered with "[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" workflows. While OSG provisions many compute resources, each queued task works independent of each other. There is no shared file system. For this reason, some computations are not appropriate for the OSG like workflows that rely on Message Passing Interface (MPI)<sup>4</sup>.
 
-Since these jobs use oportunistic cycles, they are at risk of being preempted by the compute resource owner. Hence, you wouldn’t want rely on OSG for real-time or operational jobs.
+Since these jobs use opportunistic cycles, they are at risk of being preempted by the compute resource owner. Hence, you wouldn’t want to rely on OSG for real-time or operational jobs.
 
-There is a learning curve to get started using the OSG, but the OSG support team has a well documented website with helpful tutorials and a responsive support staff happy to answer questions and get your jobs submitted and running.
+There is a learning curve to get started using the OSG, but the OSG support team has a well-documented website with helpful tutorials and a responsive support staff happy to answer questions and get your jobs submitted and running.
 
 ## Research Objective: Calculating HRRR Statistics
-The High Resolution Rapid Refresh (HRRR) forecast modeling system produces hourly analyses and 18 hr forecasts for the contiguous United States at 3 km grid spacing. Many people rely on these short-term forecasts for situational awareness and nowcasting. Long-term statistics of HRRR model output are of potential benefit for a variety of purposes. 
+The High Resolution Rapid Refresh (HRRR) forecast modeling system produces hourly analyses and 18 hr forecasts for the contiguous United States at 3 km grid spacing. Many people rely on these short-term forecasts for situational awareness and nowcasting<sup>8</sup>. Long-term statistics of HRRR model output are of potential benefit for a variety of purposes. 
 
-A public archive of HRRR ourput begining April 2015 is stored on an archive at the University of Utah's Center for High performance Computing known as Pando. This highly efficient, object-storage archive allows access to the thousands of files to calculate seasonal and hourly statistics (e.g. percentiles, extremes, and forecast biases) of HRRR output variables.  I have three years of [archived HRRR model output](http://hrrr.chpc.utah.edu) for model analyses (forecast time zero). Forecast hours 1-18 are also archived, but for a shorter time period. In our experience, the f00 HRRR file is a really good analysis for weather conditions provided every hour at 3 km grid for the contiguous United States. I am interested in quickly computing percentile statistics from the entire data set. With a size of 1059x1799 pixels, the HRRR CONUS domain has 1.9 million grid points that these statistics need to be calculated for. With 136 different meteorological variables (in the surface file) in the analysis hour and 18 forecast hours, there is a lot of data that could be sifted through. In return, much new data can be generated. I am focusing on the analysis hours at the moment. From these statistics we can learn what the typical weather is like for every hour of the day. To reduce computational time, multiprocessing and multithreading methods are used to download multiple files from the archive simultaneously. For embarrassingly parallel computations, the Open Science Grid is being tested as a resource that can make synthesizing model statistics possible when traditional computing facilities have memory and computational limitations. 
+A public archive of HRRR output beginning April 2015 is stored on an archive at the University of Utah's Center for High Performance Computing known as Pando. This highly efficient, object-storage archive allows access to the thousands of files to calculate seasonal and hourly statistics (e.g. percentiles, extremes, and forecast biases) of HRRR output variables.  I have three years of [archived HRRR model output](http://hrrr.chpc.utah.edu) for model analyses (forecast time zero). Forecast hours 1-18 are also archived, but for a shorter period. In our experience, the f00 HRRR file are good weather analysis provided every hour at 3 km grid for the contiguous United States. I am interested in quickly computing percentile statistics from the entire data set. With a size of 1059x1799 pixels, the HRRR CONUS domain has 1.9 million grid points that these statistics need to be calculated for. With 136 different meteorological variables (in the surface file) in the analysis hour and 18 forecast hours, there is a lot of data that could be sifted through. In return, much new data can be generated. This work focuses on the analysis hours (forecast hour zero), but statistics for forecast hours can also be calculated. From these statistics we can learn what the typical weather is like for every hour of the day. To reduce computational time, multiprocessing and multithreading methods are used to download multiple files from the archive simultaneously. For embarrassingly parallel computations, the Open Science Grid is being tested as a resource that can make synthesizing model statistics possible when traditional computing facilities have memory and computational limitations.  
 
 ## Method using the OSG
 Tens to thousands of jobs may be submitted to a queue managed by condor, which sends the jobs to compute resources around the country. If the user wishes to do further analysis on the data sets, that data may be transferred to their institution’s home computing facilities or their own personal computer.
 
-To use the OSG most effectivly, this computation task needs to be embarrassingly parallel. Thus, it is the investigator's responsiblity to formulate research questions that can be answered by embarasingly parallel computations. 
+To use the OSG most effectively, this computation task needs to be embarrassingly parallel. Thus, it is the investigator's responsibility to formulate research questions that can be answered by embarrassingly parallel computations. 
 
-Calculating 30-day running statistics for every hour of HRRR output can be done with parallel computing on OSG resources. I calculate a running 30-day statstic for every grid point and every hour of the year, including leap year. This requires 8,784 unique jobs (366 days * 24 hours a day) for each variable. Each job runs the same script for each hour on different OSG remote workers. For each job, the remote worker downloads 90 HRRR fields from the archive, one field for every hour in the thirty day window centerd on the hour of interest for all three years. For example, if the job is working on June 15, 0000 UTC, it will download hour 0000 UTC from May 31 through June 30 for the three years. The worker then calculats statistics for the 90 samples with numpy functions for the mean and the following list of percentiles: [0, 1, 2, 3, 4, 5, 10, 25, 33, 50, 66, 75, 90, 95, 96, 97, 98, 99, 100].
+Calculating 30-day running statistics for every hour of HRRR output can be done with parallel computing on OSG resources. I calculate a running 30-day statistic for every grid point and every hour of the year, including leap year. This requires 8,784 unique jobs (366 days * 24 hours a day) for each variable. Each job runs the same script for each hour on different OSG remote workers. For each job, the remote worker downloads 90 HRRR fields from the archive, one field for every hour in the thirty-day window centered on the hour of interest for all three years. For example, if the job is working on June 15, 0000 UTC, it will download hour 0000 UTC from May 31 through June 30 for the three years. The worker then calculates statistics for the 90 samples with numpy functions for the mean and the following list of percentiles: [0, 1, 2, 3, 4, 5, 10, 25, 33, 50, 66, 75, 90, 95, 96, 97, 98, 99, 100].
 
-Because there is no communication between the remote workers, HRRR fields are downloaded from the archive multiple times. We acknowledge this method sacrafices efficiency, but the time is recovered by using the High Throughput Computing framework of the OSG. Computing these statistics on the OSG for each variable takes between two and three hours while it as previously taken seven days on our local compute node. Downloading and calculating statistics on a single machine is time and memory intensive. Sending each job to different machines via the OSG provides access to many more resources and completes our job quickly.
+Because there is no communication between the remote workers, HRRR fields are downloaded from the archive multiple times. We acknowledge this method sacrifices efficiency, but the time is recovered by using the High Throughput Computing framework of the OSG. Computing these statistics on the OSG for each variable takes between two and three hours while it as previously taken seven days on our local compute node. Downloading and calculating statistics on a single machine is time and memory intensive. Sending each job to different machines via the OSG provides access to many more resources and completes our job quickly.
 
-The result of this work created a new file, one for each hour of the year, with percentile and mean 30-day statistics for every grid point in the HRRR domain for the archive period. The new data set created (over 680 GB of new data per variable stored in compressed HDF5 files) was transfered to CHPC using Globus file transfer<sup>7</sup> for further post-processing and use in various products by the MesoWest group.
+The result of this work created a new file, one for each hour of the year, with percentile and mean 30-day statistics for every grid point in the HRRR domain for the archive period. The new data set created (over 680 GB of new data per variable stored in compressed HDF5 files) was transferred to CHPC using Globus file transfer<sup>7</sup> for further post-processing and use in various products by the MesoWest group.
 
 This job can be completed for a single HRRR variable in about five hours on the OSG. The same job would have otherwise taken seven days to complete in serial on our locate compute resources.
 
 ### Example
-Statistics for 15 June at 0000 UTC are calculated using the 0000 UTC data for the 15 days before and after 15 June 15 using all the available years (2015-2017). The data values for a single varible for the entire CONUS domain are downloaded from the HRRR archive and stored in memory. We attempt to reduce the download time by using all the available processors on the remote worker. The downloaded data is in GRIB2 format with a size on the order of 1 MB per file. When the data of the file is loaded into a Numpy array, it is bloated to a size of 7 MB per file. I found it is a good idea to requires at least 6 MB on the OSG remote workers the job is submitted to. When all the data is files are downloaded, Numpy funcitons calculate the mean and the percentiles. The statistics are returned in an HDF5 file along with other data such as the number of cores on the worker used to download, the time it took to calculate the statistics, and the number of sample used to calculte the statistic. 
+Statistics for 15 June at 0000 UTC are calculated using the 0000 UTC data for the 15 days before and after 15 June 15 using all the available years (2015-2017). The data values for a single variable for the entire CONUS domain are downloaded from the HRRR archive and stored in memory. We attempt to reduce the download time by using all the available processors on the remote worker. The downloaded data is in GRIB2 format with a size on the order of 1 MB per file. When the data of the file is loaded into a Numpy array, it is bloated to a size of 7 MB per file. I found it is a good idea to requires at least 6 MB on the OSG remote workers the job is submitted to. When all the data is files are downloaded, Numpy functions calculate the mean and the percentiles. The statistics are returned in an HDF5 file along with other data such as the number of cores on the worker used to download, the time it took to calculate the statistics, and the number of sample used to calculate the statistic. 
 
-Calculating percentiles for one variable requires downloading between 0.7-1 TB from the HRRR archive (as noted before, some data are downloaded multiple times because remote workers do not communicate with each other) and will produces up to 700 GB (84 MB per file) of new data stored in HDF5 format (could possibly be smaller with some different storage techniques or if it's converted to GRIB2, but that's not as user friendly). The Latitude and Longitude for the HRRR grid is stored in a separate HDF5 file to reduce repedative data. There is no need to have every node return these values are known at each HRRR grid point.
+Calculating percentiles for one variable requires downloading between 0.7-1 TB from the HRRR archive (as noted before, some data are downloaded multiple times because remote workers do not communicate with each other) and will produces up to 700 GB (84 MB per file) of new data stored in HDF5 format (could possibly be smaller with some different storage techniques or if it's converted to GRIB2, but that's not as user friendly). The Latitude and Longitude for the HRRR grid is stored in a separate HDF5 file to reduce repetitive data. There is no need to have every node return these values are known at each HRRR grid point.
 
 In the future, when there are 2 or 3 years of additional HRRR data, this method of calculating statistics will require a computer with additional available memory. Computing the max, min, and mean of the data set is not memory intensive, but computing percentiles is memory intensive because all the values need to be stored and then sorted before finding each percentile. Approximation techniques needs to be investigated and implemented in this workflow.
 
@@ -67,7 +67,7 @@ Storage Types on OSG:
 - `~` home directory: Used for long term storage, but have a file limit of 500,000 files totaling no more than 102,400 MB.
 - `/local-scratch/blaylockbk/`: Short term storage. Files are deleted after 30 days. Fast writing, so it's good practice to run jobs on local-scratch and move output to stash.
 - `~/stash`: Medium term storage. Slower than local-scratch. No disk quota, but is not backed up. Can use the Globus transfer service to move from stash to CHPC.
-- `~/public`: Publically accessable files at [http://stash.osgconnect.net/+blaylockbk](http://stash.osgconnect.net/+blaylockbk). This data is accessible to remote workers via WGET.
+- `~/public`: Publically accessible files at [http://stash.osgconnect.net/+blaylockbk](http://stash.osgconnect.net/+blaylockbk). This data is accessible to remote workers via WGET.
 
 When I first ran my statistics in the home space, I reach 600% of my allotted storage, but only 5% of my allotted number of files. That's when I learned about the local-scratch and stash directories, where you are expected to run your jobs and keep your output files. I remove the files from OSG as soon as the output files are moved to CHPC. My current workflow is to run my job on `/local-scratch/blaylock/`, move the output files to stash, then move those files from OSG to CHPC with [Globus]('https://www.globus.org/') file transfer.
 
@@ -90,7 +90,7 @@ Since I still get errors when running on OSG, I have to do a little babysitting:
 - Check that jobs are being submitted properly by checking the queue
     - `condor_q`
 - Copy the files to local CHPC storage
-    - Can use scp to make the copy (have another python script for this), but this requiers some babysitting.
+    - Can use scp to make the copy (have another python script for this), but this requires some babysitting.
     - Transfer with Globus `globus_transfer.sh` (this should run after the DAGMan finishes)
 - Look for and rerun bad files
     - Some of the files returned from OSG are incomplete, so I check the file sizes of all the files and when I see one that is smaller than the rest I rerun the job locally.
@@ -102,7 +102,7 @@ Since I still get errors when running on OSG, I have to do a little babysitting:
 
 Containerized applications are useful when jobs have specific software requirements. OSG supports Singularity containers.
 
-A staff member at OSG created a singularity image for me to do my work in. This allows me to have pygrib installed in my python build, as well as a few other libraries, that are not provided in the default OSG python build. I could technically manage the sinularity image myself, but I haven't learned how to do that yet. It's all still very confusing to me. The image as it is now does all I need it to do at the moment.
+A staff member at OSG created a singularity image for me to do my work in. This allows me to have pygrib installed in my python build, as well as a few other libraries, that are not provided in the default OSG python build. I could technically manage the singularity image myself, but I haven't learned how to do that yet. It's all still very confusing to me. The image as it is now does all I need it to do at the moment.
 
 To run each job in the Singularity image, in the condor submission file (`condor.submit` or `dagman.submit`), you need to specify that your job is sent to an OSG remote worker that has Singularity and to send the image.  
     
@@ -154,8 +154,8 @@ I don't use these requirements, this is just an example:
 ### Using a DAGMan Workflow
 Documentation: ['https://support.opensciencegrid.org/support/solutions/articles/5000639932-dagman-namd-example'](DAGMan on OSG)
 
-We use DAGMan to manage our workflow. DAGMan is a Directed Acyclic Graph Manager used to manage workflow of many jobs. DAGMan will help manage the resubmission of jobs that terminate early due to preemtion. "DAGMan tracks which jobs were terminated prematurely, 
-and allows you to resubmit ther terminated jobs with one command." 
+We use DAGMan to manage our workflow. DAGMan is a Directed Acyclic Graph Manager used to manage workflow of many jobs. DAGMan will help manage the resubmission of jobs that terminate early due to pre-emption. "DAGMan tracks which jobs were terminated prematurely, 
+and allows you to resubmit their terminated jobs with one command." 
 
 It is best to run a DAGMan file from a local disk, such as `/local-scratch/<username>`.
 
@@ -181,7 +181,7 @@ It is best to run a DAGMan file from a local disk, such as `/local-scratch/<user
 We need a DAGMan file to submit many jobs to the OSG. The Python Script `write_dagman.py` creates a DAGMan file called `splice_dag.dag` by looping through a set of input variables to creates a unique job for each case. The file is in the form:
 
     JOB <unique job ID> <dagman submit file>
-    VARS <uniue job ID> <space separated list of variables>
+    VARS <unique job ID> <space separated list of variables>
     RETRY <unique job ID> <number of times to retry>
 
 Example (two jobs shown):
@@ -200,7 +200,7 @@ The variables listed in the `splice_dag.dag` file will be used as inputs for the
 
 Submit a DAGman task using the command: `condor_submit_dag`. 
 
-Submitted jobs are sent to remote machines when there is an opportunity to run them. Becuase the OSG jobs are run on oportunistic resources, they are at risk of being preempted when the hardware owner requests the resources. If a job fails, DAGMan can be configured to resubmit the job.
+Submitted jobs are sent to remote machines when there is an opportunity to run them. Because the OSG jobs are run on opportunistic resources, they are at risk of being preempted when the hardware owner requests the resources. If a job fails, DAGMan can be configured to resubmit the job.
 
 ### Useful `condor` commands
 - Submit a job: `condor_submit name_of_job_file.submit`
@@ -208,7 +208,7 @@ Submitted jobs are sent to remote machines when there is an opportunity to run t
 - View your jobs in the queue: `condor_q`
 - View your Jobs (auto update): `watch condor_q` ctr-z to exit
 - View individual jobs: `condor_q blaylockbk -nobatch`
-- View a usuer's jobs: `condor_q blaylockbk`
+- View a user's jobs: `condor_q blaylockbk`
 - Remove a job: `condor_rm 1234567890`
 
 I have seen about over 455 jobs running simultaneously on the OSG
@@ -230,18 +230,18 @@ It is best to save each array on "top level" of the HDF5 file. My first iteratio
 
 
 ### Globus File Transfer between OSG and CHPC
-Data Transfer of many large files is somewhat cumbersome. I used the scp command to move files from OSG to CHPC, my home institution's computing facility. The transfer rate with of my output files on OSG to CHPC is very slow with scp and it takes a long time to move the bulk of files. Transfering those files one at a time can take over a day over with scp. However, I have used multiprocessing to transfer those files in about 3 hours using 32 cores. I think the limiting factor of the transfer time is a function of the write speed to the disk and the bandwidth of the network.
+Data Transfer of many large files is somewhat cumbersome. I used the scp command to move files from OSG to CHPC, my home institution's computing facility. The transfer rate with of my output files on OSG to CHPC is very slow with scp and it takes a long time to move the bulk of files. Transferring those files one at a time can take over a day over with scp. However, I have used multiprocessing to transfer those files in about 3 hours using 32 cores. I think the limiting factor of the transfer time is a function of the write speed to the disk and the bandwidth of the network.
 
 Instead of an scp transfer, I use Globus to transfer files between OSG and CHPC. This has simplified and automated the data transfer after the jobs complete.
 
-This was a little tricky to get everything set up just right. I am transfering from the **osgconnect#stash** endpoint to the **University of Utah CHPC - Blaylock_HRRR** endpoint which is active for 3 months (set expire time to 2160 under advanced options) after it is activated. You may also use the **University of Utah - CHPC DTN04 Endpoint** endpoint, but it is only active for 10 days. Transfers can be initiated with the online application (simialar to WinSCP transfers), but it is most efficient to automate the transfer using the [Globus Command Line Interface](https://docs.globus.org/cli/examples/).
+This was a little tricky to get everything set up just right. I am transferring from the **osgconnect#stash** endpoint to the **University of Utah CHPC - Blaylock_HRRR** endpoint which is active for 3 months (set expire time to 2160 under advanced options) after it is activated. You may also use the **University of Utah - CHPC DTN04 Endpoint** endpoint, but it is only active for 10 days. Transfers can be initiated with the online application (similar to WinSCP transfers), but it is most efficient to automate the transfer using the [Globus Command Line Interface](https://docs.globus.org/cli/examples/).
 
 - On OSG, load some modules: `module load python/2.7` and `module load globus-cli`
 - Login to Globus on the command line: `globus login`, and follow steps to authenticate online.
     - https://docs.globus.org/cli/examples/
 - You need to know the endpoint UUID found here: https://www.globus.org/app/endpoints
 
-I run the following script `globus_transfer.sh` within the `dag.dag` DAGMan excution file:
+I run the following script `globus_transfer.sh` within the `dag.dag` DAGMan execution file:
 
     #!/bin/bash
     module load python/2.7
@@ -261,27 +261,27 @@ I run the following script `globus_transfer.sh` within the `dag.dag` DAGMan excu
     # recursively transfer the OSG ~/stash/fromScratch/ folder the CHPC endpoint and desired directory
     globus transfer $ep1:~/stash/fromScratch $ep2:/~/../horel-group2/blaylock/ --recursive --label "CLI single folder"
 
-Transfering the 8,784 files (680 GB) to `/horel-group2/blaylock/` tooks between 2-5 hours.
+Transferring the 8,784 files (680 GB) to `/horel-group2/blaylock/` tooks between 2-5 hours.
 
-For this case, when we consider file transfer time as part of our workflow, running the computations on the OSG and transfering the output files to CHPC is much faster than running the statistics at my home instituion. For example, the same job at CHPC on the wx4 node with 8 cores, took 7.5 days to complete whereas the jobs on OSG and transfering output to CHPC took less than 6 hours.
+For this case, when we consider file transfer time as part of our workflow, running the computations on the OSG and transferring the output files to CHPC is much faster than running the statistics at my home institution. For example, the same job at CHPC on the wx4 node with 8 cores, took 7.5 days to complete whereas the jobs on OSG and transferring output to CHPC took less than 6 hours.
 
 
 ## OSG Data Processing Statistics
-My OSG jobs typically begin running soon after submission. I've seen as many at 500 jobs run at once. The amount of time it takes for the jobs to run depends on the resources available and compute infrastrucure of the remote worker. Computing resources are different on each remote machine, so parallelized code may take different amounts of time. For example, I use multiple cores to download multiple files at once. There mayb be 4-72 cores available on each remote worker.
+My OSG jobs typically begin running soon after submission. I've seen as many at 500 jobs run at once. The amount of time it takes for the jobs to run depends on the resources available and compute infrastructure of the remote worker. Computing resources are different on each remote machine, so parallelized code may take different amounts of time. For example, I use multiple cores to download multiple files at once. There mayb be 4-72 cores available on each remote worker.
 
 Below shows how the number of cores, number of data samples, and total computation time are related. Note: This does not include the file transfer time between the OSG remote worker, the OSG head, and the CHPC file server.
 
 #### Does using multiprocessing to download data speedup the calculation time?
 My scripts utilize python's multiprocessing module to download all the HRRR files that are needed as quickly as possible. But it turns out that the number of processors are not well correlated to the speed to calculations are done.
 <img src='./figs/cores_counts_timer/TMP_2_m_CoresTimer.png'> 
-Yes, downloding with multiprocessors will speed up the average computation time, but only if you are dealing with less than 12 cores. I think what happens is that the downloading saturates the network bandwidth when eight or more files are being downloaded.
+Yes, downloading with multiprocessors will speed up the average computation time, but only if you are dealing with less than 12 cores. I think what happens is that the downloading saturates the network bandwidth when eight or more files are being downloaded.
 
 #### Is the calculation time limited by the sample size?
-I would expect the answer to this is "probably, yes", but 90 samples are not that many to worry about when you are calculating percentiles, and so the computation time between calculating percentiles for 30 or 90 samples isn't that great. If there were 1000 sample, then maybe there would be a differnce. Again, this may depend on the compute hardware on the compute nodes.
+I would expect the answer to this is "probably, yes", but 90 samples are not that many to worry about when you are calculating percentiles, and so the computation time between calculating percentiles for 30 or 90 samples isn't that great. If there were 1000 sample, then maybe there would be a difference. Again, this may depend on the compute hardware on the compute nodes.
 <img src='./figs/cores_counts_timer/TMP_2_m_CountTimer.png'> 
 
 #### How many samples are available each day?
-There is a maximum of 90 samples available for each hour when 3 years of data are available. If there are two years of dat, then the maximum number of samples is 60. There as been one leap year during the time period, so there are only 30 samples available for 29 February. There are some occasional "drop-outs" that are unexplained. For some reason some hours were not able to be downloaded. This could be cuased by missing files in the archive. But more often, the OSG node must have had a difficult time downloading all the files.
+There is a maximum of 90 samples available for each hour when 3 years of data are available. If there are two years of dat, then the maximum number of samples is 60. There as been one leap year during the time period, so there are only 30 samples available for 29 February. There are some occasional "drop-outs" that are unexplained. For some reason some hours were not able to be downloaded. This could be caused by missing files in the archive. But more often, the OSG node must have had a difficult time downloading all the files.
 <img src='./figs/cores_counts_timer/TMP_2_m_count.png'> 
 
 ## Post Processing
@@ -292,7 +292,7 @@ Video: [Rolling 30-day maximum 10 m Wind Speed](https://youtu.be/f9DEyuOeERY)
 
 ### Time Series
 It is much more efficient to store each statistical value as a key in the HDF5 file. My original method was to store the calculated percentiles as a 3D array, but that wasn't efficient to pluck values from.
-Using the 32 cores on meso4, I can create a time series from a point in 30 seconds with my new HDF5 storage order, whereas before with the 3D array it took 33 minutes to generate the same timeseries!
+Using the 32 cores on meso4, I can create a time series from a point in 30 seconds with my new HDF5 storage order, whereas before with the 3D array it took 33 minutes to generate the same time series!
 
 #### Generating Point Time Series with Multiprocessing
 I can generate a time series from a point in about 2-3 seconds using 32 cores
@@ -323,7 +323,7 @@ I can generate a time series from a point in about 2-3 seconds using 32 cores
     # HTS is the 'HRRR-statistic time series'
 
 #### Generating Point Time Series with List Comprehensions
-The time series can be generated on a single processer. The speed of these list comprehensions varies. Sometimes it takes 10 minutes, other times it take as little as one minute. I'm not sure the reasoning.
+The time series can be generated on a single processor. The speed of these list comprehensions varies. Sometimes it takes 10 minutes, other times it take as little as one minute. I'm not sure the reasoning.
     
     import h5py
     variable = 'TMP_2_m'
@@ -363,16 +363,16 @@ MesoWest station validation
 
 
 ## Conclusions
-Bottomline: OSG provides lots of computers needed for the high througput computations. That is why we need the OSG to compute HRRR statistics.
+Bottom line: OSG provides lots of computers needed for the high throughput computations. That is why we need the OSG to compute HRRR statistics.
 
-Where comercial cloud solutions may be expensive for some science applications, resources like the OSG was a better fit for our compute needs. The Open Science Grid is a computing resource that should not be overlooked by the atmospheric science community. With its parallel processing ability meaningful new knowledge will likely be achived from existing and future "Big Weather Data."
+Where commercial cloud solutions may be expensive for some science applications, resources like the OSG was a better fit for our compute needs. The Open Science Grid is a computing resource that should not be overlooked by the atmospheric science community. With its parallel processing ability meaningful new knowledge will likely be achieved from existing and future "Big Weather Data."
 
 
-## Acknowlegments
+## Acknowledgments
 This research was done using resources provided by the Open Science Grid<sup>5,6</sup>, which is supported by the National Science Foundation award 1148698, and the U.S. Department of Energy's Office of Science.
 
 
-## Referencs
+## References
 1. [Juve G., M. Rynge, E. Deelman, J-S. Vockler, and G. Berriman, 2013: Comparing FutureGrid, Amazon EC2, and Open Science Grid for Scientific Workflows. *Computing in Science & Engineering*  **15** 20-29. doi: 10.1109/MCSE.2013.44.](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6497031)
 
 2. [Blaylock, B. K., J. D. Horel, S. T. Liston, 2017: Cloud archiving and data mining of High-Resolution Rapid Refresh forecast model output. *Computers and Geosciences*. **109**, 43-50. doi: 10.1016/j.cageo.2017.08.005.](https://doi.org/10.1016/j.cageo.2017.08.005)
@@ -387,7 +387,7 @@ This research was done using resources provided by the Open Science Grid<sup>5,6
 
 7. [Globus](https://www.globus.org/)
 
-
+8. [Benjamin, S. G., and Coauthors, 2016: A North American Hourly Assimilation and Model Forecast Cycle: The Rapid Refresh. *Mon. Wea. Rev.* 144, 1669-1694, doi:10.1175/MWR-D-15-0242.1.](http://journals.ametsoc.org/doi/full/10.1175/MWR-D-15-0242.1)
 
 
 
