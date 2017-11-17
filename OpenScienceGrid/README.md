@@ -115,6 +115,15 @@ Sometimes, for unknown reasons to me, a job doesn't finish on the OSG. I used to
 
 If you are using a DAGMan workflow, there is another way to retry the failed files.
 
+**NOTE: The script need to have a non-zero exit code.** [source](https://support.opensciencegrid.org/support/discussions/topics/12000013002)  
+In python, a clean job has an exit code of zero or if you use `sys.exit()`. Need to do some error handeling to cause your script to exit if anything is broken. I use the following to exit the program if anything fails:
+
+    import sys
+    import errno
+    sys.exit(errno.EAGAIN)
+
+ [More exit code details](https://stackoverflow.com/questions/285289/exit-codes-in-python)
+
 
 ### Submit jobs with Condor 
 Users have the ability to specify machine requirements that their jobs should be run on. Users can request a certain operating system, minimum amount of memory, minimum amount of disk space, ability to run a Singularity container, and (others?).
