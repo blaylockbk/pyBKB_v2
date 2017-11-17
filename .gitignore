@@ -12,3 +12,4 @@ get_token.py
 *.npy
 
 !balloon.png
+!OSG_DAGMan.PNG

@@ -1,13 +1,19 @@
 <img src='./OSG_logo.jpg' height='200px' alt="Open Science Grid">
 
+#### High Resolution Rapid Refresh Model Analytics on the Open Science Grid
 # Lessons Learned Using the Open Science Grid
+
 *Brian Blaylock  
 Department of Atmospheric Science  
 University of Utah  
 Summer/Fall 2017*
 
 ## Introduction
-Data are collected and generated at an increasing rate, so much that novel compute strategies are requred to analyse the unprecedented voluminous "Big Data". Scientists are using grid and cloud computing infrastructors to manage workflows for processing these massive datasets<sup>1</sup>. The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a distributed [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system capable of allocating many compute resources from over 100 sites for resesearchers.<sup>5,6</sup>. Researchers submit jobs to a queue through Condor, a schedular that farms out the jobs to opportunistic, idle compute resources on the OSG when they become avialble. HTC computing should not be confused with High Performance Computing (HPC) systems where few jobs are highly optimized and completed in a short amount of time.
+Weather data are collected and generated at an increasing rate, so much that novel compute strategies are requred to analyse the unprecedented voluminous "Big Data". The weather community will continue to face "Big Data" challenges with the continued and accelerated production of massive data sets of future—high resolution numerical weather prediction, ensemble numerical weather prediction, satellite data like the new GOES-16 with higher temporal, spatial, and spectral resolution than its predecessors, radar data, internet of things, and forthcoming technology.
+
+Terabytes of weather data are collected and generated every day by in-situ and remotely sensed observations and gridded model simulations. Much of this data is used few times or not used at all because the large amount of data is expensive to archive for extended periods of time (i.e. the HRRR model is not offically archvied)and traditional analysis methods cannot process "Big Weather Data."
+
+Scientists in many diciplines use grid and cloud computing infrastructors to manage workflows for processing these massive datasets<sup>1</sup>. The [Open Science Grid](https://www.opensciencegrid.org/) (OSG) is a distributed [High Throughput Computing](https://en.wikipedia.org/wiki/High-throughput_computing) (HTC) system capable of allocating many compute resources from over 100 sites for resesearchers.<sup>5,6</sup>. Researchers submit jobs to a queue through Condor, a schedular that farms out the jobs to opportunistic, idle compute resources on the OSG when they become avialble. HTC computing should not be confused with High Performance Computing (HPC) systems where few jobs are highly optimized and completed in a short amount of time.  With HTC, more that can be learned from "Big Weather Data" if this data could be archived and analysed in more itelligent way.
 
 When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend you want to bake a world-record sized cake. With HPC you would build a giant oven and bake the giant cake at once. With HTC you would bake thousands of small cakes in normal sized oven. All the baked cakes would be brought to the smae place and assembled together into the world's largest cake. For this particular case, the HTC method of creating the largest cake is the more practical solution.
 
@@ -17,8 +23,6 @@ When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend yo
 - [My OSG Public](http://stash.osgconnect.net/+blaylockbk/)
 - [Globus File Transfer](http://www.globus.org)
 
-Terabytes of weather data are collected and generated every day by in-situ and remotely sensed observations and gridded model simulations. Much of this data is used few times or not used at all because the large amount of data is expensive to archive for extended periods of time (i.e. the HRRR model is not offically archvied) and traditional analysis methods cannot process "Big Data." With HTC,more that can be learned from "Big Weather Data" if this data could be archived and analysed in more itelligent way.
-
 Here, I describe how the OSG system is used to efficiently compute percentile statistics of key variables from the High Resolution Rapid Refresh (HRRR) model over a three year period (2015-2018). The HRRR data is archived on the University of Utah Center for High Performance Computing's Pando archive system<sup>2</sup>. Our HRRR archive is currently over 60 TB (February 2018), and grows by over 100 GB every day.
 
 ## About the OSG
@@ -26,15 +30,27 @@ The Open Science Grid is a worldwide consortium of computing resourses<sup>5,6</
 
 The OSG is most useful at answering research questions that can be formulated and answered with "[embarasingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)" computation workflows. While OSG provisions many compute resources, each queued task works independent of each other. There is no shared file system. For this reason, some computation are not appropriate for the OSG like workflows that rely on Message Passing Interface (MPI)<sup>4</sup>.
 
+Since these jobs use oportunistic cycles, they are at risk of being preempted by the compute resource owner. Hence, you wouldn’t want rely on OSG for real-time or operational jobs.
+
 There is a learning curve to get started using the OSG, but the OSG support team has a well documented website with helpful tutorials and a responsive support staff happy to answer questions and get your jobs submitted and running.
 
 ## Research Objective: Calculating HRRR Statistics
-I have three years of [archived HRRR model output](http://hrrr.chpc.utah.edu) for forecast hour zero. Forecasts 1-18 are also archived, but for a shorter time period. In our experience, the f00 HRRR file is a really good analysis for weather conditions provided every hour at 3 km grid for the contiguous United States. I am interested in quickly computing percentile statistics from the entire data set. With a size of 1059x1799 pixels, the HRRR CONUS domain has 1.9 million grid points that these statistics need to be calculated for. With 136 different meteorological variables (in the surface file) in the analysis hour and 18 forecast hours, there is a lot of data that could be sifted through. I am focusing on the analysis hours at the moment. From these statistics we can learn what the typical weather is like for every hour of the day.
+The High Resolution Rapid Refresh (HRRR) forecast modeling system produces hourly analyses and 18 hr forecasts for the contiguous United States at 3 km grid spacing. Many people rely on these short-term forecasts for situational awareness and nowcasting. Long-term statistics of HRRR model output are of potential benefit for a variety of purposes. 
+
+A public archive of HRRR ourput begining April 2015 is stored on an archive at the University of Utah's Center for High performance Computing known as Pando. This highly efficient, object-storage archive allows access to the thousands of files to calculate seasonal and hourly statistics (e.g. percentiles, extremes, and forecast biases) of HRRR output variables.  I have three years of [archived HRRR model output](http://hrrr.chpc.utah.edu) for model analyses (forecast time zero). Forecast hours 1-18 are also archived, but for a shorter time period. In our experience, the f00 HRRR file is a really good analysis for weather conditions provided every hour at 3 km grid for the contiguous United States. I am interested in quickly computing percentile statistics from the entire data set. With a size of 1059x1799 pixels, the HRRR CONUS domain has 1.9 million grid points that these statistics need to be calculated for. With 136 different meteorological variables (in the surface file) in the analysis hour and 18 forecast hours, there is a lot of data that could be sifted through. In return, much new data can be generated. I am focusing on the analysis hours at the moment. From these statistics we can learn what the typical weather is like for every hour of the day. To reduce computational time, multiprocessing and multithreading methods are used to download multiple files from the archive simultaneously. For embarrassingly parallel computations, the Open Science Grid is being tested as a resource that can make synthesizing model statistics possible when traditional computing facilities have memory and computational limitations. 
 
 ## Method using the OSG
-To use the OSG most effectivly, this computation task needs to be embarrassingly parallel. Thus, I have framed the research questions I want answered in an embarrassingly parallel framework. I calculate a running 30-day statstic for every grid point and every hour of the year, including leap year. This requires 8,784 unique jobs (366 days * 24 hours a day) for each variable. Each job runs the same script for each hour on different OSG remote workers. For each job, the remote worker downloads 90 HRRR fields from the archive, one field for every hour in the thirty day window centerd on the hour of interest for all three years. For example, if the job is working on June 15, 0000 UTC, it will download hour 0000 UTC from May 31 through June 30 for the three years. The worker then calculats statistics for the 90 samples with numpy functions for the mean and the following list of percentiles: [0, 1, 2, 3, 4, 5, 10, 25, 33, 50, 66, 75, 90, 95, 96, 97, 98, 99, 100].
+Tens to thousands of jobs may be submitted to a queue managed by condor, which sends the jobs to compute resources around the country. If the user wishes to do further analysis on the data sets, that data may be transferred to their institution’s home computing facilities or their own personal computer.
+
+To use the OSG most effectivly, this computation task needs to be embarrassingly parallel. Thus, it is the investigator's responsiblity to formulate research questions that can be answered by embarasingly parallel computations. 
+
+Calculating 30-day running statistics for every hour of HRRR output can be done with parallel computing on OSG resources. I calculate a running 30-day statstic for every grid point and every hour of the year, including leap year. This requires 8,784 unique jobs (366 days * 24 hours a day) for each variable. Each job runs the same script for each hour on different OSG remote workers. For each job, the remote worker downloads 90 HRRR fields from the archive, one field for every hour in the thirty day window centerd on the hour of interest for all three years. For example, if the job is working on June 15, 0000 UTC, it will download hour 0000 UTC from May 31 through June 30 for the three years. The worker then calculats statistics for the 90 samples with numpy functions for the mean and the following list of percentiles: [0, 1, 2, 3, 4, 5, 10, 25, 33, 50, 66, 75, 90, 95, 96, 97, 98, 99, 100].
 
 Because there is no communication between the remote workers, HRRR fields are downloaded from the archive multiple times. We acknowledge this method sacrafices efficiency, but the time is recovered by using the High Throughput Computing framework of the OSG. Computing these statistics on the OSG for each variable takes between two and three hours while it as previously taken seven days on our local compute node. Downloading and calculating statistics on a single machine is time and memory intensive. Sending each job to different machines via the OSG provides access to many more resources and completes our job quickly.
+
+The result of this work created a new file, one for each hour of the year, with percentile and mean 30-day statistics for every grid point in the HRRR domain for the archive period. The new data set created (over 680 GB of new data per variable stored in compressed HDF5 files) was transfered to CHPC using Globus file transfer<sup>7</sup> for further post-processing and use in various products by the MesoWest group.
+
+This job can be completed for a single HRRR variable in about five hours on the OSG. The same job would have otherwise taken seven days to complete in serial on our locate compute resources.
 
 ### Example
 Statistics for 15 June at 0000 UTC are calculated using the 0000 UTC data for the 15 days before and after 15 June 15 using all the available years (2015-2017). The data values for a single varible for the entire CONUS domain are downloaded from the HRRR archive and stored in memory. We attempt to reduce the download time by using all the available processors on the remote worker. The downloaded data is in GRIB2 format with a size on the order of 1 MB per file. When the data of the file is loaded into a Numpy array, it is bloated to a size of 7 MB per file. I found it is a good idea to requires at least 6 MB on the OSG remote workers the job is submitted to. When all the data is files are downloaded, Numpy funcitons calculate the mean and the percentiles. The statistics are returned in an HDF5 file along with other data such as the number of cores on the worker used to download, the time it took to calculate the statistics, and the number of sample used to calculte the statistic. 
@@ -337,11 +353,19 @@ The time series can be generated on a single processer. The speed of these list 
  - The OSG appears to run faster in the early morning. Maybe less people are on it.
  - I set up SSH keys on meso4, but had trouble setting up SSH keys on Putty, so I gave up.
 
+## Use cases
+Among the many applications for HRRR composite statistics (e.g. renewable energy and agriculture), the focus of this work is to assist incident meteorologists who are responsible for giving weather forecasts to wild fire managers. Forecasters assigned to an incident can look at composite statistics to become familiar with numerical model performance for an area they may be unfamiliar with.
+
+IMET and fire weather managers
+
+MesoWest station validation
+
+
 
 ## Conclusions
 Bottomline: OSG provides lots of computers needed for the high througput computations. That is why we need the OSG to compute HRRR statistics.
 
-Where comercial cloud solutions may be expensive for some science applications, resources like the OSG was a better fit for our compute needs. 
+Where comercial cloud solutions may be expensive for some science applications, resources like the OSG was a better fit for our compute needs. The Open Science Grid is a computing resource that should not be overlooked by the atmospheric science community. With its parallel processing ability meaningful new knowledge will likely be achived from existing and future "Big Weather Data."
 
 
 ## Acknowlegments
@@ -361,7 +385,7 @@ This research was done using resources provided by the Open Science Grid<sup>5,6
 
 6. [Sfiligoi, I., D. Bradley, B. Holzman, P. Mhashilkar, S. Padhi, and F. Wurthwein, 2009: The Pilot Way to Grid Resources Using glideinWMS, *2009 WRI World Congress on Computer Science and Information Engineering*, **2**, 428–432. doi:10.1109/CSIE.2009.950.](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5171374)
 
-
+7. [Globus](https://www.globus.org/)
 
 
 
