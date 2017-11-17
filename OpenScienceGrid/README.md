@@ -174,7 +174,7 @@ It is best to run a DAGMan file from a local disk, such as `/local-scratch/<user
 | `../daily_30/OSG_HRRR_composite_daily30.py`|Python script that performs percentile calculations for each job submitted.|
 | `../daily_30/HRRR_S3.py`|Contains some functions used by the main script above.|
 
-<center><img src='./DAGMan/OSG_DAGMan.PNG' width='80%' alt="DAGMan Workflow"></center>
+<center><img src='./DAGMan/OSG_DAGMan.png' width='80%' alt="DAGMan Workflow"></center>
 
 #### DAGMan job file
 
