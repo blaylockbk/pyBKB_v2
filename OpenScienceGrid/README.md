@@ -22,6 +22,7 @@ When I was first introduced to HTC, I was told of the "Cake Analogy". Pretend yo
 - [OSG Help Desk](https://support.opensciencegrid.org/support/home)
 - [My OSG Public](http://stash.osgconnect.net/+blaylockbk/)
 - [Globus File Transfer](http://www.globus.org)
+- [Globus CLI Reference](https://docs.globus.org/cli/reference/)
 
 This document describes how the OSG system is used to efficiently compute percentile statistics of key variables from the High Resolution Rapid Refresh (HRRR) model over a three-year period (2015-2018). The HRRR data is archived on the University of Utah Center for High Performance Computing's Pando archive system<sup>2</sup>. Our HRRR archive is currently over 60 TB (February 2018), and grows by over 100 GB every day.
 
@@ -174,7 +175,7 @@ It is best to run a DAGMan file from a local disk, such as `/local-scratch/<user
 | `../daily_30/OSG_HRRR_composite_daily30.py`|Python script that performs percentile calculations for each job submitted.|
 | `../daily_30/HRRR_S3.py`|Contains some functions used by the main script above.|
 
-<center><img src='./DAGMan/OSG_DAGMan.png' width='80%' alt="DAGMan Workflow"></center>
+<center><img src='./OSG_DAGMan.png' width='80%' alt="DAGMan Workflow"></center>
 
 #### DAGMan job file
 
@@ -210,6 +211,7 @@ Submitted jobs are sent to remote machines when there is an opportunity to run t
 - View individual jobs: `condor_q blaylockbk -nobatch`
 - View a user's jobs: `condor_q blaylockbk`
 - Remove a job: `condor_rm 1234567890`
+- Check error for jobs in a hold state: `condor_q blaylockbk -hold`
 
 I have seen about over 455 jobs running simultaneously on the OSG
 The total time to calculate hourly statistics on OSG takes about 3 hours. This same work would otherwise take over 7 days if I ran this on one node at CHPC.

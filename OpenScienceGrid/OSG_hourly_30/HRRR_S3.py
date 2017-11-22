@@ -14,6 +14,20 @@ import re
 import numpy as np
 import multiprocessing
 
+def wind_uv_to_spd(U, V):
+    """
+    Calculates the wind speed from the u and v wind components
+    Inputs:
+      U = west / east direction(wind from the west is positive, from the east is negative)
+      V = south / noth direction(wind from the south is positive, from the north is negative)
+    """
+    try:
+        WSPD = np.sqrt(np.square(U) + np.square(V))
+    except:
+        # why didn't numpy work???
+        WSPD = (U*U + V*V)**(.5)
+    return WSPD
+
 def get_hrrr_variable(DATE, variable,
                       fxx=0,
                       model='hrrr',

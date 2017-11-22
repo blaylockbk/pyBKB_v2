@@ -1,8 +1,8 @@
 Universe = vanilla
 Requirements = HAS_SINGULARITY == True
-request_memory = 6 GB
+request_memory = 8 GB
 +SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-blaylockbk:latest/"
-Executable = ../daily_30/OSG_HRRR_run_this.sh
+Executable = ../OSG_hourly_30/OSG_HRRR_run_this.sh
 Error = log/job.err.$(Cluster)-$(Process)
 Output = log/job.out.$(Cluster)-$(Process)
 Log = log/job.log.$(Cluster)

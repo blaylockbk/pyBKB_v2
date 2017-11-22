@@ -1,4 +1,4 @@
-SPLICE utah_1 /local-scratch/blaylockbk/dagman_example/splice_dag.dag
-JOB utah_1_noop2 /local-scratch/blaylockbk/dagman_example/splice_dag.dag NOOP
-SCRIPT POST utah_1_noop2 /local-scratch/blaylockbk/globus_transfer.sh
+SPLICE utah_1 /uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/OpenScienceGrid/DAGMan/splice_dag.dag
+JOB utah_1_noop2 /uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/OpenScienceGrid/DAGMan/splice_dag.dag NOOP
+SCRIPT POST utah_1_noop2 /uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/OpenScienceGrid/DAGMan/globus_transfer.sh
 PARENT utah_1 CHILD utah_1_noop2
