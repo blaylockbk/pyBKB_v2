@@ -275,16 +275,18 @@ Below shows how the number of cores, number of data samples, and total computati
 
 #### Does using multiprocessing to download data speedup the calculation time?
 My scripts utilize python's multiprocessing module to download all the HRRR files that are needed as quickly as possible. But it turns out that the number of processors are not well correlated to the speed to calculations are done.
-<img src='./figs/cores_counts_timer/TMP_2_m_CoresTimer.png'> 
 Yes, downloading with multiprocessors will speed up the average computation time, but only if you are dealing with less than 12 cores. I think what happens is that the downloading saturates the network bandwidth when eight or more files are being downloaded.
 
 #### Is the calculation time limited by the sample size?
 I would expect the answer to this is "probably, yes", but 90 samples are not that many to worry about when you are calculating percentiles, and so the computation time between calculating percentiles for 30 or 90 samples isn't that great. If there were 1000 sample, then maybe there would be a difference. Again, this may depend on the compute hardware on the compute nodes.
-<img src='./figs/cores_counts_timer/TMP_2_m_CountTimer.png'> 
 
 #### How many samples are available each day?
 There is a maximum of 90 samples available for each hour when 3 years of data are available. If there are two years of dat, then the maximum number of samples is 60. There as been one leap year during the time period, so there are only 30 samples available for 29 February. There are some occasional "drop-outs" that are unexplained. For some reason some hours were not able to be downloaded. This could be caused by missing files in the archive. But more often, the OSG node must have had a difficult time downloading all the files.
-<img src='./figs/cores_counts_timer/TMP_2_m_count.png'> 
+
+<img src='./OSG_TMP2m_JobStats.png'>
+<img src='./OSG_DPT2m_JobStats.png'>
+<img src='./OSG_UVGRD10m_JobStats.png'>
+
 
 ## Post Processing
 ### Plot Maps
