@@ -283,9 +283,10 @@ I would expect the answer to this is "probably, yes", but 90 samples are not tha
 #### How many samples are available each day?
 There is a maximum of 90 samples available for each hour when 3 years of data are available. If there are two years of dat, then the maximum number of samples is 60. There as been one leap year during the time period, so there are only 30 samples available for 29 February. There are some occasional "drop-outs" that are unexplained. For some reason some hours were not able to be downloaded. This could be caused by missing files in the archive. But more often, the OSG node must have had a difficult time downloading all the files.
 
-<img src='./OSG_TMP2m_JobStats.png'>
-<img src='./OSG_DPT2m_JobStats.png'>
-<img src='./OSG_UVGRD10m_JobStats.png'>
+[Notebook for figures below](https://github.com/blaylockbk/pyBKB_v2/blob/master/OpenScienceGrid/OSG_JOB_STATS.ipynb)
+<img src='./figs/OSG_TMP2m_JobStats.png'>
+<img src='./figs/OSG_DPT2m_JobStats.png'>
+<img src='./figs/OSG_UVGRD10m_JobStats.png'>
 
 
 ## Post Processing
@@ -325,6 +326,10 @@ I can generate a time series from a point in about 2-3 seconds using 32 cores
     HTS = p.map(get_point_MP, args) 
     p.close()
     # HTS is the 'HRRR-statistic time series'
+
+<img src='./figs/TS_WBB_TMP2m_p05p95.png'>
+<img src='./figs/TS_WBB_TMP2m_p05p50p95_h18.png'>
+<img src='./figs/TS_WBB_DPT2m_p05p50p95_h18.png'>
 
 #### Generating Point Time Series with List Comprehensions
 The time series can be generated on a single processor. The speed of these list comprehensions varies. Sometimes it takes 10 minutes, other times it take as little as one minute. I'm not sure the reasoning.
