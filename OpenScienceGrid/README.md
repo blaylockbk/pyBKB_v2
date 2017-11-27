@@ -291,84 +291,39 @@ There is a maximum of 90 samples available for each hour when 3 years of data ar
 
 ## Post Processing
 ### Plot Maps
+[Python Notebook: Make Map](https://github.com/blaylockbk/pyBKB_v2/blob/master/OpenScienceGrid/map_OSG_statistics.ipynb)
 A map of the statistical data: 
 
 Video: [Rolling 30-day maximum 10 m Wind Speed](https://youtu.be/f9DEyuOeERY)
 
 ### Time Series
+[Python Notebook: Make Time Series](https://github.com/blaylockbk/pyBKB_v2/blob/master/OpenScienceGrid/plot_OSG_statistics_TimeSeries.ipynb)
+
 It is much more efficient to store each statistical value as a key in the HDF5 file. My original method was to store the calculated percentiles as a 3D array, but that wasn't efficient to pluck values from.
 Using the 32 cores on meso4, I can create a time series from a point in 30 seconds with my new HDF5 storage order, whereas before with the 3D array it took 33 minutes to generate the same time series!
 
 #### Generating Point Time Series with Multiprocessing
-I can generate a time series from a point in about 2-3 seconds using 32 cores
-
-    import h5py
-    import multiprocessing
-    variable = 'TMP_2_m'
-    DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/daily30_20150418-20170801/%s/' % (variable)
-    months = range(1,13)
-    days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    hours = range(24)
-
-    def get_point_MP(inputs):
-        FILE, STAT, ROW, COL = inputs
-        with h5py.File(FILE, 'r') as f:
-            return f[STAT][ROW][COL]
-
-    ROW = 10
-    COL = 10
-    STAT = 'mean'
-    args = [[DIR+'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % \
-            (variable, month, day, hour), STAT, ROW, COL] \
-            for month in months for day in range(1,days[month-1]+1) for hour in hours]
-    num_proc = multiprocessing.cpu_count()
-    p = multiprocessing.Pool(num_proc)
-    HTS = p.map(get_point_MP, args) 
-    p.close()
-    # HTS is the 'HRRR-statistic time series'
+After moving the statistics output from the OSG to CHPC, I can generate time series at a point location for a statistic and all hours of the year in about 3 seconds using 32 cores.
 
 <img src='./figs/TS_WBB_TMP2m_p05p95.png'>
+
+Looking at all hours at once can look somewhat noisey. Instead, it may be helpful to view a single hour of the day. Below shows temperature and dew point at WBB at 1800 UTC (local noon) for every day of the year.
 <img src='./figs/TS_WBB_TMP2m_p05p50p95_h18.png'>
 <img src='./figs/TS_WBB_DPT2m_p05p50p95_h18.png'>
-
-#### Generating Point Time Series with List Comprehensions
-The time series can be generated on a single processor. The speed of these list comprehensions varies. Sometimes it takes 10 minutes, other times it take as little as one minute. I'm not sure the reasoning.
-    
-    import h5py
-    variable = 'TMP_2_m'
-    DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/daily30_20150418-20170801/%s/' % (variable)
-    months = range(1,13)
-    days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    hours = range(24)
-
-    def get_point(FILE, STAT, ROW, COL):
-        with h5py.File(FILE, 'r') as f:
-            return f[STAT][ROW][COL]
-
-    # Pluck the value at point (10, 10)
-    ROW = 10
-    COL = 10
-    STAT = 'mean'
-    HTS = [get_point(DIR+'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % \
-           (variable, month, day, hour), STAT, ROW, COL) \
-           for month in months for day in range(1,days[month-1]+1) for hour in hours]
-    # HTS is the 'HRRR-statistic Time Series'
-
 
 ---------
 
 
 ## Other OSG Tidbits
- - The OSG appears to run faster in the early morning. Maybe less people are on it.
+ - The OSG appears to run faster in the early morning. Maybe less people are on it and more remote resources are available.
  - I set up SSH keys on meso4, but had trouble setting up SSH keys on Putty, so I gave up.
 
 ## Use cases
-Among the many applications for HRRR composite statistics (e.g. renewable energy and agriculture), the focus of this work is to assist incident meteorologists who are responsible for giving weather forecasts to wild fire managers. Forecasters assigned to an incident can look at composite statistics to become familiar with numerical model performance for an area they may be unfamiliar with.
+Among the many applications for HRRR composite statistics (e.g. renewable energy and agriculture), the focus of this work is to assist incident meteorologists who are responsible for giving weather forecasts to wild fire managers. Forecasters assigned to an incident can look at composite statistics to become familiar with numerical model performance for an area they may be unfamiliar with. Compare those statistics with recent model runs and recent observations.
 
 IMET and fire weather managers
 
 MesoWest station validation
-
 
 
 ## Conclusions
@@ -400,33 +355,17 @@ This research was done using resources provided by the Open Science Grid<sup>5,6
 
 
 
-
-
 -----------
 -----------
 # Old discussion of first attempt statistics
 Because I only have 2.5 years of data, a loop showing a map of the maximum or minimum values appears to show features of two underlying weather features move around the map. These are caused by the extreme events for the day
 
-Python multiprocessing is easy to utilize, but doesn't really gain me any ground for what I'm doing. Primarily, multiprocessing is used to speed up the downloads, but it doesn't appear it makes much difference in the compute time. Below shows a scatter plot for 288 files of the number of cores used in the computation in relation to the number of seconds it took to complete the computations. Something to keep in mind is that some of these are calculating statistics for a high sample size, while some are calculating for a fewer sample size.
+Python multiprocessing is easy to utilize, but doesn't really gain me much ground for what I'm doing. Primarily, multiprocessing is used to speed up the downloads, but it doesn't appear it makes much difference in the compute time. The download speed becomes saturated after 8 cores are used.
 
-This is nice for these brute-force percentile computations when they need to be
+The OSG resources are nice for these brute-force percentile computations when they need to be
 re-run. For example, if you ran these calculation every week or every month, on 
 your own computer it would take over 7 days. On OSG it only takes several hours.
-However, you can get away from doing this for more simple calculations (i.e. sum, mean, max, min, RMSE)
-that can be calculated by only hold one value in memory (no sorting required, like there is for the percentile calculation).
-For these rolling statistics, you could save values and update the data without
-requiring the throughput OSG provides.
-
-Images
-num of cores/compute time
-
-number of samples/compute time
-
-each data point/number of samples
-
-point time series
-
-point time series with mesowest observations
+However, you can get away from doing this for more simple calculations (i.e. sum, mean, max, min, RMSE) that can be calculated by only hold one value in memory (no sorting required, like there is for the percentile calculation). For these rolling statistics, you could save values and update the data without requiring the throughput OSG provides.
 
 ### Example
 To give you an idea of the speed of computing on OSG, I have a job that would take about 2 hours to run on the meso4 server, which has 32 processors, and created 288 ~65MB files. In comparison, I submitted the same job to the OSG, which ran in about 15 minutes. The difference is that I ran the 288 jobs on meso4 in serial, whereas I ran the 288 jobs simultaneously on the OSG, each with between 8-48 processors,as soon as the computing resources become available. If you don't account for the time in the queue waiting for resources to become available, it takes less than one minute (typically between 10-60 seconds with an average time of 30 seconds) to complete the computations on the 8,000+ cores. The trade off is in the transfer time...transferring the files from the compute node (farmed out somewhere in the United States) to my OSG home directory, and then from the OSG home directory to meso4 via scp. The transfer of files from OSG to meso4 can take up to 24 minutes if done in serial (about 4-5 seconds per file, and need to transfer 288 files).
@@ -436,4 +375,4 @@ My first attempt calculated the hourly statistics for each month, a job that cou
 
 I didn't calculate as many statistics as I had before, only computing the mean, max, min and [1, 5, 10, 90, 95, 99] percentiles. 
 
-I origianally stored the statistics data in NetCDF files, but these filese were so bloated it would have been too much data to store in memory. I used compression level=1 which reduced a 180 MB file to a 65 MB file. I later changed to HDF5 which has reduced the file sizes substantially (83 MB for a file with many more percintles stored). This was a smart move especially after I doubled the number of calculated statistics. The file size as HDF5 with the 20 statistics was about the same size as the NetCDF file with the 9 statistics.
+I origianally stored the statistics data in NetCDF files, but these filese were so bloated it would have been too much data to store in memory. I used compression level=1 which reduced a 180 MB file to a 65 MB file. I later changed to HDF5 which has reduced the file sizes substantially (83 MB per file for a file with many more percentiles stored). Using HDF5 instead of NetCDF was a smart move, especially after I doubled the number of calculated statistics. The file size as HDF5 with the 20 statistics was about the same size as the NetCDF file with the 9 statistics.
