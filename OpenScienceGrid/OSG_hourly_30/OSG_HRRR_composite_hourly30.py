@@ -105,10 +105,11 @@ for y in years:
     except:
         print 'Not a valid date: datetime(%s, %s, %s, %s)' % (y, month, day, hour)
         continue
-    begin = centerDATE-timedelta(days=15)
-    end = centerDATE+timedelta(days=15)
-    chunk = [begin+timedelta(days=x) for x in range(0,(end-begin).days) if begin+timedelta(days=x) > sDATE]
-    validDATES += chunk
+    if centerDATE <= eDATE:
+        begin = centerDATE-timedelta(days=15)
+        end = centerDATE+timedelta(days=15)
+        chunk = [begin+timedelta(days=x) for x in range(0,(end-begin).days) if begin+timedelta(days=x) > sDATE]
+        validDATES += chunk
 requestDATES = np.array([d-timedelta(hours=fxx) for d in validDATES])
 
 print "  Requesting %s Samples" % len(requestDATES)
@@ -147,8 +148,8 @@ if len(requestDATES) != 0:
     print "    Retrieved %s/%s expected samples for calculations --- %.2f%% \n" % (len(result), len(requestDATES), percentage_retrieved)
 
     # Exit job if result has length zero
-    if percentage_retrieved < 80:
-        print '!!! The results array collected less than 80% of the expected samples'
+    if percentage_retrieved < 90:
+        print '!!! The results array collected less than 90% of the expected samples'
         print '!!! Exit with exit code 74'
         sys.exit(os.EX_IOERR)
 
