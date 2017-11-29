@@ -219,12 +219,13 @@ The total time to calculate hourly statistics on OSG takes about 3 hours. This s
 
 ## Data Created
 
-|File Name  | Total Size           |Images | Transfer OSG --> CHPC | Run time on OSG |
-|-----------|----------------------|-------|-----------------------|-----------------|
-|TMP:2 m    | 685 GB (~82 MB/file) |8.87 GB| 6.5 hours (8 cores)   |                 |
-|DPT:2 m    | 691 GB (~84 MB/file) |GB     | 2 hours (32 cores)    | 3 hours         |
-|WIND:10 m  | 704 GB (~87 MB/file) |8.98 GB| 2.5 hours (32 cores)  |                 |
-|REFC:entire| 335 GB (~43 MB/file  |GB     | hours (cores)         |                 |
+|File Name  | Total Size           |
+|-----------|----------------------|
+|TMP:2 m    | 685 GB (~82 MB/file) |
+|DPT:2 m    | 690 GB (~84 MB/file) |
+|WIND:10 m  | 790 GB (~94 MB/file) |
+|WIND:80 m  |  (~97 MB/file)|
+|REFC:entire|  |
 |LatLon     | 184 MB |
 
 ### A note about saving HDF5 files:
