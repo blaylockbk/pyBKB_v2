@@ -288,7 +288,15 @@ There is a maximum of 90 samples available for each hour when 3 years of data ar
 <img src='./figs/OSG_TMP2m_JobStats.png'>
 <img src='./figs/OSG_DPT2m_JobStats.png'>
 <img src='./figs/OSG_UVGRD10m_JobStats.png'>
+<img src='./figs/OSG_UVGRD80m_JobStats.png'>
 
+Statistics for these four HRRR variables:
+- 2 m temperature
+- 2 m dew point
+- 10 m wind speed (calculated from U and V)
+- 80 m wind speed (calculated from U and V))
+
+created **3 TB** of new data. The complete process would take 2-3 days of continuous computation (I did some babysitting, so it took a bit longer). This is much better than the four seeks it would take at our local CHPC computer facility. 
 
 ## Post Processing
 ### Plot Maps
@@ -306,11 +314,16 @@ Using the 32 cores on meso4, I can create a time series from a point in 30 secon
 #### Generating Point Time Series with Multiprocessing
 After moving the statistics output from the OSG to CHPC, I can generate time series at a point location for a statistic and all hours of the year in about 3 seconds using 32 cores.
 
-<img src='./figs/TS_WBB_TMP2m_p05p95.png'>
+Below shows the 5th, 50th, and 95th percentiles at WBB for every day of the yea, overlaid with MesoWest observations from 2017.
+<img src='./figs/TS_WBB_TMP2m_p05p50p95_MW.png'>
 
-Looking at all hours at once can look somewhat noisey. Instead, it may be helpful to view a single hour of the day. Below shows temperature and dew point at WBB at 1800 UTC (local noon) for every day of the year.
-<img src='./figs/TS_WBB_TMP2m_p05p50p95_h18.png'>
-<img src='./figs/TS_WBB_DPT2m_p05p50p95_h18.png'>
+Looking at all hours at once can look somewhat noisy. Instead, it may be helpful to view a single hour of the day. Below shows some percentiles for temperature and wind speed at WBB at 1800 UTC (local noon) for every day of the year.
+<img src='./figs/TS_WBB_TMP2m_p00p05p25p50p75p95p100_h18.png'>
+<img src='./figs/TS_WBB_UVGRD10m_p00p05p25p50p75p95p100_h18.png'>
+
+We may also look at a shorter periods, and compare percentiles for every hour with the MesoWest observations and the HRRR analysis for the same period. Greys are the percentiles black is the MesoWest observations in 2017, and red is the HRRR analysis (f00) for 2017.
+<img src='./figs/TS_WBB_TMP2m_p00p05p25p50p75p95p100_Jan05-15_MW_HRRR.png'>
+<img src='./figs/TS_WBB_UVGRD10m_p00p05p25p50p75p95p100_Jan05-15_MW_HRRR.png'>
 
 ---------
 
