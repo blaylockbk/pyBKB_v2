@@ -140,10 +140,19 @@ options = {1:{'var'        : 'TMP:2 m',
               'rmse max'   : 5, 
               'mean cmap'  : 'PiYG',              
               'WIND'       : True},
+           6:{'var'        : 'HGT:500 mb',
+              'name'       : '500 hPa Height',
+              'mean label' : r'$\Delta$ 500 hPa Height (m)',
+              'rmse label' : r'RMSE 500 hPa Height (m)',
+              'save prefix': 'HGT500mb',
+              'mean maxmin': [2, -2],
+              'rmse max'   : 5, 
+              'mean cmap'  : 'RdGy',              
+              'WIND'       : True},
           }
 
 # Choose your option
-option = 2
+option = 1
 
 o = options[option]
 var = o['var']
@@ -159,8 +168,8 @@ for f in range(1, 19):
 
         # Date Range
         hour = h
-        sDATE = datetime(2017, 8, 10, hour)
-        eDATE = datetime(2017, 10, 10, hour)
+        sDATE = datetime(2017, 9, 1, hour)
+        eDATE = datetime(2017, 12, 1, hour)
         days = (eDATE-sDATE).days
         date_list = np.array([sDATE + timedelta(days=x) for x in range(0, days)])
 

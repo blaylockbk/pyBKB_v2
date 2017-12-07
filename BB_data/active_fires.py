@@ -152,6 +152,8 @@ def map_fires_date_range(sDATE, eDATE):
 
 if __name__ == "__main__":
     
-    sDATE = datetime(2017, 1, 1)
-    eDATE = datetime(2017, 10, 13)
-    map_fires_date_range(sDATE, eDATE)
+    #sDATE = datetime(2017, 1, 1)
+    #eDATE = datetime(2017, 10, 13)
+    #map_fires_date_range(sDATE, eDATE)
+
+    f = get_fires()
