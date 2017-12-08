@@ -152,7 +152,7 @@ options = {1:{'var'        : 'TMP:2 m',
           }
 
 # Choose your option
-option = 1
+option = 4
 
 o = options[option]
 var = o['var']
