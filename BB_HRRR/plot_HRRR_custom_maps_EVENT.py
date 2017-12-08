@@ -100,7 +100,7 @@ for fxx in FXX:
     for VALID_DATE in DATES:
         plt.clf(); plt.cla()
 
-        print fxx, DATE
+        print fxx, VALID_DATE
 
         model = 'hrrr'
         dsize = 'small'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
