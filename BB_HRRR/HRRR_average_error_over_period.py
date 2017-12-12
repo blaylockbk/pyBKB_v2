@@ -1,5 +1,5 @@
 # Brian Blaylock
-# October 11, 2017          # I get married to my best friend next week :)
+# October 11, 2017               # I get married to my best friend next week :)
 
 """
 Calculate the mean error for a time period.
@@ -166,14 +166,14 @@ if o['WIND'] is True:
 for f in range(1, 19):
     for h in range(0, 24):
 
-        # Date Range
+        ## 1) Create Date Range
         hour = h
         sDATE = datetime(2017, 9, 1, hour)
         eDATE = datetime(2017, 12, 1, hour)
         days = (eDATE-sDATE).days
         date_list = np.array([sDATE + timedelta(days=x) for x in range(0, days)])
 
-        # Multiprocessing :) will return the difference (fxx-anlys)
+        ## 2) Multiprocessing :) will return the difference (fxx-anlys) for each sample
         fxx = f
         num_proc = multiprocessing.cpu_count() # use all processors
         p = multiprocessing.Pool(num_proc)
@@ -183,16 +183,16 @@ for f in range(1, 19):
             result = p.map(HRRR_error, date_list)
         p.close()
 
-        # Remove anny nan arrays
+        ## 3) Remove any nan arrays
         samples_requested = len(result)
         result = np.array([i for i in result if not np.isnan(np.sum(i))])
         samples = len(result)
 
-        # Calculate error statistics
+        ## 4) Calculate error statistics
         RMSE = np.sqrt(np.nanmean(result**2, axis=0))
         mean_error = np.nanmean(result, axis=0)
 
-        # Create Figure
+        ## 5) Create Figure
         plt.sca(ax1)
         plot_error = m.pcolormesh(H['lon'], H['lat'], mean_error, 
                                   latlon=True, cmap=o['mean cmap'],

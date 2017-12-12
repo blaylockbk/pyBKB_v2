@@ -5,11 +5,14 @@
 Functions for getting data on active fires
 """
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+import urllib
 import urllib2
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter, HourLocator
+import os
+import zipfile
 
 import sys
 sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
@@ -149,6 +152,45 @@ def map_fires_date_range(sDATE, eDATE):
         except:
             print ">>>>> SKIPPED", D
             pass
+
+def download_latest_fire_shapefile(TYPE='fire'):
+    """
+    Download active fire shapefiles from the web.
+    Points of active fire.
+    Original Script from '/uufs/chpc.utah.edu/host/gl/oper/mesowest/fire/get_fire.csh'
+    Input:
+        TYPE - 'fire' or 'smoke'
+    """
+    URL = 'http://satepsanone.nesdis.noaa.gov/pub/FIRE/HMS/GIS/'
+    SAVE = '/uufs/chpc.utah.edu/common/home/u0553130/oper/HRRR_fires/fire_shapefiles/'
+    NAME = 'latest_' + TYPE
+    urllib.urlretrieve(URL+NAME+".dbf", SAVE+NAME+".dbf")
+    urllib.urlretrieve(URL+NAME+".shp", SAVE+NAME+".shp")
+    urllib.urlretrieve(URL+NAME+".shx", SAVE+NAME+".shx")
+
+def download_fire_perimiter_shapefile(active=True):
+    """
+    Download active fire perimeter shapefiles.
+    Original Script from '/uufs/chpc.utah.edu/host/gl/oper/mesowest/fire/get_perim.csh'
+    
+    Input:
+        active - True for downloading the current, active fire perimeters
+                 False for the current year
+    """
+    ## Download zip file
+    URL = 'http://rmgsc.cr.usgs.gov/outgoing/GeoMAC/current_year_fire_data/current_year_all_states/'
+    if active:
+        NAME = 'active_perimeters_dd83.zip'
+    else:
+        NAME = 'perimeters_dd83.zip'
+    SAVE = '/uufs/chpc.utah.edu/common/home/u0553130/oper/HRRR_fires/fire_shapefiles/'
+    urllib.urlretrieve(URL+NAME, SAVE+NAME)
+    ## Unzip file
+    zip_ref = zipfile.ZipFile(SAVE+NAME, 'r')
+    zip_ref.extractall(SAVE)
+    zip_ref.close()
+    ## Remove zip file
+    os.remove(SAVE+NAME)
 
 if __name__ == "__main__":
     
