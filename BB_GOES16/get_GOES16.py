@@ -17,6 +17,20 @@ from pyproj import Proj
 import subprocess
 
 
+def contrast_correction(color, C):
+    """
+    Modify the contrast of an R, G, or B color channel
+    See: #www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
+
+    Input:
+        C - contrast level
+    """
+    F = (259*(C + 255))/(255.*259-C)
+    COLOR = F*(color-.5)+.5
+    COLOR = np.minimum(COLOR, 1)
+    COLOR = np.maximum(COLOR, 0)
+    return COLOR
+
 def files_on_pando(DATE):
     """
     Get a list of file in Pando on the DATE requested
@@ -49,18 +63,28 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
         print "Can't open file:", FILE
         return None
 
-    # Load the RGB arrays and apply a gamma correction (square root)
-    R = np.sqrt(C.variables['CMI_C02']) # Band 2 is red (0.64 um)
-    G = np.sqrt(C.variables['CMI_C03']) # Band 3 is "green" (0.865 um)
-    B = np.sqrt(C.variables['CMI_C01']) # Band 1 is blue (0.47 um)
+    # Load the RGB arrays and apply a gamma correction (a power, usually the squar root)
+    gamma = .40
+    R = np.power(C.variables['CMI_C02'][:].data, gamma) # Band 2 is red (0.64 um)
+    G = np.power(C.variables['CMI_C03'][:].data, gamma) # Band 3 is "green" (0.865 um)
+    B = np.power(C.variables['CMI_C01'][:].data, gamma) # Band 1 is blue (0.47 um)
+    print '\n   Gamma correction: %s' % gamma
 
+    # Modify the RGB color contrast:
+    contrast = 150
+    print "   Contrast correction: %s\n" % contrast
+    F = (259*(contrast + 255))/(255.*259-contrast)
+    R = contrast_correction(R, contrast)
+    G = contrast_correction(G, contrast)
+    B = contrast_correction(B, contrast)
+    
     # "True Green" is some linear interpolation between the three channels
     G_true = 0.48358168 * R + 0.45706946 * B + 0.06038137 * G
 
     if night_IR == True:
         # Prepare the Clean IR band by converting brightness temperatures to greyscale values
         # From: https://github.com/occ-data/goes16-play/blob/master/plot.py
-        cleanir = C.variables['CMI_C13'][:]
+        cleanir = C.variables['CMI_C13'][:].data
         cir_min = 90.0
         cir_max = 313.0
         cleanir_c = (cleanir - cir_min) / (cir_max - cir_min) # normalize array between 0 and 1
@@ -111,9 +135,11 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
 
     # Create a color tuple for pcolormesh
     rgb = RGB[:,:-1,:] # Using one less column is very imporant, else your image will be scrambled! (This is the stange nature of pcolormesh)
+    #rgb = RGB[:,:,:] # Other times you need all the columns. Not sure why???
     rgb = np.minimum(rgb, 1) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
     colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
     colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
+
 
     return {'TrueColor': RGB,
             'lat': lats,
@@ -136,7 +162,7 @@ if __name__ == '__main__':
     from BB_basemap.draw_maps import draw_CONUS_HRRR_map, draw_Utah_map
 
 
-    DATE = datetime(2017, 9, 25)
+    DATE = datetime(2017, 12, 14)
     DIR = '/uufs/chpc.utah.edu/common/home/horel-group/archive/%s/BB_test/goes16/' % DATE.strftime('%Y%m%d')
     
     FILES = files_on_pando(DATE)
@@ -144,13 +170,13 @@ if __name__ == '__main__':
     mHRRR = draw_CONUS_HRRR_map()
     mUtah = draw_Utah_map()
 
-    for f in FILES:
-        G = get_GOES16_truecolor(DIR+f, nightIR=True)
+    for f in FILES[-2:-1]:
+        G = get_GOES16_truecolor(DIR+f, night_IR=True)
 
         # Plot on HRRR domain Map
         plt.figure(1)
         plt.clf(); plt.cla()        
-        newmap = mHRRR.pcolormesh(G['LONS'], G['LATS'], G['TrueColor'][:,:,1],
+        newmap = mHRRR.pcolormesh(G['lon'], G['lat'], G['TrueColor'][:,:,1],
                                 color=G['rgb_tuple'],
                                 linewidth=0,
                                 latlon=True)
@@ -161,12 +187,11 @@ if __name__ == '__main__':
         # Plot on Utah Map
         plt.figure(2)
         plt.clf(); plt.cla()    
-        newmap = mUtah.pcolormesh(G['LONS'], G['LATS'], G['TrueColor'][:,:,1],
-                                color=G['rgb_tuple'],
-                                linewidth=0,
-                                latlon=True)
+        newmap = mUtah.pcolormesh(G['lon'], G['lat'], G['TrueColor'][:,:,1],
+                                  color=G['rgb_tuple'],
+                                  linewidth=0)
+                                  # Do not set latlon=True for cylindrical projection.
         newmap.set_array(None) # must have this line if using pcolormesh and linewidth=0
         mUtah.drawstates()   
         plt.savefig('utah_'+G['DATE'].strftime('%Y%m%d_%H%M'))
-
 
