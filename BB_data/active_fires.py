@@ -192,10 +192,13 @@ def download_fire_perimiter_shapefile(active=True):
     ## Remove zip file
     os.remove(SAVE+NAME)
 
+
 if __name__ == "__main__":
     
     #sDATE = datetime(2017, 1, 1)
     #eDATE = datetime(2017, 10, 13)
     #map_fires_date_range(sDATE, eDATE)
 
-    f = get_fires()
+    #f = get_fires()
+
+    download_fire_perimiter_shapefile(active=False)
