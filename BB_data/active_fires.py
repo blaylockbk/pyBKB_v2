@@ -168,7 +168,7 @@ def download_latest_fire_shapefile(TYPE='fire'):
     urllib.urlretrieve(URL+NAME+".shp", SAVE+NAME+".shp")
     urllib.urlretrieve(URL+NAME+".shx", SAVE+NAME+".shx")
 
-def download_fire_perimiter_shapefile(active=True):
+def download_fire_perimeter_shapefile(active=True):
     """
     Download active fire perimeter shapefiles.
     Original Script from '/uufs/chpc.utah.edu/host/gl/oper/mesowest/fire/get_perim.csh'

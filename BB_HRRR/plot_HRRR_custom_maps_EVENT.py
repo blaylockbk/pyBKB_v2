@@ -3,15 +3,7 @@
 
 """
 Plot a custom HRRR map for an event.
-"""
 
-#!/uufs/chpc.utah.edu/sys/installdir/anaconda/4.2.0/bin/python
-
-# Brian Blaylock
-# June 8, 2017     # I accidentally made beef jerky in the crock pot last night
-
-
-"""
 Plots a sample image of HRRR near the fire.
 
 Note: For CGI, cannot print anything to screen when outputting a .png file
@@ -20,6 +12,7 @@ Note: For CGI, cannot print anything to screen when outputting a .png file
 import numpy as np
 from datetime import datetime, timedelta
 import h5py
+import os
 
 firsttimer = datetime.now()
 
@@ -61,54 +54,60 @@ from matplotlib.collections import PatchCollection
 # Need a map object to read in shapefile.
 # As long as you stay in the default projection, this should work.
 # Note: ArcGIS base image wont work in lcc projection.
+is_FIRE = False
 
-shapefile = '/uufs/chpc.utah.edu/common/home/u0553130/oper/HRRR_fires/perim'
-ms = Basemap()
-per = ms.readshapefile(shapefile, 'perim',
-                      linewidth=.5,
-                      color='dimgrey',
-                      drawbounds=False)
-# Specify a fire name. 
-# Must be in the list above, becuase we need the start lat/lon to build the map.
-firename = 'THOMAS'
+if is_FIRE:
+    shapefile = '/uufs/chpc.utah.edu/common/home/u0553130/oper/HRRR_fires/perim'
+    ms = Basemap()
+    per = ms.readshapefile(shapefile, 'perim',
+                           linewidth=.5,
+                           color='dimgrey',
+                           drawbounds=False)
+    # Specify a fire name. 
+    # Must be in the list above, because we need the start lat/lon to build the map.
+    firename = 'THOMAS'
 
-# Shape by Fire Name and Largest Area
-area = 0
+    # Shape by Fire Name and Largest Area
+    area = 0
 
-for i, [info, PERIM] in enumerate(zip(ms.perim_info, ms.perim)):
-    # Check if the boundary is one of the large active fires
-    if info['FIRENAME'].upper() == firename:
-        f = info['GISACRES']
-        draw_area = float(f)
-        if draw_area > area:
-            patches = []
-            area = draw_area
-            patches.append(Polygon(np.array(PERIM), True) )
+    for i, [info, PERIM] in enumerate(zip(ms.perim_info, ms.perim)):
+        # Check if the boundary is one of the large active fires
+        if info['FIRENAME'].upper() == firename:
+            f = info['GISACRES']
+            draw_area = float(f)
+            if draw_area > area:
+                patches = []
+                area = draw_area
+                patches.append(Polygon(np.array(PERIM), True) )
 
 
 # === Load Form Input =========================================================
 fxx = 0
 
 # Valid Dates
-sDATE = datetime(2017, 12, 8, 0)
-eDATE = datetime(2017, 12, 8, 12)
+sDATE = datetime(2018, 1, 4, 0)
+eDATE = datetime(2018, 1, 4, 15)
+
+EVENT = 'EAST_cyclone_MSLP-WIND_%s' % sDATE.strftime('%Y-%m-%d')
+model = 'hrrr'
+dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
+location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'
+
+#plotcode = '10mWind_Shade,10mWind_Barb'
+plotcode = 'MSLP_Contour,10mWind_Shade'
+background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse
+
+
 hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
 DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
 FXX = range(0,19)
 
 for fxx in FXX:
     for VALID_DATE in DATES:
+        print 'working on', VALID_DATE, fxx
         plt.clf(); plt.cla()
 
         print fxx, VALID_DATE
-
-        model = 'hrrr'
-        dsize = 'small'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
-        location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'
-
-        plotcode = '10mWind_Shade,10mWind_Barb'
-        background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse
-
 
         # === Some housekeeping variables =============================================
         # Convert Valid Date to Run Date, adjusted by the forecast
@@ -140,7 +139,7 @@ for fxx in FXX:
             alpha = 1
             t1= datetime.now()
             #m = draw_CONUS_HRRR_map(res=map_res)
-            m = np.load('HRRR_CONUS_map_object_'+map_res+'.npy').item()
+            m = np.load('/uufs/chpc.utah.edu/common/home/u0553130/public_html/Brian_Blaylock/cgi-bin/HRRR_CONUS_map_object_'+map_res+'.npy').item()
             m.drawcountries(zorder=500)
             m.drawstates(zorder=500)
             m.drawcoastlines(zorder=500)
@@ -249,12 +248,13 @@ for fxx in FXX:
                         latlon=True)
 
         # Add SHAPEFILE
-        plt.gca().add_collection(PatchCollection(patches,
-                         facecolor='indianred',
-                         alpha=.65,
-                         edgecolor='k',
-                         linewidths=1,
-                         zorder=1))
+        if is_FIRE:
+            plt.gca().add_collection(PatchCollection(patches,
+                            facecolor='indianred',
+                            alpha=.65,
+                            edgecolor='k',
+                            linewidths=1,
+                            zorder=1))
 
         # === Figure Title ============================================================
         if dsize != 'conus':
@@ -293,7 +293,7 @@ for fxx in FXX:
                             colors=('yellow', 'orange', 'red'),
                             alpha=alpha,
                             extend='max',
-                            zorder=10,
+                            zorder=1,
                             latlon=True)
                 cb = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
                 cb.set_label(r'10 m Wind Speed (ms$\mathregular{^{-1}}$)')
@@ -609,12 +609,15 @@ for fxx in FXX:
                 CS = m.contour(gridlon, gridlat, H['value']/100., 
                             latlon=True,
                             levels=range(952, 1200, 4),
-                            colors='k')
-                plt.clabel(CS, inline=1, fmt='%2.f')
+                            colors='k',
+                            zorder=400)
+                CS.clabel(inline=1, fmt='%2.f',
+                        zorder=400)
 
             if 'MSLP_Fill' in plotcode:
                 m.pcolormesh(gridlon, gridlat, H['value']/100., 
-                    latlon=True, cmap='viridis')
+                             latlon=True,
+                             cmap='viridis')
 
                 cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
                 cb.set_label('Mean Sea Level Pressure (hPa)')
@@ -753,7 +756,9 @@ for fxx in FXX:
 
         #plt.ylabel('Section Timer:%s\nFull Timer:%s' % (t2-t1, datetime.now()-firsttimer))
 
-        SAVEDIR = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/HRRR/Events_Day/THOMAS_FIRE_2017-12-08/'
+        SAVEDIR = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/HRRR/Events_Day/%s/' % EVENT
+        if not os.path.exists(SAVEDIR):
+            os.makedirs(SAVEDIR)
         SAVEFIG = SAVEDIR + '%s_f%02d' % (VALID_DATE.strftime('%Y-%m-%d_h%H'), fxx)
         plt.savefig(SAVEFIG)	# Plot standard output.
         print 'SAVED:', SAVEFIG
