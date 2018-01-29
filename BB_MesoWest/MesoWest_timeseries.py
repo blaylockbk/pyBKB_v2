@@ -53,7 +53,7 @@ default_vars = 'altimeter,pressure,sea_level_pressure,wind_direction,\
 wind_speed,air_temp,relative_humidity,dew_point_temperature,wind_gust'
 
 
-def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, verbose=True):
+def get_mesowest_ts(stationID, start_time, end_time, variables=default_vars, verbose=True):
     """
     Get MesoWest Time Series:
     Makes a time series query from the MesoWest API for a single station.
@@ -62,7 +62,7 @@ def get_mesowest_ts(stationID, start_time, end_time, variables = default_vars, v
     cgi scripts cannot deal with printed statements.
 
     Input:
-        stationID  : string of the station ID
+        stationID  : string of the station ID (a single station)
         start_time : datetime object of the start time in UTC
         end_time   : datetime object of the end time in UTC
         verbose    : print out some diagnostics, defualt is True

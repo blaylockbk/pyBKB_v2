@@ -1,0 +1,643 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Basemap	../HRRR_average_error_over_period.py	/^from mpl_toolkits.basemap import Basemap$/;"	kind:namespace	line:10
+Basemap	../HRRR_average_error_over_period_hovmoller.py	/^from mpl_toolkits.basemap import Basemap$/;"	kind:namespace	line:10
+Basemap	../plot_HRRR_custom_maps_EVENT.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map, Basemap$/;"	kind:namespace	line:44
+Basemap	../save_HRRR_MesoWest_point.py	/^from mpl_toolkits.basemap import Basemap$/;"	kind:namespace	line:17
+Basemap	../save_HRRR_MesoWest_point_FIRES.py	/^from mpl_toolkits.basemap import Basemap$/;"	kind:namespace	line:17
+BeautifulSoup	../sounding.py	/^from bs4 import BeautifulSoup$/;"	kind:namespace	line:28
+CONUS_highest_bin_count	../HRRR_histogram.py	/^CONUS_highest_bin_count = np.sum(rose[:,:,-1,:], axis=2)$/;"	kind:variable	line:202
+CONUS_north_wind_count	../HRRR_histogram.py	/^CONUS_north_wind_count = np.sum(rose[:,:,:,0], axis=2)$/;"	kind:variable	line:216
+CONUS_south_wind_count	../HRRR_histogram.py	/^CONUS_south_wind_count = np.sum(rose[:,:,:,4], axis=2)$/;"	kind:variable	line:230
+DATE	../HRRR_S3_climo.py	/^DATE = datetime(2015, 4, 17)$/;"	kind:variable	line:30
+DATE	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^DATE = date(2015, 4, 18)$/;"	kind:variable	line:113
+DATE	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^DATE = date(2015, 4, 18)$/;"	kind:variable	line:113
+DATE	../HRRR_S3_climo_maxmin_hourly.py	/^DATE = date(2015, 4, 18)$/;"	kind:variable	line:32
+DATE	../HRRR_S3_climo_maxmin_hourly.py	/^DATE = date(2017, 3, 15)$/;"	kind:variable	line:33
+DATE	../test_max_memory.py	/^DATE = datetime(2015, 4, 18)$/;"	kind:variable	line:47
+DATES	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^DATES = [DATE + timedelta(days=x) for x in range(0, days)]$/;"	kind:variable	line:121
+DATES	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^DATES = [DATE + timedelta(days=x) for x in range(0, days)]$/;"	kind:variable	line:121
+DATES	../HRRR_S3_climo_maxmin_hourly.py	/^DATES = np.array([DATE + timedelta(days=x) for x in range(0, days)])$/;"	kind:variable	line:36
+DATES	../plot_HRRR_custom_maps_EVENT.py	/^    DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]$/;"	kind:variable	line:774
+DATES	../test_max_memory.py	/^DATES = [DATE + timedelta(hours=x) for x in range(0, hours)]$/;"	kind:variable	line:55
+DATE_LIST	../HRRR_S3_climo.py	/^        DATE_LIST = np.append(DATE_LIST, DATE)$/;"	kind:variable	line:41
+DATE_LIST	../HRRR_S3_climo.py	/^DATE_LIST = np.array([])$/;"	kind:variable	line:35
+DATE_LIST	../HRRR_S3_climo.py	/^DATE_LIST = np.genfromtxt('dates_hrrr_wind.txt', dtype=None, delimiter='\\n')$/;"	kind:variable	line:72
+DATE_LIST	../HRRR_S3_climo_maxmin_hourly.py	/^            DATE_LIST = np.append(DATE_LIST, getDATE)$/;"	kind:variable	line:53
+DATE_LIST	../HRRR_S3_climo_maxmin_hourly.py	/^DATE_LIST = np.array([])$/;"	kind:variable	line:43
+Dataset	../HRRR_histogram.py	/^from netCDF4 import Dataset$/;"	kind:namespace	line:10
+Dataset	../OSG_stats.py	/^from netCDF4 import Dataset$/;"	kind:namespace	line:10
+DateFormatter	../save_MesoWest_tophour.py	/^from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator$/;"	kind:namespace	line:11
+DayLocator	../save_MesoWest_tophour.py	/^from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator$/;"	kind:namespace	line:11
+EVENT	../plot_HRRR_custom_maps_EVENT.py	/^    EVENT = 'EAST_cyclone_MSLP-WIND_%s' % sDATE.strftime('%Y-%m-%d')$/;"	kind:variable	line:760
+FXX	../plot_HRRR_custom_maps_EVENT.py	/^    FXX = range(0, 19)$/;"	kind:variable	line:775
+H	../HRRR_S3_climo.py	/^        H = get_hrrr_variable(DATE, variable, fxx=0, model='hrrr', field='sfc')$/;"	kind:variable	line:40
+H	../HRRR_S3_climo_maxmin_hourly.py	/^            H = get_hrrr_variable(getDATE, variable, fxx=0, model='hrrr', field='sfc')$/;"	kind:variable	line:52
+H	../HRRR_average_error_over_period.py	/^H = get_hrrr_variable(datetime(2017, 10, 1), 'TMP:2 m')$/;"	kind:variable	line:81
+H	../HRRR_average_error_over_period_hovmoller.py	/^H = get_hrrr_variable(datetime(2017, 10, 1), 'TMP:2 m')$/;"	kind:variable	line:185
+H	../HRRR_histogram.py	/^H = get_hrrr_variable(requestDATES[0], 'UGRD:10 m')$/;"	kind:variable	line:142
+HRRR_S3_climo.py	../HRRR_S3_climo.py	1;"	kind:file	line:1
+HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	1;"	kind:file	line:1
+HRRR_S3_climo_MaxMinMean_hourly_multipro.py	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	1;"	kind:file	line:1
+HRRR_S3_climo_maxmin_hourly.py	../HRRR_S3_climo_maxmin_hourly.py	1;"	kind:file	line:1
+HRRR_average_error_over_period.py	../HRRR_average_error_over_period.py	1;"	kind:file	line:1
+HRRR_average_error_over_period_hovmoller.py	../HRRR_average_error_over_period_hovmoller.py	1;"	kind:file	line:1
+HRRR_error	../HRRR_average_error_over_period.py	/^def HRRR_error(DATE):$/;"	kind:function	line:55
+HRRR_error	../HRRR_average_error_over_period_hovmoller.py	/^def HRRR_error(DATE):$/;"	kind:function	line:162
+HRRR_error_wind_speed	../HRRR_average_error_over_period.py	/^def HRRR_error_wind_speed(DATE):$/;"	kind:function	line:29
+HRRR_error_wind_speed	../HRRR_average_error_over_period_hovmoller.py	/^def HRRR_error_wind_speed(DATE):$/;"	kind:function	line:136
+HRRR_histogram.py	../HRRR_histogram.py	1;"	kind:file	line:1
+HRRR_vars	../pluck_point_from_HRRR.py	/^HRRR_vars = {'2 metre temperature': 'air_temp_2m',$/;"	kind:variable	line:23
+HourLocator	../save_MesoWest_tophour.py	/^from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator$/;"	kind:namespace	line:11
+K_to_C	../pluck_point_from_HRRR.py	/^from pyBKB_v2.BB_conversions.convert import K_to_C$/;"	kind:namespace	line:17
+KtoC	../save_HRRR_MesoWest_point.py	/^def KtoC(Tk):$/;"	kind:function	line:19
+KtoC	../save_HRRR_MesoWest_point_FIRES.py	/^def KtoC(Tk):$/;"	kind:function	line:19
+LU_MODIS21	../plot_HRRR_custom_maps_EVENT.py	/^        from BB_cmap.landuse_colormap import LU_MODIS21$/;"	kind:namespace	line:212
+MesoWest_stations_dict	../save_HRRR_MesoWest_point.py	/^    MesoWest_stations_dict = {'LAT':np.array([40.77069]),$/;"	kind:variable	line:182
+MesoWest_stations_dict	../save_HRRR_MesoWest_point_FIRES.py	/^    MesoWest_stations_dict = {'LAT':np.array([40.77069]),$/;"	kind:variable	line:648
+MesoWest_stations_nearesttime	../save_MesoWest_tophour.py	/^from BB_MesoWest import MesoWest_stations_nearesttime$/;"	kind:namespace	line:18
+MonthLocator	../save_MesoWest_tophour.py	/^from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator$/;"	kind:namespace	line:11
+OSG_stats.py	../OSG_stats.py	1;"	kind:file	line:1
+PatchCollection	../plot_HRRR_custom_maps_EVENT.py	/^from matplotlib.collections import PatchCollection$/;"	kind:namespace	line:51
+Polygon	../plot_HRRR_custom_maps_EVENT.py	/^from matplotlib.patches import Polygon$/;"	kind:namespace	line:50
+RMSE	../HRRR_average_error_over_period.py	/^        RMSE = np.sqrt(np.nanmean(result**2, axis=0))$/;"	kind:variable	line:192
+RMSE	../HRRR_average_error_over_period_hovmoller.py	/^        RMSE = np.sqrt(np.nanmean(result**2, axis=0))$/;"	kind:variable	line:254
+S	../sounding.py	/^  S=SkewT.Sounding(soundingdata=hourdata)$/;"	kind:variable	line:352
+SAVEDIR	../HRRR_average_error_over_period.py	/^SAVEDIR = '\/uufs\/chpc.utah.edu\/common\/home\/u0553130\/public_html\/PhD\/HRRR\/RMSE_mean\/%s\/' % o['save prefix']$/;"	kind:variable	line:160
+SAVEDIR	../HRRR_average_error_over_period_hovmoller.py	/^SAVEDIR = '\/uufs\/chpc.utah.edu\/common\/home\/u0553130\/public_html\/PhD\/HRRR\/RMSE_mean_Hovmoller\/%s\/' % o['save prefix']$/;"	kind:variable	line:222
+SS	../OSG_stats.py	/^    SS = get_OSG_stats(locs, variable, stats, months=range(1,13), hours=range(0,24), extra=True, fxx=0)$/;"	kind:variable	line:168
+SkewT	../sounding.py	/^from skewt import SkewT$/;"	kind:namespace	line:25
+Sounding_dir	../sounding.py	/^    Sounding_dir = arcdir+year+month+day+'\/models\/hrrr\/'$/;"	kind:variable	line:430
+Sounding_filename	../sounding.py	/^    Sounding_filename = 'SLC_balloon_'+str(stn)+'.'+str(year)+str(month)+str(day)+str(hour)+'.txt'$/;"	kind:variable	line:431
+T	../sounding.py	/^    T = SkewT.Sounding(filename=Sounding_dir+Sounding_filename)$/;"	kind:variable	line:439
+U	../HRRR_histogram.py	/^U = np.array([x for x in U if x is not None])$/;"	kind:variable	line:128
+U	../HRRR_histogram.py	/^U = p.map(get_HRRR_value, requestDATES)$/;"	kind:variable	line:127
+V	../HRRR_histogram.py	/^V = np.array([x for x in V if x is not None])$/;"	kind:variable	line:134
+V	../HRRR_histogram.py	/^V = p.map(get_HRRR_value, requestDATES)$/;"	kind:variable	line:133
+VARS	../plot_HRRR_custom_maps_EVENT.py	/^    VARS = [[VALID_DATE, fxx] for VALID_DATE in DATES for fxx in FXX]$/;"	kind:variable	line:777
+WDIR	../HRRR_histogram.py	/^WDIR = wind_uv_to_dir(U, V)$/;"	kind:variable	line:139
+WSPD	../HRRR_histogram.py	/^WSPD = wind_uv_to_spd(U, V)$/;"	kind:variable	line:138
+WindroseAxes	../HRRR_histogram.py	/^from BB_rose.windrose import WindroseAxes$/;"	kind:namespace	line:256
+YearLocator	../save_MesoWest_tophour.py	/^from matplotlib.dates import DateFormatter, YearLocator, MonthLocator, DayLocator, HourLocator$/;"	kind:namespace	line:11
+__author__	../__init__.py	/^__author__="Brian K. Blaylock"$/;"	kind:variable	line:11
+__date__	../__init__.py	/^__date__= "July 27, 2016"$/;"	kind:variable	line:12
+__init__.py	../__init__.py	1;"	kind:file	line:1
+__url__	../__init__.py	/^__url__="http:\/\/home.chpc.utah.edu\/~u0553130\/Brian_Blaylock\/home.html"$/;"	kind:variable	line:13
+__version__	../__init__.py	/^__version__="2.0.0"$/;"	kind:variable	line:10
+a	../save_MesoWest_tophour.py	/^    a = save_MesoWest_tophour(stations,out_dir,'20160730','20160801')/;"	kind:variable	line:146
+anl	../sounding.py	/^anl = sys.argv[7]$/;"	kind:variable	line:186
+append_MW	../save_MesoWest_tophour.py	/^def append_MW(start_time,out_dir,stn,date_str,MW_temp,MW_dwpt,MW_u,MW_v,MW_speed):$/;"	kind:function	line:22
+arcdir	../sounding.py	/^arcdir = '\/uufs\/chpc.utah.edu\/common\/home\/horel-group\/archive\/'$/;"	kind:variable	line:178
+archivedir	../sounding.py	/^archivedir = arcdir + iyear + imonth + iday + '\/models\/hrrr\/'$/;"	kind:variable	line:198
+area	../plot_HRRR_custom_maps_EVENT.py	/^                area = draw_area$/;"	kind:variable	line:80
+area	../plot_HRRR_custom_maps_EVENT.py	/^    area = 0$/;"	kind:variable	line:71
+average_H	../HRRR_S3_climo.py	/^average_H = sumH\/float(len(DATE_LIST))$/;"	kind:variable	line:54
+ax	../HRRR_histogram.py	/^ax = WindroseAxes(fig, rect, axisbg='w')$/;"	kind:variable	line:280
+back_an_hour	../sounding.py	/^      back_an_hour = datetime_fmt-timedelta(hours=-1)$/;"	kind:variable	line:407
+background	../plot_HRRR_custom_maps_EVENT.py	/^    background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse$/;"	kind:variable	line:770
+bufrfile	../sounding.py	/^bufrfile = archivedir + site + '_'+iyear + imonth + iday + ihour + '.buf'$/;"	kind:variable	line:200
+calc_stats	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^def calc_stats():$/;"	kind:function	line:125
+calc_stats	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^def calc_stats():$/;"	kind:function	line:125
+calcght	../sounding.py	/^def calcght(tsfc,zsfc,psfc,plev):$/;"	kind:function	line:33
+calcrh	../sounding.py	/^def calcrh(tval,tdval):$/;"	kind:function	line:41
+calctheta	../sounding.py	/^def calctheta(tval,pres):$/;"	kind:function	line:54
+calctv	../sounding.py	/^def calctv(tval,wval):$/;"	kind:function	line:60
+calendar	../sounding.py	/^import calendar$/;"	kind:namespace	line:24
+cb	../HRRR_S3_climo.py	/^cb = plt.colorbar(orientation='horizontal', shrink=.9, pad=.05, extend='both')$/;"	kind:variable	line:85
+cb	../HRRR_average_error_over_period.py	/^            cb = plt.colorbar(orientation='horizontal', pad=0.01, shrink=0.95)$/;"	kind:variable	line:203
+cb	../HRRR_average_error_over_period.py	/^            cb = plt.colorbar(orientation='horizontal', pad=0.01, shrink=0.95)$/;"	kind:variable	line:214
+ccccddyy	../sounding.py	/^  ccccddyy='%.i'%starttime.year+'%02d'%starttime.month+'%02d'%starttime.day$/;"	kind:variable	line:363
+cfhr	../sounding.py	/^    cfhr = '0' + str(fhr[i])$/;"	kind:variable	line:360
+cfhr	../sounding.py	/^    cfhr = '00' + str(fhr[i])$/;"	kind:variable	line:358
+cfhr	../sounding.py	/^    cfhr = str(fhr[i])$/;"	kind:variable	line:362
+color	../HRRR_histogram.py	/^        color = p.get_color()$/;"	kind:variable	line:309
+color	../HRRR_histogram.py	/^        color = p.get_facecolor()$/;"	kind:variable	line:307
+color	../plot_HRRR_custom_maps_EVENT.py	/^                           color='dimgrey',$/;"	kind:variable	line:64
+content	../sounding.py	/^    content = urllib2.urlopen(url).read()$/;"	kind:variable	line:417
+count_highest_spd_bin	../HRRR_histogram.py	/^count_highest_spd_bin = np.sum(rose[0,0][-1,:])$/;"	kind:variable	line:195
+count_highest_spd_bin	../HRRR_histogram.py	/^count_highest_spd_bin = np.sum(rose[0,0][:,0])$/;"	kind:variable	line:198
+cpu_count	../HRRR_histogram.py	/^cpu_count = multiprocessing.cpu_count()$/;"	kind:variable	line:123
+cpu_count	../test_max_memory.py	/^cpu_count = multiprocessing.cpu_count() - 1$/;"	kind:variable	line:57
+created_NC	../HRRR_S3_climo_maxmin_hourly.py	/^                    created_NC = True$/;"	kind:variable	line:76
+created_NC	../HRRR_S3_climo_maxmin_hourly.py	/^created_NC = False$/;"	kind:variable	line:45
+data_text	../sounding.py	/^    data_text = soup.get_text()$/;"	kind:variable	line:422
+date	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+date	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+date	../HRRR_S3_climo_maxmin_hourly.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:13
+date	../test_max_memory.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+date_list	../HRRR_average_error_over_period.py	/^        date_list = np.array([sDATE + timedelta(days=x) for x in range(0, days)])$/;"	kind:variable	line:174
+date_list	../HRRR_average_error_over_period_hovmoller.py	/^        date_list = np.array([sDATE + timedelta(days=x) for x in range(0, days)])$/;"	kind:variable	line:236
+datetime	../HRRR_S3_climo.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:13
+datetime	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+datetime	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+datetime	../HRRR_S3_climo_maxmin_hourly.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:13
+datetime	../HRRR_average_error_over_period.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:11
+datetime	../HRRR_average_error_over_period_hovmoller.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:11
+datetime	../HRRR_histogram.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:9
+datetime	../get_bufr_sounding.py	/^from datetime import datetime$/;"	kind:namespace	line:8
+datetime	../plot_HRRR_custom_maps_EVENT.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:13
+datetime	../pluck_point_from_HRRR.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:12
+datetime	../save_HRRR_MesoWest_point.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:15
+datetime	../save_HRRR_MesoWest_point_FIRES.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:15
+datetime	../save_MesoWest_tophour.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:8
+datetime	../sounding.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:21
+datetime	../test_max_memory.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+datetime_fmt	../sounding.py	/^    datetime_fmt = datetime(int(year),int(month),int(day),int(hour))$/;"	kind:variable	line:405
+day	../HRRR_histogram.py	/^day = 15$/;"	kind:variable	line:89
+day	../sounding.py	/^      day =  str(back_an_hour.day).zfill(2)$/;"	kind:variable	line:410
+day	../sounding.py	/^    day  = junk[8:10]$/;"	kind:variable	line:401
+daylight	../HRRR_average_error_over_period_hovmoller.py	/^daylight = time.daylight # If daylight is on (1) then subtract from timezone.$/;"	kind:variable	line:44
+dayofweek	../sounding.py	/^  dayofweek = daysofweek[idayofweek]$/;"	kind:variable	line:289
+days	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^days = (eDATE - DATE).days$/;"	kind:variable	line:120
+days	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^days = (eDATE - DATE).days$/;"	kind:variable	line:120
+days	../HRRR_S3_climo_maxmin_hourly.py	/^days = (eDATE - DATE).days$/;"	kind:variable	line:35
+days	../HRRR_average_error_over_period.py	/^        days = (eDATE-sDATE).days$/;"	kind:variable	line:173
+days	../HRRR_average_error_over_period_hovmoller.py	/^        days = (eDATE-sDATE).days$/;"	kind:variable	line:235
+daysofweek	../sounding.py	/^daysofweek=['MON','TUE','WED','THU','FRI','SAT','SUN']  $/;"	kind:variable	line:172
+dir	../sounding.py	/^dir=zeros((numhours,numlevs))$/;"	kind:variable	line:245
+draw_CONUS_HRRR_map	../HRRR_S3_climo.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:28
+draw_CONUS_HRRR_map	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:28
+draw_CONUS_HRRR_map	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:28
+draw_CONUS_HRRR_map	../HRRR_S3_climo_maxmin_hourly.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:28
+draw_CONUS_HRRR_map	../HRRR_average_error_over_period.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:19
+draw_CONUS_HRRR_map	../HRRR_average_error_over_period_hovmoller.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:20
+draw_CONUS_HRRR_map	../plot_HRRR_custom_maps_EVENT.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map, Basemap$/;"	kind:namespace	line:44
+draw_CONUS_HRRR_map	../test_max_memory.py	/^from BB_basemap.draw_maps import draw_CONUS_HRRR_map$/;"	kind:namespace	line:28
+draw_area	../plot_HRRR_custom_maps_EVENT.py	/^            draw_area = float(f)$/;"	kind:variable	line:77
+drawbounds	../plot_HRRR_custom_maps_EVENT.py	/^                           drawbounds=False)$/;"	kind:variable	line:65
+dsize	../plot_HRRR_custom_maps_EVENT.py	/^    dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']$/;"	kind:variable	line:762
+dtheta	../HRRR_histogram.py	/^dtheta = 2*np.pi\/new_nsector$/;"	kind:variable	line:284
+eDATE	../HRRR_S3_climo.py	/^eDATE = datetime.now()$/;"	kind:variable	line:31
+eDATE	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^eDATE = date.today()$/;"	kind:variable	line:114
+eDATE	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^eDATE = date.today()$/;"	kind:variable	line:114
+eDATE	../HRRR_S3_climo_maxmin_hourly.py	/^eDATE = date.today()$/;"	kind:variable	line:34
+eDATE	../HRRR_average_error_over_period.py	/^        eDATE = datetime(2017, 12, 1, hour)$/;"	kind:variable	line:172
+eDATE	../HRRR_average_error_over_period_hovmoller.py	/^        eDATE = datetime(2017, 10, 10, hour)$/;"	kind:variable	line:234
+eDATE	../HRRR_histogram.py	/^eDATE = datetime(2017, 8, 1, hour)$/;"	kind:variable	line:95
+eDATE	../plot_HRRR_custom_maps_EVENT.py	/^    eDATE = datetime(2018, 1, 4, 22)$/;"	kind:variable	line:758
+eDATE	../test_max_memory.py	/^eDATE = datetime.now()$/;"	kind:variable	line:48
+endtime	../sounding.py	/^endtime=ptimes[-1]$/;"	kind:variable	line:223
+f	../HRRR_S3_climo.py	/^f = netcdf.netcdf_file('average_'+var_name+'.nc', 'w')$/;"	kind:variable	line:57
+f	../HRRR_S3_climo_maxmin_hourly.py	/^                    f = netcdf.NetCDFFile('MaxMinMean_hourly_'+var_name+'.nc', 'w')$/;"	kind:variable	line:69
+f	../HRRR_histogram.py	/^f = h5py.File('OSG_HRRR_%s_m%02d_d%02d_h%02d_f%02d.h5' % (var_name, month, day, hour, fxx), 'w')$/;"	kind:variable	line:169
+f	../plot_HRRR_custom_maps_EVENT.py	/^            f = info['GISACRES']$/;"	kind:variable	line:76
+f	../sounding.py	/^    f = open(Sounding_dir+Sounding_filename,'w')$/;"	kind:variable	line:432
+f	../sounding.py	/^f=open(bufrfile,'r')$/;"	kind:variable	line:207
+fhr	../sounding.py	/^fhr=[]$/;"	kind:variable	line:213
+fig	../HRRR_histogram.py	/^fig = plt.figure(figsize=(8, 8), dpi=80, facecolor='w', edgecolor='w')$/;"	kind:variable	line:278
+fig_dir	../save_HRRR_MesoWest_point.py	/^    fig_dir = '.\/test\/'$/;"	kind:variable	line:187
+fig_dir	../save_HRRR_MesoWest_point_FIRES.py	/^    fig_dir = '.\/test\/'$/;"	kind:variable	line:653
+firename	../plot_HRRR_custom_maps_EVENT.py	/^    firename = 'THOMAS'$/;"	kind:variable	line:68
+firsttimer	../plot_HRRR_custom_maps_EVENT.py	/^firsttimer = datetime.now()$/;"	kind:variable	line:17
+forecast_hour	../pluck_point_from_HRRR.py	/^    forecast_hour = 'f12'$/;"	kind:variable	line:111
+forecast_hour	../save_HRRR_MesoWest_point.py	/^    forecast_hour = 'f12' $/;"	kind:variable	line:189
+forecast_hour	../save_HRRR_MesoWest_point_FIRES.py	/^    forecast_hour = 'f12' $/;"	kind:variable	line:655
+fxx	../HRRR_average_error_over_period.py	/^        fxx = f$/;"	kind:variable	line:177
+fxx	../HRRR_average_error_over_period_hovmoller.py	/^        fxx = f$/;"	kind:variable	line:239
+fxx	../HRRR_histogram.py	/^fxx = 0$/;"	kind:variable	line:91
+getDATE	../HRRR_S3_climo_maxmin_hourly.py	/^            getDATE = datetime(D.year, D.month, D.day, h)$/;"	kind:variable	line:51
+get_HRRR	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^def get_HRRR(getthisDATE):$/;"	kind:function	line:31
+get_HRRR	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^def get_HRRR(getthisDATE):$/;"	kind:function	line:31
+get_HRRR	../test_max_memory.py	/^def get_HRRR(getthisDATE):$/;"	kind:function	line:31
+get_HRRR_value	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^def get_HRRR_value(getthisDATE):$/;"	kind:function	line:38
+get_HRRR_value	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^def get_HRRR_value(getthisDATE):$/;"	kind:function	line:38
+get_HRRR_value	../HRRR_histogram.py	/^def get_HRRR_value(getthisDATE):$/;"	kind:function	line:20
+get_HRRR_value	../test_max_memory.py	/^def get_HRRR_value(getthisDATE):$/;"	kind:function	line:38
+get_OSG_stats	../OSG_stats.py	/^def get_OSG_stats(locs, variable, stats, months=range(1,13), hours=range(0,24), extra=True, fxx=0):$/;"	kind:function	line:18
+get_bufr_sounding	../get_bufr_sounding.py	/^def get_bufr_sounding(request_time, site='kslc', model='hrrr', verbose=False):$/;"	kind:function	line:11
+get_bufr_sounding.py	../get_bufr_sounding.py	1;"	kind:file	line:1
+get_hist_table	../HRRR_histogram.py	/^def get_hist_table(ij):$/;"	kind:function	line:74
+get_hrrr_variable	../HRRR_average_error_over_period.py	/^from BB_downloads.HRRR_S3 import get_hrrr_variable$/;"	kind:namespace	line:18
+get_hrrr_variable	../HRRR_average_error_over_period_hovmoller.py	/^from BB_downloads.HRRR_S3 import get_hrrr_variable$/;"	kind:namespace	line:19
+get_hrrr_variable	../HRRR_histogram.py	/^from BB_downloads.HRRR_S3 import get_hrrr_variable$/;"	kind:namespace	line:17
+get_hrrr_variable	../plot_HRRR_custom_maps_EVENT.py	/^from BB_downloads.HRRR_S3 import get_hrrr_variable$/;"	kind:namespace	line:45
+get_station_info	../plot_HRRR_custom_maps_EVENT.py	/^from BB_MesoWest.MesoWest_STNinfo import get_station_info$/;"	kind:namespace	line:46
+getind	../sounding.py	/^getind=[]$/;"	kind:variable	line:227
+graphicsfile	../sounding.py	/^  graphicsfile = plotdir+modid+'SKEWT_'+site.upper()+ccccddyy+hh+'F'+cfhr$/;"	kind:variable	line:378
+h5	../HRRR_histogram.py	/^h5 = h5py.File('OSG_HRRR_%s_m%02d_d%02d_h%02d_f%02d.h5' % (var_name, month, day, hour, fxx), 'r')$/;"	kind:variable	line:186
+h5_begD	../HRRR_histogram.py	/^h5_begD = f.create_dataset('Beginning Date', data=validDATES[0].strftime('%Y-%m-%d-%H:00'))$/;"	kind:variable	line:175
+h5_cores	../HRRR_histogram.py	/^h5_cores = f.create_dataset('cores', data=cpu_count)$/;"	kind:variable	line:173
+h5_count	../HRRR_histogram.py	/^h5_count = f.create_dataset('wind direction edges', data=sector_edges)$/;"	kind:variable	line:172
+h5_count	../HRRR_histogram.py	/^h5_count = f.create_dataset('wind speed bins', data=bins)$/;"	kind:variable	line:171
+h5_endD	../HRRR_histogram.py	/^h5_endD = f.create_dataset('Ending Date', data=validDATES[-1].strftime('%Y-%m-%d-%H:00'))$/;"	kind:variable	line:176
+h5_per	../HRRR_histogram.py	/^h5_per = f.create_dataset('rose tables', data=rose_storage.astype(int), compression="gzip", compression_opts=9)$/;"	kind:variable	line:170
+h5_timer	../HRRR_histogram.py	/^h5_timer = f.create_dataset('timer', data=str(timer))$/;"	kind:variable	line:174
+h5py	../HRRR_histogram.py	/^import h5py$/;"	kind:namespace	line:13
+h5py	../plot_HRRR_custom_maps_EVENT.py	/^import h5py$/;"	kind:namespace	line:14
+handles	../HRRR_histogram.py	/^handles = list()$/;"	kind:variable	line:303
+hh	../sounding.py	/^  hh = '%02d'%starttime.hour$/;"	kind:variable	line:364
+histogram	../HRRR_histogram.py	/^def histogram(direction, var, bins, nsector, normed=False, blowto=False):$/;"	kind:function	line:30
+hour	../HRRR_average_error_over_period.py	/^        hour = h$/;"	kind:variable	line:170
+hour	../HRRR_average_error_over_period_hovmoller.py	/^        hour = h$/;"	kind:variable	line:232
+hour	../HRRR_histogram.py	/^hour = 0$/;"	kind:variable	line:90
+hour	../sounding.py	/^      hour = str(back_an_hour.hour).zfill(2)$/;"	kind:variable	line:411
+hour	../sounding.py	/^    hour = junk[11:13]$/;"	kind:variable	line:402
+hourdata	../sounding.py	/^  hourdata = {'drct':mydata_fix['drct'][i],'dwpt':mydata_fix['dwpt'][i],'hght':mydata_fix['hght'][i],'pres':mydata_fix['pres'][i],'sknt':mydata_fix['sknt'][i],'temp':mydata_fix['temp'][i]}$/;"	kind:variable	line:351
+hours	../HRRR_S3_climo_maxmin_hourly.py	/^hours = range(0, 24)$/;"	kind:variable	line:38
+hours	../plot_HRRR_custom_maps_EVENT.py	/^    hours = (eDATE-sDATE).seconds\/60\/60 + (eDATE-sDATE).days*24$/;"	kind:variable	line:773
+hours	../test_max_memory.py	/^hours = (eDATE - DATE).days*24$/;"	kind:variable	line:54
+i	../HRRR_histogram.py	/^i = I[0]$/;"	kind:variable	line:259
+iday	../sounding.py	/^iday = sys.argv[5]$/;"	kind:variable	line:184
+idayofweek	../sounding.py	/^  idayofweek = calendar.weekday(int(junk[0:4]),int(junk[5:7]),int(junk[8:10]))$/;"	kind:variable	line:288
+ihour	../sounding.py	/^ihour = sys.argv[6]$/;"	kind:variable	line:185
+imonth	../sounding.py	/^imonth = sys.argv[4]$/;"	kind:variable	line:183
+ind1	../sounding.py	/^  ind1=arange(getind[0]+i*(numlevs*2+12)+11,getind[0]+i*(numlevs*2+12)+11+numlevs*2,2)$/;"	kind:variable	line:254
+indexes	../HRRR_histogram.py	/^indexes = [[i, j] for i in range(x_dim) for j in range(y_dim)]$/;"	kind:variable	line:154
+inputs	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^inputs = [[v, m, i, j] for i in range(24) for j in ['max', 'min', 'mean']]$/;"	kind:variable	line:485
+inputs	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^inputs = [[v, m, i] for i in range(24)]$/;"	kind:variable	line:479
+inputs	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^inputs = [[v, m, i, j] for i in range(24) for j in ['max', 'min', 'mean']]$/;"	kind:variable	line:485
+inputs	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^inputs = [[v, m, i] for i in range(24)]$/;"	kind:variable	line:479
+is_FIRE	../plot_HRRR_custom_maps_EVENT.py	/^is_FIRE = False$/;"	kind:variable	line:57
+iyear	../sounding.py	/^iyear = sys.argv[3]$/;"	kind:variable	line:182
+j	../HRRR_histogram.py	/^j = J[0]$/;"	kind:variable	line:260
+junk	../sounding.py	/^  junk = str(ptimes[i])$/;"	kind:variable	line:287
+l	../sounding.py	/^  l=ls[i]$/;"	kind:variable	line:215
+labels	../HRRR_histogram.py	/^            for i in range(len(labels)-1)]$/;"	kind:variable	line:318
+labels	../HRRR_histogram.py	/^labels = np.copy(bins)$/;"	kind:variable	line:316
+lat	../HRRR_S3_climo.py	/^lat = nc.variables['latitude'].data$/;"	kind:variable	line:76
+lat	../HRRR_histogram.py	/^lat = latlon['latitude'].value$/;"	kind:variable	line:248
+latH	../HRRR_S3_climo.py	/^latH =  f.createVariable('latitude', float, ('x', 'y'))$/;"	kind:variable	line:64
+latH	../HRRR_S3_climo_maxmin_hourly.py	/^latH =  f.createVariable('latitude', float, ('x', 'y'))$/;"	kind:variable	line:90
+latlon	../HRRR_histogram.py	/^latlon = h5py.File('\/uufs\/chpc.utah.edu\/common\/home\/horel-group2\/blaylock\/HRRR_OSG\/daily30_20150418-20170801\/OSG_HRRR_latlon.h5', 'r')$/;"	kind:variable	line:247
+level	../HRRR_average_error_over_period.py	/^    level = o['var'].split(':')[1]$/;"	kind:variable	line:163
+level	../HRRR_average_error_over_period_hovmoller.py	/^    level = o['var'].split(':')[1]$/;"	kind:variable	line:225
+linewidth	../plot_HRRR_custom_maps_EVENT.py	/^                           linewidth=.5,$/;"	kind:variable	line:63
+location	../plot_HRRR_custom_maps_EVENT.py	/^    location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'$/;"	kind:variable	line:763
+locations	../HRRR_average_error_over_period_hovmoller.py	/^locations = {'Oaks': {'latitude':40.084,$/;"	kind:variable	line:45
+locs	../OSG_stats.py	/^    locs = {'KSLC' :{'latitude':40.77069, 'longitude':-111.96503},$/;"	kind:variable	line:159
+log10	../sounding.py	/^from scipy import log10$/;"	kind:namespace	line:71
+lon	../HRRR_S3_climo.py	/^lon = nc.variables['longitude'].data$/;"	kind:variable	line:77
+lon	../HRRR_histogram.py	/^lon = latlon['longitude'].value$/;"	kind:variable	line:249
+lonH	../HRRR_S3_climo.py	/^lonH =  f.createVariable('longitude', float, ('x', 'y'))$/;"	kind:variable	line:65
+lonH	../HRRR_S3_climo_maxmin_hourly.py	/^lonH =  f.createVariable('longitude', float, ('x', 'y'))$/;"	kind:variable	line:91
+ls	../sounding.py	/^ls=f.readlines()$/;"	kind:variable	line:208
+m	../HRRR_S3_climo.py	/^m = draw_CONUS_HRRR_map()$/;"	kind:variable	line:79
+m	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^m = draw_CONUS_HRRR_map()$/;"	kind:variable	line:475
+m	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^m = draw_CONUS_HRRR_map()$/;"	kind:variable	line:475
+m	../HRRR_average_error_over_period.py	/^m = draw_CONUS_HRRR_map()$/;"	kind:variable	line:78
+make_plots	../plot_HRRR_custom_maps_EVENT.py	/^def make_plots(inputs):$/;"	kind:function	line:85
+manheight	../sounding.py	/^  manheight=[calcght(t[i,0],z[i,0],p[i,0],1000.),calcght(t[i,0],z[i,0],p[i,0],925.),calcght(t[i,0],z[i,0],p[i,0],850.),calcght(t[i,0],z[i,0],p[i,0],700.),calcght(t[i,0],z[i,0],p[i,0],500.)]$/;"	kind:variable	line:295
+manlevels	../sounding.py	/^  manlevels=[1000.0, 925.0, 850.0, 700.0, 500.0]$/;"	kind:variable	line:294
+map_res	../plot_HRRR_custom_maps_EVENT.py	/^map_res = 'l'$/;"	kind:variable	line:38
+matplotlib	../HRRR_S3_climo.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:19
+matplotlib	../HRRR_S3_climo.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:18
+matplotlib	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+matplotlib	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+matplotlib	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+matplotlib	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+matplotlib	../HRRR_S3_climo_maxmin_hourly.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:19
+matplotlib	../HRRR_S3_climo_maxmin_hourly.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:18
+matplotlib	../HRRR_average_error_over_period.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+matplotlib	../HRRR_average_error_over_period_hovmoller.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+matplotlib	../HRRR_histogram.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:12
+matplotlib	../OSG_stats.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+matplotlib	../plot_HRRR_custom_maps_EVENT.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:22
+matplotlib	../save_HRRR_MesoWest_point.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:16
+matplotlib	../save_HRRR_MesoWest_point_FIRES.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:16
+matplotlib	../save_MesoWest_tophour.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+matplotlib	../sounding.py	/^import matplotlib$/;"	kind:namespace	line:17
+matplotlib	../test_max_memory.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+matplotlib	../test_max_memory.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+maxH	../HRRR_S3_climo_maxmin_hourly.py	/^                maxH = H['value'].copy()$/;"	kind:variable	line:63
+maxfhr	../sounding.py	/^maxfhr=int(24.0*(endtime-starttime).days+(endtime-starttime).seconds\/3600)$/;"	kind:variable	line:224
+maxpres	../sounding.py	/^  maxpres=max(p[i,:])$/;"	kind:variable	line:296
+mdates	../HRRR_S3_climo.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:19
+mdates	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+mdates	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+mdates	../HRRR_S3_climo_maxmin_hourly.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:19
+mdates	../test_max_memory.py	/^import matplotlib.dates as mdates$/;"	kind:namespace	line:18
+meanH	../HRRR_S3_climo.py	/^meanH = f.createVariable(variable, float, ('x', 'y'))$/;"	kind:variable	line:63
+meanWind	../HRRR_S3_climo.py	/^meanWind = nc.variables['WIND:10 m'].data$/;"	kind:variable	line:75
+mean_error	../HRRR_average_error_over_period.py	/^        mean_error = np.nanmean(result, axis=0)$/;"	kind:variable	line:193
+mean_error	../HRRR_average_error_over_period_hovmoller.py	/^        mean_error = np.nanmean(result, axis=0)$/;"	kind:variable	line:255
+minH	../HRRR_S3_climo_maxmin_hourly.py	/^                minH = H['value'].copy()$/;"	kind:variable	line:64
+model	../plot_HRRR_custom_maps_EVENT.py	/^    model = 'hrrr'$/;"	kind:variable	line:761
+model	../sounding.py	/^model=sys.argv[1]$/;"	kind:variable	line:180
+modid	../sounding.py	/^    modid = 'GFS'$/;"	kind:variable	line:373
+modid	../sounding.py	/^    modid = 'HRRR'$/;"	kind:variable	line:376
+modid	../sounding.py	/^    modid = 'NAM'$/;"	kind:variable	line:367
+modid	../sounding.py	/^    modid = 'NAM'$/;"	kind:variable	line:370
+month	../HRRR_histogram.py	/^month = 9$/;"	kind:variable	line:88
+month	../sounding.py	/^      month= str(back_an_hour.month).zfill(2)$/;"	kind:variable	line:409
+month	../sounding.py	/^    month= junk[5:7]$/;"	kind:variable	line:400
+mpl	../HRRR_average_error_over_period.py	/^import matplotlib as mpl$/;"	kind:namespace	line:22
+mpl	../HRRR_average_error_over_period_hovmoller.py	/^import matplotlib as mpl$/;"	kind:namespace	line:24
+mpl	../plot_HRRR_custom_maps_EVENT.py	/^import matplotlib as mpl$/;"	kind:namespace	line:20
+mpl	../save_MesoWest_tophour.py	/^import matplotlib as mpl$/;"	kind:namespace	line:10
+mr_to_rh	../sounding.py	/^def mr_to_rh( mr,  p,  t) :$/;"	kind:function	line:94
+mr_to_rh_ice	../sounding.py	/^def mr_to_rh_ice( mr,  p,  t) :$/;"	kind:function	line:108
+mr_to_rh_wat	../sounding.py	/^def mr_to_rh_wat( mr,  p,  t) :$/;"	kind:function	line:101
+ms	../plot_HRRR_custom_maps_EVENT.py	/^    ms = Basemap()$/;"	kind:variable	line:61
+multiprocessing	../HRRR_S3_climo.py	/^import multiprocessing$/;"	kind:namespace	line:20
+multiprocessing	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import multiprocessing$/;"	kind:namespace	line:19
+multiprocessing	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import multiprocessing$/;"	kind:namespace	line:19
+multiprocessing	../HRRR_S3_climo_maxmin_hourly.py	/^import multiprocessing$/;"	kind:namespace	line:20
+multiprocessing	../HRRR_average_error_over_period.py	/^import multiprocessing$/;"	kind:namespace	line:13
+multiprocessing	../HRRR_average_error_over_period_hovmoller.py	/^import multiprocessing$/;"	kind:namespace	line:14
+multiprocessing	../HRRR_histogram.py	/^import multiprocessing # :)$/;"	kind:namespace	line:11
+multiprocessing	../plot_HRRR_custom_maps_EVENT.py	/^    import multiprocessing #:)$/;"	kind:namespace	line:749
+multiprocessing	../test_max_memory.py	/^import multiprocessing$/;"	kind:namespace	line:19
+mydata	../sounding.py	/^  mydata=dict(zip(('hght','pres','temp','dwpt','drct','sknt'),(z,p,t,td,dir,spd)))   $/;"	kind:variable	line:322
+mydata_fix	../sounding.py	/^    mydata_fix = mydata$/;"	kind:variable	line:329
+mydata_fix	../sounding.py	/^    mydata_fix = mydata$/;"	kind:variable	line:344
+mydata_fix	../sounding.py	/^    mydata_fix = {}$/;"	kind:variable	line:328
+naddlevs	../sounding.py	/^    naddlevs = 0$/;"	kind:variable	line:308
+naddlevs	../sounding.py	/^    naddlevs = 1$/;"	kind:variable	line:306
+naddlevs	../sounding.py	/^    naddlevs = 2$/;"	kind:variable	line:304
+naddlevs	../sounding.py	/^    naddlevs = 3$/;"	kind:variable	line:302
+naddlevs	../sounding.py	/^    naddlevs = 4$/;"	kind:variable	line:300
+naddlevs	../sounding.py	/^    naddlevs = 5$/;"	kind:variable	line:298
+name	../save_HRRR_MesoWest_point.py	/^    name = 'TEST'$/;"	kind:variable	line:188
+name	../save_HRRR_MesoWest_point_FIRES.py	/^    name = 'TEST'$/;"	kind:variable	line:654
+nc	../HRRR_S3_climo.py	/^nc = netcdf.NetCDFFile('average_wind_10m.nc', 'r')$/;"	kind:variable	line:74
+nc	../HRRR_S3_climo_maxmin_hourly.py	/^nc = netcdf.NetCDFFile('MaxMinMean_hourly_temp_2m.nc', 'r')$/;"	kind:variable	line:97
+nc_maxH	../HRRR_S3_climo_maxmin_hourly.py	/^                    nc_maxH = f.createVariable('max_'+variable, float, ('x', 'y', 't'))$/;"	kind:variable	line:73
+nc_meanH	../HRRR_S3_climo_maxmin_hourly.py	/^                    nc_meanH = f.createVariable('mean_'+variable, float, ('x', 'y', 't'))$/;"	kind:variable	line:75
+nc_minH	../HRRR_S3_climo_maxmin_hourly.py	/^                    nc_minH = f.createVariable('min_'+variable, float, ('x', 'y', 't'))$/;"	kind:variable	line:74
+netcdf	../HRRR_S3_climo.py	/^from scipy.io import netcdf$/;"	kind:namespace	line:21
+netcdf	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^from scipy.io import netcdf$/;"	kind:namespace	line:20
+netcdf	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^from scipy.io import netcdf$/;"	kind:namespace	line:20
+netcdf	../HRRR_S3_climo_maxmin_hourly.py	/^from scipy.io import netcdf$/;"	kind:namespace	line:21
+netcdf	../test_max_memory.py	/^from scipy.io import netcdf$/;"	kind:namespace	line:20
+new	../HRRR_S3_climo_maxmin_hourly.py	/^                new = H['value']$/;"	kind:variable	line:55
+new_angles	../HRRR_histogram.py	/^new_angles = np.arange(0, -2*np.pi, -2*np.pi\/new_nsector) + np.pi\/2$/;"	kind:variable	line:271
+new_bins	../HRRR_histogram.py	/^new_bins = bins[0:-1]$/;"	kind:variable	line:266
+new_cmap	../HRRR_histogram.py	/^new_cmap = mpl.cm.jet$/;"	kind:variable	line:269
+new_colors	../HRRR_histogram.py	/^new_colors = [new_cmap(i) for i in np.linspace(0.0, 1.0, new_nbins)]$/;"	kind:variable	line:270
+new_nbins	../HRRR_histogram.py	/^new_nbins = num_spd_bins$/;"	kind:variable	line:267
+new_nsector	../HRRR_histogram.py	/^new_nsector = num_dir_sectors$/;"	kind:variable	line:268
+np	../HRRR_S3_climo.py	/^import numpy as np$/;"	kind:namespace	line:17
+np	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import numpy as np$/;"	kind:namespace	line:16
+np	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import numpy as np$/;"	kind:namespace	line:16
+np	../HRRR_S3_climo_maxmin_hourly.py	/^import numpy as np$/;"	kind:namespace	line:17
+np	../HRRR_average_error_over_period.py	/^import numpy as np$/;"	kind:namespace	line:12
+np	../HRRR_average_error_over_period_hovmoller.py	/^import numpy as np$/;"	kind:namespace	line:13
+np	../HRRR_histogram.py	/^import numpy as np$/;"	kind:namespace	line:8
+np	../OSG_stats.py	/^import numpy as np$/;"	kind:namespace	line:8
+np	../get_bufr_sounding.py	/^import numpy as np$/;"	kind:namespace	line:9
+np	../plot_HRRR_custom_maps_EVENT.py	/^import numpy as np$/;"	kind:namespace	line:12
+np	../pluck_point_from_HRRR.py	/^import numpy as np$/;"	kind:namespace	line:19
+np	../save_HRRR_MesoWest_point.py	/^import numpy as np$/;"	kind:namespace	line:13
+np	../save_HRRR_MesoWest_point_FIRES.py	/^import numpy as np$/;"	kind:namespace	line:13
+np	../save_MesoWest_tophour.py	/^import numpy as np$/;"	kind:namespace	line:7
+np	../test_max_memory.py	/^import numpy as np$/;"	kind:namespace	line:16
+num_cpu	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^num_cpu = multiprocessing.cpu_count()$/;"	kind:variable	line:476
+num_cpu	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^num_cpu = multiprocessing.cpu_count()$/;"	kind:variable	line:476
+num_dir_sectors	../HRRR_histogram.py	/^num_dir_sectors = 8              # Number of directional sectors (sectors calculated in histogram function)$/;"	kind:variable	line:145
+num_proc	../HRRR_average_error_over_period.py	/^        num_proc = multiprocessing.cpu_count() # use all processors$/;"	kind:variable	line:178
+num_proc	../HRRR_average_error_over_period_hovmoller.py	/^        num_proc = multiprocessing.cpu_count() # use all processors$/;"	kind:variable	line:240
+num_proc	../plot_HRRR_custom_maps_EVENT.py	/^    num_proc = 6                           # specify number to use (to be nice)$/;"	kind:variable	line:784
+num_proc	../plot_HRRR_custom_maps_EVENT.py	/^    num_proc = multiprocessing.cpu_count() # use all processors$/;"	kind:variable	line:782
+num_spd_bins	../HRRR_histogram.py	/^num_spd_bins = len(speed_bins)    # Number of speed bins$/;"	kind:variable	line:147
+numhours	../sounding.py	/^numhours=len(ptimes)$/;"	kind:variable	line:226
+numlevs	../sounding.py	/^numlevs=(min(array(getind)[1:-1]-array(getind)[0:-2])-12)\/2$/;"	kind:variable	line:231
+o	../HRRR_average_error_over_period.py	/^o = options[option]$/;"	kind:variable	line:157
+o	../HRRR_average_error_over_period_hovmoller.py	/^o = options[option]$/;"	kind:variable	line:219
+offset	../HRRR_histogram.py	/^    offset = 0$/;"	kind:variable	line:290
+open_HRRR	../pluck_point_from_HRRR.py	/^from pyBKB_v2.BB_data.data_manager import open_HRRR$/;"	kind:namespace	line:16
+opening	../HRRR_histogram.py	/^opening = 0.8$/;"	kind:variable	line:283
+opening	../HRRR_histogram.py	/^opening = dtheta*opening$/;"	kind:variable	line:285
+option	../HRRR_average_error_over_period.py	/^option = 5$/;"	kind:variable	line:155
+option	../HRRR_average_error_over_period_hovmoller.py	/^option = 3$/;"	kind:variable	line:217
+options	../HRRR_average_error_over_period.py	/^options = {1:{'var'        : 'TMP:2 m',$/;"	kind:variable	line:94
+options	../HRRR_average_error_over_period_hovmoller.py	/^options = {1:{'var'        : 'TMP:2 m',$/;"	kind:variable	line:188
+os	../HRRR_S3_climo.py	/^import os$/;"	kind:namespace	line:11
+os	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import os$/;"	kind:namespace	line:10
+os	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import os$/;"	kind:namespace	line:10
+os	../HRRR_S3_climo_maxmin_hourly.py	/^import os$/;"	kind:namespace	line:11
+os	../plot_HRRR_custom_maps_EVENT.py	/^import os$/;"	kind:namespace	line:15
+os	../save_HRRR_MesoWest_point.py	/^import os$/;"	kind:namespace	line:14
+os	../save_HRRR_MesoWest_point_FIRES.py	/^import os$/;"	kind:namespace	line:14
+os	../save_MesoWest_tophour.py	/^import os$/;"	kind:namespace	line:13
+os	../sounding.py	/^import os, sys, time$/;"	kind:namespace	line:20
+os	../test_max_memory.py	/^import os$/;"	kind:namespace	line:10
+otheraddlevs	../sounding.py	/^  otheraddlevs = []$/;"	kind:variable	line:311
+out_dir	../save_HRRR_MesoWest_point.py	/^    out_dir = '.\/test\/'$/;"	kind:variable	line:186
+out_dir	../save_HRRR_MesoWest_point_FIRES.py	/^    out_dir = '.\/test\/'$/;"	kind:variable	line:652
+out_dir	../save_MesoWest_tophour.py	/^    out_dir ='.\/test\/'$/;"	kind:variable	line:144
+p	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^p = multiprocessing.Pool(num_cpu)$/;"	kind:variable	line:480
+p	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^p = multiprocessing.Pool(num_cpu)$/;"	kind:variable	line:486
+p	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^p = multiprocessing.Pool(num_cpu)$/;"	kind:variable	line:480
+p	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^p = multiprocessing.Pool(num_cpu)$/;"	kind:variable	line:486
+p	../HRRR_average_error_over_period.py	/^        p = multiprocessing.Pool(num_proc)$/;"	kind:variable	line:179
+p	../HRRR_average_error_over_period_hovmoller.py	/^        p = multiprocessing.Pool(num_proc)$/;"	kind:variable	line:241
+p	../HRRR_histogram.py	/^p = multiprocessing.Pool(cpu_count)$/;"	kind:variable	line:126
+p	../HRRR_histogram.py	/^p = multiprocessing.Pool(cpu_count)$/;"	kind:variable	line:132
+p	../HRRR_histogram.py	/^p = multiprocessing.Pool(cpu_count)$/;"	kind:variable	line:156
+p	../plot_HRRR_custom_maps_EVENT.py	/^    p = multiprocessing.Pool(num_proc)$/;"	kind:variable	line:786
+p	../pluck_point_from_HRRR.py	/^    p = pluck_point(stns_dict, request_date, forecast_hour)$/;"	kind:variable	line:113
+p	../sounding.py	/^p=zeros((numhours,numlevs))$/;"	kind:variable	line:239
+p	../test_max_memory.py	/^p = multiprocessing.Pool(cpu_count)$/;"	kind:variable	line:59
+pad	../plot_HRRR_custom_maps_EVENT.py	/^pad = 0.01$/;"	kind:variable	line:35
+paddlevs	../sounding.py	/^  paddlevs = manlevels[0:naddlevs]$/;"	kind:variable	line:309
+patch	../HRRR_histogram.py	/^        patch = mpl.patches.Rectangle((plot_angles[j]-opening\/2, offset), opening, val,$/;"	kind:variable	line:296
+patches	../plot_HRRR_custom_maps_EVENT.py	/^                patches = []$/;"	kind:variable	line:79
+pc	../sounding.py	/^  pc=S.get_parcel('mu')$/;"	kind:variable	line:387
+per	../plot_HRRR_custom_maps_EVENT.py	/^    per = ms.readshapefile(shapefile, 'perim',$/;"	kind:variable	line:62
+plot_HRRR_custom_maps_EVENT.py	../plot_HRRR_custom_maps_EVENT.py	1;"	kind:file	line:1
+plot_MMM	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^def plot_MMM(inputs):$/;"	kind:function	line:417
+plot_MMM	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^def plot_MMM(inputs):$/;"	kind:function	line:417
+plot_P	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^def plot_P(inputs):$/;"	kind:function	line:361
+plot_P	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^def plot_P(inputs):$/;"	kind:function	line:361
+plot_angles	../HRRR_histogram.py	/^plot_angles = np.hstack((new_angles, new_angles[-1]-2*np.pi\/new_nsector))$/;"	kind:variable	line:273
+plot_corescount_vs_time	../OSG_stats.py	/^def plot_corescount_vs_time():$/;"	kind:function	line:120
+plot_error	../HRRR_average_error_over_period.py	/^        plot_error = m.pcolormesh(H['lon'], H['lat'], mean_error, $/;"	kind:variable	line:197
+plot_rmse	../HRRR_average_error_over_period.py	/^        plot_rmse = m.pcolormesh(H['lon'], H['lat'], RMSE, $/;"	kind:variable	line:208
+plot_vals	../HRRR_histogram.py	/^plot_vals = np.hstack((wbb_rose_table,$/;"	kind:variable	line:274
+plotcode	../plot_HRRR_custom_maps_EVENT.py	/^    plotcode = 'MSLP_Contour,10mWind_Shade'$/;"	kind:variable	line:766
+plotdir	../sounding.py	/^plotdir = arcdir + iyear + imonth + iday + '\/images\/models\/hrrr\/'$/;"	kind:variable	line:199
+plt	../HRRR_S3_climo.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:18
+plt	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+plt	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+plt	../HRRR_S3_climo_maxmin_hourly.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:18
+plt	../HRRR_average_error_over_period.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+plt	../HRRR_average_error_over_period_hovmoller.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+plt	../HRRR_histogram.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:12
+plt	../OSG_stats.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+plt	../plot_HRRR_custom_maps_EVENT.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:22
+plt	../save_HRRR_MesoWest_point.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:16
+plt	../save_HRRR_MesoWest_point_FIRES.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:16
+plt	../save_MesoWest_tophour.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:9
+plt	../test_max_memory.py	/^import matplotlib.pyplot as plt$/;"	kind:namespace	line:17
+pluck_point	../pluck_point_from_HRRR.py	/^def pluck_point(dict, request_date, forecast_hour, vars=HRRR_vars):$/;"	kind:function	line:30
+pluck_point_from_HRRR.py	../pluck_point_from_HRRR.py	1;"	kind:file	line:1
+pluck_point_new	../HRRR_average_error_over_period_hovmoller.py	/^from BB_data.grid_manager import pluck_point_new$/;"	kind:namespace	line:22
+pluck_point_new	../HRRR_histogram.py	/^from BB_data.grid_manager import pluck_point_new$/;"	kind:namespace	line:254
+pluck_point_new	../OSG_stats.py	/^from BB_data.grid_manager import pluck_point_new$/;"	kind:namespace	line:14
+pluck_point_new	../plot_HRRR_custom_maps_EVENT.py	/^from BB_data.grid_manager import pluck_point_new$/;"	kind:namespace	line:48
+poly_between	../HRRR_histogram.py	/^from pylab import poly_between$/;"	kind:namespace	line:255
+psutil	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import psutil$/;"	kind:namespace	line:21
+psutil	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import psutil$/;"	kind:namespace	line:21
+psutil	../test_max_memory.py	/^import psutil$/;"	kind:namespace	line:21
+ptimes	../sounding.py	/^ptimes=[]$/;"	kind:variable	line:212
+ptimes	../sounding.py	/^ptimes=array(ptimes)$/;"	kind:variable	line:221
+pygrib	../HRRR_S3_climo.py	/^import pygrib$/;"	kind:namespace	line:12
+pygrib	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import pygrib$/;"	kind:namespace	line:11
+pygrib	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import pygrib$/;"	kind:namespace	line:11
+pygrib	../HRRR_S3_climo_maxmin_hourly.py	/^import pygrib$/;"	kind:namespace	line:12
+pygrib	../save_HRRR_MesoWest_point.py	/^import pygrib$/;"	kind:namespace	line:12
+pygrib	../save_HRRR_MesoWest_point_FIRES.py	/^import pygrib$/;"	kind:namespace	line:12
+pygrib	../test_max_memory.py	/^import pygrib$/;"	kind:namespace	line:11
+pytz	../sounding.py	/^import pytz$/;"	kind:namespace	line:23
+re	../HRRR_S3_climo.py	/^import re$/;"	kind:namespace	line:16
+re	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import re$/;"	kind:namespace	line:15
+re	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import re$/;"	kind:namespace	line:15
+re	../HRRR_S3_climo_maxmin_hourly.py	/^import re$/;"	kind:namespace	line:16
+re	../test_max_memory.py	/^import re$/;"	kind:namespace	line:15
+rect	../HRRR_histogram.py	/^rect = [0.1, 0.1, 0.8, 0.8]$/;"	kind:variable	line:279
+reflect_ncdc	../plot_HRRR_custom_maps_EVENT.py	/^        from BB_cmap.reflectivity_colormap import reflect_ncdc$/;"	kind:namespace	line:390
+requestDATES	../HRRR_histogram.py	/^requestDATES = np.array([d-timedelta(hours=fxx) for d in validDATES])$/;"	kind:variable	line:117
+request_date	../pluck_point_from_HRRR.py	/^    request_date = datetime(2016, 7, 31, 0)$/;"	kind:variable	line:106
+request_date	../save_HRRR_MesoWest_point.py	/^    request_date = datetime(2016,7,31,0)$/;"	kind:variable	line:181
+request_date	../save_HRRR_MesoWest_point_FIRES.py	/^    request_date = datetime(2016,7,31,0)$/;"	kind:variable	line:647
+request_time	../get_bufr_sounding.py	/^    request_time = datetime(2017, 1, 30)$/;"	kind:variable	line:155
+result	../HRRR_average_error_over_period.py	/^            result = p.map(HRRR_error, date_list)$/;"	kind:variable	line:183
+result	../HRRR_average_error_over_period.py	/^            result = p.map(HRRR_error_wind_speed, date_list)$/;"	kind:variable	line:181
+result	../HRRR_average_error_over_period.py	/^        result = np.array([i for i in result if not np.isnan(np.sum(i))])$/;"	kind:variable	line:188
+result	../HRRR_average_error_over_period_hovmoller.py	/^            result = p.map(HRRR_error, date_list)$/;"	kind:variable	line:245
+result	../HRRR_average_error_over_period_hovmoller.py	/^            result = p.map(HRRR_error_wind_speed, date_list)$/;"	kind:variable	line:243
+result	../HRRR_average_error_over_period_hovmoller.py	/^        result = np.array([i for i in result if not np.isnan(np.sum(i))])$/;"	kind:variable	line:250
+result	../HRRR_histogram.py	/^result = np.array(p.map(get_hist_table, indexes))$/;"	kind:variable	line:157
+result	../test_max_memory.py	/^result = p.map(get_HRRR_value, DATES)$/;"	kind:variable	line:60
+rh_to_mr	../sounding.py	/^def rh_to_mr( rh, p, t) :$/;"	kind:function	line:73
+rh_to_mr_ice	../sounding.py	/^def rh_to_mr_ice( rh, p, t) :$/;"	kind:function	line:87
+rh_to_mr_wat	../sounding.py	/^def rh_to_mr_wat( rh, p, t) :$/;"	kind:function	line:80
+rose	../HRRR_histogram.py	/^rose = h5['rose tables']$/;"	kind:variable	line:187
+rose_dim	../HRRR_histogram.py	/^rose_dim = num_spd_bins * num_dir_sectors$/;"	kind:variable	line:149
+rose_storage	../HRRR_histogram.py	/^rose_storage = result.reshape(x_dim, y_dim, num_spd_bins, num_dir_sectors)$/;"	kind:variable	line:160
+s	../get_bufr_sounding.py	/^    s = get_bufr_sounding(request_time)$/;"	kind:variable	line:157
+sDATE	../HRRR_average_error_over_period.py	/^        sDATE = datetime(2017, 9, 1, hour)$/;"	kind:variable	line:171
+sDATE	../HRRR_average_error_over_period_hovmoller.py	/^        sDATE = datetime(2017, 8, 10, hour)$/;"	kind:variable	line:233
+sDATE	../HRRR_histogram.py	/^sDATE = datetime(2015, 4, 18, hour)$/;"	kind:variable	line:94
+sDATE	../plot_HRRR_custom_maps_EVENT.py	/^    sDATE = datetime(2018, 1, 4, 15)$/;"	kind:variable	line:757
+samples	../HRRR_average_error_over_period.py	/^        samples = len(result)$/;"	kind:variable	line:189
+samples	../HRRR_average_error_over_period_hovmoller.py	/^        samples = len(result)$/;"	kind:variable	line:251
+samples	../HRRR_histogram.py	/^samples = np.sum(rose[0,0]) # same as np.sum(rose[0, 0, :, :])$/;"	kind:variable	line:192
+samples_requested	../HRRR_average_error_over_period.py	/^        samples_requested = len(result)$/;"	kind:variable	line:187
+samples_requested	../HRRR_average_error_over_period_hovmoller.py	/^        samples_requested = len(result)$/;"	kind:variable	line:249
+satmix	../sounding.py	/^def satmix( p, t) :$/;"	kind:function	line:115
+satmixice	../sounding.py	/^def satmixice( p, t) :$/;"	kind:function	line:133
+satmixwat	../sounding.py	/^def satmixwat( p,  t) :$/;"	kind:function	line:125
+save_HRRR_MesoWest_point	../save_HRRR_MesoWest_point.py	/^def save_HRRR_MesoWest_point(request_date,MesoWest_stations_dict,out_dir,fig_dir,name,forecast_hour):$/;"	kind:function	line:22
+save_HRRR_MesoWest_point	../save_HRRR_MesoWest_point_FIRES.py	/^def save_HRRR_MesoWest_point(fires_dict,request_date,forecast_hour,base_dir,terminal_date=datetime(today.year,today.month,today.day)):$/;"	kind:function	line:24
+save_HRRR_MesoWest_point.py	../save_HRRR_MesoWest_point.py	1;"	kind:file	line:1
+save_HRRR_MesoWest_point_EXTRA_WIND	../save_HRRR_MesoWest_point_FIRES.py	/^def save_HRRR_MesoWest_point_EXTRA_WIND(fires_dict,request_date,forecast_hour,base_dir,terminal_date=datetime(today.year,today.month,today.day)):$/;"	kind:function	line:225
+save_HRRR_MesoWest_point_FIRES.py	../save_HRRR_MesoWest_point_FIRES.py	1;"	kind:file	line:1
+save_HRRR_MesoWest_point_JIMS_WIND	../save_HRRR_MesoWest_point_FIRES.py	/^def save_HRRR_MesoWest_point_JIMS_WIND(fires_dict,request_date,forecast_hour,base_dir,terminal_date=datetime(today.year,today.month,today.day)):$/;"	kind:function	line:435
+save_MesoWest_tophour	../save_MesoWest_tophour.py	/^def save_MesoWest_tophour(stations,out_dir,start_API,end_API):$/;"	kind:function	line:64
+save_MesoWest_tophour.py	../save_MesoWest_tophour.py	1;"	kind:file	line:1
+savefig	../sounding.py	/^from matplotlib.pyplot import savefig$/;"	kind:namespace	line:19
+shapefile	../plot_HRRR_custom_maps_EVENT.py	/^    shapefile = '\/uufs\/chpc.utah.edu\/common\/home\/u0553130\/oper\/HRRR_fires\/perim'$/;"	kind:variable	line:60
+shrink	../plot_HRRR_custom_maps_EVENT.py	/^shrink = 0.7$/;"	kind:variable	line:36
+site	../sounding.py	/^site=sys.argv[2]$/;"	kind:variable	line:181
+sounding.py	../sounding.py	1;"	kind:file	line:1
+soup	../sounding.py	/^    soup = BeautifulSoup(content, "html.parser")$/;"	kind:variable	line:421
+spd	../sounding.py	/^spd=zeros((numhours,numlevs))$/;"	kind:variable	line:246
+speed_bins	../HRRR_histogram.py	/^speed_bins = np.arange(0, 10, 2)  # Speed bins$/;"	kind:variable	line:146
+splitted	../sounding.py	/^    splitted = data_text.split("\\n",data_text.count("\\n"))$/;"	kind:variable	line:426
+ssl	../HRRR_S3_climo.py	/^import ssl$/;"	kind:namespace	line:15
+ssl	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import ssl$/;"	kind:namespace	line:14
+ssl	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import ssl$/;"	kind:namespace	line:14
+ssl	../HRRR_S3_climo_maxmin_hourly.py	/^import ssl$/;"	kind:namespace	line:15
+ssl	../test_max_memory.py	/^import ssl$/;"	kind:namespace	line:14
+starttime	../sounding.py	/^starttime=ptimes[0]$/;"	kind:variable	line:222
+stations	../save_MesoWest_tophour.py	/^    stations=['KSLC','UKBKB']$/;"	kind:variable	line:143
+stats	../OSG_stats.py	/^    stats = ['MAX']$/;"	kind:variable	line:167
+step	../sounding.py	/^step=int(maxfhr\/float(len(ptimes)-1))$/;"	kind:variable	line:225
+stn	../sounding.py	/^    stn = '72572' #this is the ID for the slc balloon$/;"	kind:variable	line:398
+stns_dict	../pluck_point_from_HRRR.py	/^    stns_dict = {'LAT': np.array([40.77069]),$/;"	kind:variable	line:107
+subdir	../sounding.py	/^    subdir = 'gfs004'$/;"	kind:variable	line:372
+subdir	../sounding.py	/^    subdir = 'hrrr'$/;"	kind:variable	line:375
+subdir	../sounding.py	/^    subdir = 'nam218'$/;"	kind:variable	line:369
+subdir	../sounding.py	/^    subdir = 'namhires'$/;"	kind:variable	line:366
+sumH	../HRRR_S3_climo.py	/^            sumH = H['value'] + sumH$/;"	kind:variable	line:43
+sumH	../HRRR_S3_climo.py	/^            sumH = H['value']$/;"	kind:variable	line:46
+sumH	../HRRR_S3_climo_maxmin_hourly.py	/^                sumH = H['value'].copy(); count = 1$/;"	kind:variable	line:65
+svpice	../sounding.py	/^def svpice( t) :$/;"	kind:function	line:162
+svpwat	../sounding.py	/^def svpwat(t) :$/;"	kind:function	line:142
+sys	../HRRR_S3_climo.py	/^import sys$/;"	kind:namespace	line:23
+sys	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import sys$/;"	kind:namespace	line:23
+sys	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import sys$/;"	kind:namespace	line:23
+sys	../HRRR_S3_climo_maxmin_hourly.py	/^import sys$/;"	kind:namespace	line:23
+sys	../HRRR_average_error_over_period.py	/^import sys$/;"	kind:namespace	line:16
+sys	../HRRR_average_error_over_period_hovmoller.py	/^import sys$/;"	kind:namespace	line:17
+sys	../HRRR_histogram.py	/^import sys$/;"	kind:namespace	line:15
+sys	../OSG_stats.py	/^import sys$/;"	kind:namespace	line:12
+sys	../plot_HRRR_custom_maps_EVENT.py	/^import sys$/;"	kind:namespace	line:41
+sys	../pluck_point_from_HRRR.py	/^import sys$/;"	kind:namespace	line:14
+sys	../save_MesoWest_tophour.py	/^import sys$/;"	kind:namespace	line:14
+sys	../sounding.py	/^import os, sys, time$/;"	kind:namespace	line:20
+sys	../test_max_memory.py	/^import sys$/;"	kind:namespace	line:23
+t	../sounding.py	/^t=zeros((numhours,numlevs))$/;"	kind:variable	line:241
+td	../sounding.py	/^td=zeros((numhours,numlevs))$/;"	kind:variable	line:243
+test_max_memory.py	../test_max_memory.py	1;"	kind:file	line:1
+time	../HRRR_average_error_over_period_hovmoller.py	/^import time$/;"	kind:namespace	line:12
+time	../sounding.py	/^import os, sys, time$/;"	kind:namespace	line:20
+timedelta	../HRRR_S3_climo.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:13
+timedelta	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+timedelta	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+timedelta	../HRRR_S3_climo_maxmin_hourly.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:13
+timedelta	../HRRR_average_error_over_period.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:11
+timedelta	../HRRR_average_error_over_period_hovmoller.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:11
+timedelta	../HRRR_histogram.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:9
+timedelta	../plot_HRRR_custom_maps_EVENT.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:13
+timedelta	../pluck_point_from_HRRR.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:12
+timedelta	../save_HRRR_MesoWest_point.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:15
+timedelta	../save_HRRR_MesoWest_point_FIRES.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:15
+timedelta	../save_MesoWest_tophour.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:8
+timedelta	../sounding.py	/^from datetime import datetime, timedelta$/;"	kind:namespace	line:21
+timedelta	../test_max_memory.py	/^from datetime import date, datetime, timedelta$/;"	kind:namespace	line:12
+timer	../HRRR_histogram.py	/^timer = datetime.now() - timer1$/;"	kind:variable	line:165
+timer1	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^timer1 = datetime.now()$/;"	kind:variable	line:111
+timer1	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^timer1 = datetime.now()$/;"	kind:variable	line:111
+timer1	../HRRR_S3_climo_maxmin_hourly.py	/^timer1 = datetime.now()$/;"	kind:variable	line:30
+timer1	../HRRR_histogram.py	/^timer1 = datetime.now()$/;"	kind:variable	line:97
+timezone	../sounding.py	/^from pytz import timezone$/;"	kind:namespace	line:22
+titlestring	../sounding.py	/^  titlestring = ccccddyy+hh+'F'+cfhr+modid+' '+site.upper()+' Valid '+ junk[11:13] + 'Z' + dayofweek + junk[8:10] + calendar.month_abbr[int(junk[5:7])] + junk[0:4]$/;"	kind:variable	line:379
+today	../save_HRRR_MesoWest_point_FIRES.py	/^today = datetime.now()$/;"	kind:variable	line:22
+tw	../sounding.py	/^tw=zeros((numhours,numlevs))$/;"	kind:variable	line:242
+urllib2	../HRRR_S3_climo.py	/^import urllib2$/;"	kind:namespace	line:14
+urllib2	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^import urllib2$/;"	kind:namespace	line:13
+urllib2	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^import urllib2$/;"	kind:namespace	line:13
+urllib2	../HRRR_S3_climo_maxmin_hourly.py	/^import urllib2$/;"	kind:namespace	line:14
+urllib2	../sounding.py	/^import urllib2$/;"	kind:namespace	line:27
+urllib2	../test_max_memory.py	/^import urllib2$/;"	kind:namespace	line:13
+v	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^v = 'gust10m'$/;"	kind:variable	line:473
+v	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^v = 'gust10m'$/;"	kind:variable	line:473
+val	../HRRR_histogram.py	/^        val = wbb_rose_percent[i, j]$/;"	kind:variable	line:294
+validDATES	../HRRR_histogram.py	/^validDATES = []$/;"	kind:variable	line:104
+var	../HRRR_average_error_over_period.py	/^var = o['var']$/;"	kind:variable	line:158
+var	../HRRR_average_error_over_period_hovmoller.py	/^var = o['var']$/;"	kind:variable	line:220
+var	../OSG_stats.py	/^    var = variable.replace(':', '_').replace(' ', '_')$/;"	kind:variable	line:164
+var_dict	../HRRR_S3_climo_MaxMinMeanPerc_hourly_multipro.py	/^var_dict = {'temp2m':{'variable':'TMP:2 m',$/;"	kind:variable	line:46
+var_dict	../HRRR_S3_climo_MaxMinMean_hourly_multipro.py	/^var_dict = {'temp2m':{'variable':'TMP:2 m',$/;"	kind:variable	line:46
+var_name	../HRRR_S3_climo.py	/^var_name = "wind_10m"$/;"	kind:variable	line:34
+var_name	../HRRR_S3_climo_maxmin_hourly.py	/^var_name = "temp_2m"$/;"	kind:variable	line:41
+var_name	../HRRR_histogram.py	/^var_name = 'ROSE_10m'$/;"	kind:variable	line:168
+var_str	../HRRR_average_error_over_period.py	/^var_str = var.replace(':', '_').replace(' ', '_')$/;"	kind:variable	line:159
+var_str	../HRRR_average_error_over_period_hovmoller.py	/^var_str = var.replace(':', '_').replace(' ', '_')$/;"	kind:variable	line:221
+variable	../HRRR_S3_climo.py	/^variable = 'WIND:10 m'$/;"	kind:variable	line:33
+variable	../HRRR_S3_climo_maxmin_hourly.py	/^variable = 'TMP:2 m'$/;"	kind:variable	line:40
+variable	../HRRR_histogram.py	/^variable = 'UGRD:10 m'$/;"	kind:variable	line:125
+variable	../HRRR_histogram.py	/^variable = 'VGRD:10 m'$/;"	kind:variable	line:131
+variable	../OSG_stats.py	/^    variable = 'TMP:2 m'$/;"	kind:variable	line:162
+wbb_lat	../HRRR_histogram.py	/^wbb_lat = 40.76623$/;"	kind:variable	line:251
+wbb_lon	../HRRR_histogram.py	/^wbb_lon = -111.84755$/;"	kind:variable	line:252
+wbb_rose_percent	../HRRR_histogram.py	/^wbb_rose_percent = wbb_rose_table\/float(samples)$/;"	kind:variable	line:287
+wbb_rose_table	../HRRR_histogram.py	/^wbb_rose_table = rose[i, j]$/;"	kind:variable	line:262
+wind_calcs	../save_MesoWest_tophour.py	/^import wind_calcs$/;"	kind:namespace	line:19
+wind_uv_to_dir	../HRRR_histogram.py	/^from BB_wx_calcs.wind import wind_uv_to_spd, wind_uv_to_dir$/;"	kind:namespace	line:18
+wind_uv_to_spd	../HRRR_average_error_over_period.py	/^from BB_wx_calcs.wind import wind_uv_to_spd$/;"	kind:namespace	line:20
+wind_uv_to_spd	../HRRR_average_error_over_period_hovmoller.py	/^from BB_wx_calcs.wind import wind_uv_to_spd$/;"	kind:namespace	line:21
+wind_uv_to_spd	../HRRR_histogram.py	/^from BB_wx_calcs.wind import wind_uv_to_spd, wind_uv_to_dir$/;"	kind:namespace	line:18
+wind_uv_to_spd	../plot_HRRR_custom_maps_EVENT.py	/^from BB_wx_calcs.wind import wind_uv_to_spd$/;"	kind:namespace	line:47
+year	../sounding.py	/^      year = str(back_an_hour.year)$/;"	kind:variable	line:408
+year	../sounding.py	/^    year = junk[0:4]$/;"	kind:variable	line:399
+years	../HRRR_histogram.py	/^years = range(sDATE.year, eDATE.year+1)$/;"	kind:variable	line:103
+z	../sounding.py	/^z=zeros((numhours,numlevs))$/;"	kind:variable	line:240
+zaddlevs	../sounding.py	/^  zaddlevs = manheight[0:naddlevs]$/;"	kind:variable	line:310
+zorder	../HRRR_histogram.py	/^        zorder = ZBASE + new_nbins - i$/;"	kind:variable	line:295
