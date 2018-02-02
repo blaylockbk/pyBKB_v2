@@ -78,24 +78,25 @@ def get_hrrr_variable(DATE, variable,
         print outfile
 
     # Dear User,
-    # Only HRRR files for the previous day have been transfered to Pando.
+    # Only HRRR files for the previous day have been transferred to Pando.
     # That means if you are requesting data for today, you need to get it from
     # the NOMADS website. Good news, it's an easy fix. All we need to do is 
     # redirect you to the NOMADS URLs. I'll check that the date you are
     # requesting is not for today's date. If it is, then I'll send you to
     # NOMADS. Deal? :)
-    #                                                    -Sincerely, Brian
+    #                                             -Sincerely, Brian
+    #
     UTC = datetime.utcnow() # the current date in UTC
     if DATE < datetime(UTC.year, UTC.month, UTC.day):
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
         # URL for the grib2.idx file
-        fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                    % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+        fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                    % (model_dir, field, DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
         # URL for the grib2 file (located on PANDO S3 archive)
-        pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                    % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+        pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
+                    % (model_dir, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
     else:
         # Get operational HRRR from NOMADS
         if model == 'hrrr':
@@ -105,11 +106,11 @@ def get_hrrr_variable(DATE, variable,
                 print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
                 print "-----------------------------------------------------------------------\n"
             # URL for the grib2 idx file
-            fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                        % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+            fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+                        % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
             # URL for the grib2 file (located on NOMADS server)
-            pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                        % (DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
+            pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
+                        % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
         # or, get experiemtnal HRRR from ESRL
         elif model == 'hrrrX':
             print "\n-----------------------------------------------------------------------"
