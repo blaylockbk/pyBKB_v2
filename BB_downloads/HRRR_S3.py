@@ -62,12 +62,12 @@ def get_hrrr_variable(DATE, variable,
         verbose - prints some stuff out
     """
     # Model direcotry names are named differently than the model name.
-    if model == 'hrrr':
-        model_dir = 'oper'
-    elif model == 'hrrrX':
-        model_dir = 'exp'
-    elif model == 'hrrrAK':
-        model_dir = 'alaska'
+    #if model == 'hrrr':
+    #    model_dir = 'oper'
+    #elif model == 'hrrrX':
+    #    model_dir = 'exp'
+    #elif model == 'hrrrAK':
+    #    model_dir = 'alaska'
 
 
     # Temp file name has to be very unique, else when we use multiprocessing we
@@ -92,11 +92,15 @@ def get_hrrr_variable(DATE, variable,
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
         # URL for the grib2.idx file
-        fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                    % (model_dir, field, DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+        #fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
+        #            % (model_dir, field, DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
         # URL for the grib2 file (located on PANDO S3 archive)
-        pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
-                    % (model_dir, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+        #pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
+        #            % (model_dir, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+        # URL for the grib2 file (located on PANDO S3 archive)
+        pandofile = 'https://pando-rgw01.chpc.utah.edu/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
+                    % (model, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+        fileidx = pandofile+'.idx'
     else:
         # Get operational HRRR from NOMADS
         if model == 'hrrr':
