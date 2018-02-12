@@ -73,6 +73,7 @@ def get_station_info(stationIDs):
                'America/Indiana/Indianapolis': 5,
                'America/Chicago': 6,
                'America/Denver': 7,
+               'America/Boise': 7,
                'America/Phoenix': 7,      # no daylight savings
                'America/Los_Angeles': 8,
                'America/Anchorage': 9,
