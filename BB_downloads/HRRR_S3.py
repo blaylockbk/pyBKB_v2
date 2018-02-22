@@ -146,6 +146,9 @@ def get_hrrr_variable(DATE, variable,
             grbs = pygrib.open(OUTDIR+NEWFILE)
             if value_only is True:
                 value = grbs[number].values
+                validDATE = grbs[number].validDate
+                anlysDATE = grbs[number].analDate
+                msg = str(grbs[number])
                 # (Remove the temporary file)
                 #    ?? Is it possible to push the data straight from curl to ??
                 #    ?? pygrib, without writing/removing a temp file? and     ??
@@ -153,7 +156,10 @@ def get_hrrr_variable(DATE, variable,
                 if removeFile is True:
                     os.system('rm -f %s' % (OUTDIR+NEWFILE))
                     os.system('rm -f %s' % (OUTDIR+NEWFILE+'.idx'))
-                return {'value': value}
+                return {'value': value,
+                        'valid': validDATE,
+                        'anlys': anlysDATE,
+                        'msg': msg}
 
             else:
                 value, lat, lon = grbs[number].data()
