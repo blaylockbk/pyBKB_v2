@@ -1,5 +1,5 @@
-# Brian Blaylock
 # March 14, 2017                                           It's Pi Day!! (3.14)
+# Brian Blaylock
 
 """
 Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
@@ -54,21 +54,13 @@ def get_hrrr_variable(DATE, variable,
                    You want to put the variable short name and the level information
                    For example, for 2m temperature: 'TMP:2 m above ground'
         fxx - the forecast hour you desire. Default is the anlaysis hour.
-        model - the model you want. Options include ['hrrr', 'hrrrX', 'hrrrAK']
+        model - the model you want. Options include ['hrrr', 'hrrrX', 'hrrrak']
         field - the file type your variable is in. Options include ['sfc', 'prs']
         removeFile - True will remove the grib2 file after downloaded. False will not.
         value_only - Only return the values. Fastest return speed if set to True, when all you need is the value.
                      Return Time .75-1 Second if False, .2 seconds if True.
         verbose - prints some stuff out
     """
-    # Model direcotry names are named differently than the model name.
-    #if model == 'hrrr':
-    #    model_dir = 'oper'
-    #elif model == 'hrrrX':
-    #    model_dir = 'exp'
-    #elif model == 'hrrrAK':
-    #    model_dir = 'alaska'
-
 
     # Temp file name has to be very unique, else when we use multiprocessing we
     # might accidentally delete files before we are done with them.
@@ -91,13 +83,6 @@ def get_hrrr_variable(DATE, variable,
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
-        # URL for the grib2.idx file
-        #fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-        #            % (model_dir, field, DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
-        # URL for the grib2 file (located on PANDO S3 archive)
-        #pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
-        #            % (model_dir, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
-        # URL for the grib2 file (located on PANDO S3 archive)
         pandofile = 'https://pando-rgw01.chpc.utah.edu/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
                     % (model, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
         fileidx = pandofile+'.idx'
@@ -109,16 +94,14 @@ def get_hrrr_variable(DATE, variable,
                 print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
                 print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
                 print "-----------------------------------------------------------------------\n"
-            # URL for the grib2 idx file
-            fileidx = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                        % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
             # URL for the grib2 file (located on NOMADS server)
             pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
                         % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+            fileidx = pandofile+'.idx'
         # or, get experiemtnal HRRR from ESRL
         elif model == 'hrrrX':
             print "\n-----------------------------------------------------------------------"
-            print "!! Need to download today's Experimental HRRRfrom ESRL via FTP !!"
+            print "!! Need to download today's Experimental HRRR from ESRL via FTP !!"
             print "!! Have to get the full file, and then will have to sift through each field"
             print "-----------------------------------------------------------------------\n"
             import sys
@@ -130,7 +113,7 @@ def get_hrrr_variable(DATE, variable,
             ftp.login(user, password)
             ftp.cwd('hrrr/conus/wrftwo')
 
-            # What is the initalized hour and forecast?
+            # What is the initialized hour and forecast?
             hour = ESRL_file[5:7]
             forecast = ESRL_file[9:11]
 
@@ -717,7 +700,7 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     return return_this
 
 
-def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
+def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18, verbose=True):
     """
     Creates a vector of a variable's value for each hour in a HRRR model 
     forecast initialized from a specific time.
@@ -743,8 +726,8 @@ def get_hrrr_pollywog(DATE, variable, lat, lon, forecast_limit=18):
     forecasts = range(forecast_limit+1)
     for fxx in forecasts:
         try:
-            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc')
-            Vdate, plucked = pluck_hrrr_point(H, lat, lon)
+            H = get_hrrr_variable(DATE, variable, fxx, model='hrrr', field='sfc', verbose=verbose)
+            Vdate, plucked = pluck_hrrr_point(H, lat, lon, verbose=verbose)
             pollywog = np.append(pollywog, plucked)
             valid_dates = np.append(valid_dates, Vdate)
         except:

@@ -65,9 +65,12 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
 
     # Load the RGB arrays and apply a gamma correction (a power, usually the squar root)
     gamma = .40
-    R = np.power(C.variables['CMI_C02'][:].data, gamma) # Band 2 is red (0.64 um)
-    G = np.power(C.variables['CMI_C03'][:].data, gamma) # Band 3 is "green" (0.865 um)
-    B = np.power(C.variables['CMI_C01'][:].data, gamma) # Band 1 is blue (0.47 um)
+    R = np.power(C.variables['CMI_C02'][:], gamma) # Band 2 is red (0.64 um)
+    G = np.power(C.variables['CMI_C03'][:], gamma) # Band 3 is "green" (0.865 um)
+    B = np.power(C.variables['CMI_C01'][:], gamma) # Band 1 is blue (0.47 um)
+    #R = np.power(C.variables['CMI_C02'][:].data, gamma) # Band 2 is red (0.64 um)
+    #G = np.power(C.variables['CMI_C03'][:].data, gamma) # Band 3 is "green" (0.865 um)
+    #B = np.power(C.variables['CMI_C01'][:].data, gamma) # Band 1 is blue (0.47 um)
     print '\n   Gamma correction: %s' % gamma
 
     # Modify the RGB color contrast:
@@ -84,7 +87,8 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
     if night_IR == True:
         # Prepare the Clean IR band by converting brightness temperatures to greyscale values
         # From: https://github.com/occ-data/goes16-play/blob/master/plot.py
-        cleanir = C.variables['CMI_C13'][:].data
+        cleanir = C.variables['CMI_C13'][:]
+        #cleanir = C.variables['CMI_C13'][:].data
         cir_min = 90.0
         cir_max = 313.0
         cleanir_c = (cleanir - cir_min) / (cir_max - cir_min) # normalize array between 0 and 1
