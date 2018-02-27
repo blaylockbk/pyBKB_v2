@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import multiprocessing
 
 import sys
@@ -350,7 +350,7 @@ def plot_for_each_fxx_with_Map(f):
     plt.title('Valid: %s' % D.strftime('%Y-%b-%d %H:%M'), loc='right')
     
     plt.suptitle('%s  %s' % (stn, var))
-    plt.savefig(SAVEDIR+'%s_f%02d.png' % (D.strftime('%Y-%m-%d_%H'), f))
+    plt.savefig(SAVEDIR+'h%02d_f%02d.png' % (D.hour, f))
     plt.close()
     return None
 
@@ -360,17 +360,30 @@ def plot_for_each_fxx_with_Map(f):
 
 ###############################################################################
 
-## Set Up
-DATE = datetime(2018, 2, 16, 0)
-stn = 'DBSU1'
-percentiles = [0,1,2,3,4,5,10,25,33,50,66,75,90,95,96,97,98,99,100]
-box_radius = 5
-print DATE, stn
+## --- User Set Up ------------------------------------------------------------
 
-# MesoWest Station Info
+# List of all hours for yesterday
+DATE = date.today()-timedelta(days=1)
+DATES = [datetime(DATE.year, DATE.month, DATE.day, h) for h in range(24)]
+
+# MesoWest Station ID and Info
+#stn = 'WBB'     # WBB   HWKC1   DBSU1
+#stn = 'HWKC1'
+stn = 'DBSU1'
+
 LD = get_MW_location_dict(stn)
 MWlat = LD[stn]['latitude']
 MWlon = LD[stn]['longitude']
+
+# Box area "radius" for area statistics
+box_radius = 5
+
+print 'working on ', DATE, stn
+
+# -----------------------------------------------------------------------------
+
+# List of percentiles computed in the percentiles file
+percentiles = [0,1,2,3,4,5,10,25,33,50,66,75,90,95,96,97,98,99,100]
 
 # Load HRRR lat/lon Grid
 DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/'
@@ -378,12 +391,14 @@ latlon_file = h5py.File(DIR+'OSG_HRRR_latlon.h5', 'r')
 lat = latlon_file['latitude'].value
 lon = latlon_file['longitude'].value
 
-# Pluck point
+# Pluck point of MesoWest station location in HRRR grid
 point = pluck_point_new(MWlat, MWlon, lat, lon)
 x = point[0][0]
 y = point[1][0]
 
-print lat[x,y], MWlat, 'and',lon[x,y], MWlon
+print '     MesoWest  |  HRRR Nearest Point   '
+print 'lat: %s        |  %s' % (MWlat, lat[x,y])
+print 'lon: %s        |  %s' % (MWlon, lon[x,y])
 
 ### Plot with side map
 LATS_BOX = lat[x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
@@ -403,15 +418,6 @@ am = Basemap(llcrnrlon=MWlon-.3,  urcrnrlon=MWlon+.3,
             llcrnrlat=MWlat-.3, urcrnrlat=MWlat+.3)
 
 ## Area Percentiles and Current HRRR
-
-#var = 'TMP:2 m'
-#var = 'UVGRD:10 m'
-#var = 'DPT:2 m'
-#var = 'UVGRD:80 m'
-#var = 'REFC:entire'
-#var = 'GUST:surface'
-#var = 'HGT:500'
-
 VARS = ['TMP:2 m', 'UVGRD:10 m', 'DPT:2 m', 'UVGRD:80 m', 'REFC:entire', 'GUST:surface', 'HGT:500']
 
 for var in VARS:
@@ -425,9 +431,6 @@ for var in VARS:
 
     ## OSG data directory
     DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/%s/' % (variable)
-
-    sDATE = datetime(2018, 2, 18, 0)
-    DATES = [sDATE+timedelta(hours=h) for h in range(24)]
 
     if var == 'TMP:2 m':
         ymin = -20
