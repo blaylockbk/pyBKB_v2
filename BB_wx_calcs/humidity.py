@@ -22,7 +22,7 @@ def dwptRH_to_Temp(dwpt, RH):
 
 def Tempdwpt_to_RH(Temp, dwpt):
     """
-    Convert a temperature and dew point temerature to relative humidity.
+    Convert a temperature and dew point temperature to relative humidity.
     Equation from:
     http://andrew.rsmas.miami.edu/bmcnoldy/humidity_conversions.pdf
 
