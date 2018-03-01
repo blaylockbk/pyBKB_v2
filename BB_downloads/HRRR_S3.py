@@ -78,8 +78,8 @@ def get_hrrr_variable(DATE, variable,
     # NOMADS. Deal? :)
     #                                             -Sincerely, Brian
     #
-    UTC = datetime.utcnow() # the current date in UTC
-    if DATE < datetime(UTC.year, UTC.month, UTC.day, UTC.hour-4):
+    
+    if DATE+timedelta(hours=fxx) < datetime.utcnow():
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
@@ -172,9 +172,15 @@ def get_hrrr_variable(DATE, variable,
                     'msg':msg}
 
     except:
-        print " ! Could not get the file:", pandofile
-        print " ! Is the variable right?", variable
-        print " ! Does the file exist?", fileidx
+        print " _______________________________________________________________"
+        print " !!   Run Date Requested :", DATE, "F%02d" % fxx 
+        print " !! Valid Date Requested :", DATE+timedelta(hours=fxx)
+        print " !!     Current UTC time :", datetime.utcnow()
+        print " !! ------------------------------------------------------------"
+        print " !! ERROR downloading from:", pandofile
+        print " !! Is the variable right?", variable
+        print " !! Does the .idx file exist?", fileidx
+        print " ---------------------------------------------------------------"
         return {'value' : np.nan,
                 'lat' : np.nan,
                 'lon' : np.nan,
