@@ -79,7 +79,7 @@ def get_hrrr_variable(DATE, variable,
     #                                             -Sincerely, Brian
     #
     
-    if DATE+timedelta(hours=fxx) < datetime.utcnow():
+    if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=12):
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
