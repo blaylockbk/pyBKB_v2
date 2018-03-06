@@ -364,12 +364,13 @@ def plot_for_each_fxx_with_Map(f):
 
 # List of all hours for yesterday
 DATE = date.today()-timedelta(days=1)
+DATE = datetime(2018, 3, 2)
 DATES = [datetime(DATE.year, DATE.month, DATE.day, h) for h in range(24)]
 
 # MesoWest Station ID and Info
-#stn = 'WBB'     # WBB   HWKC1   DBSU1
+stn = 'WBB'     # WBB   HWKC1   DBSU1
 #stn = 'HWKC1'
-stn = 'DBSU1'
+#stn = 'DBSU1'
 
 LD = get_MW_location_dict(stn)
 MWlat = LD[stn]['latitude']
