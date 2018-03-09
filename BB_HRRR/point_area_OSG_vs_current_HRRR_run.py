@@ -182,21 +182,21 @@ def plot_for_each_fxx_with_Map(f):
         HU = get_hrrr_variable(RUN, 'UGRD:'+level, fxx=f, value_only=True, verbose=False)    
         HV = get_hrrr_variable(RUN, 'VGRD:'+level, fxx=f, value_only=True, verbose=False)
         speed = wind_uv_to_spd(HU['value'], HV['value'])
-        H = HU
-        H['value'] = speed
+        H = {'value': speed}
+        Hpoint = speed[x,y]
+        Harea = speed[x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
         HUarea = HU['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
         HVarea = HV['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
     else:
         H = get_hrrr_variable(RUN, var, fxx=f, value_only=True, verbose=False)
-    
-    ## Convert units and get values in bounding box area
-    if var == 'TMP:2 m' or var == 'DPT:2 m':
-        H['value'] = H['value']-273.15
-        Hpoint = H['value'][x,y]
-        Harea = H['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
-    else:
-        Hpoint = H['value'][x,y]
-        Harea = H['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
+        ## Convert units and get values in bounding box area
+        if var == 'TMP:2 m' or var == 'DPT:2 m':
+            H['value'] = H['value']-273.15
+            Hpoint = H['value'][x,y]
+            Harea = H['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
+        else:
+            Hpoint = H['value'][x,y]
+            Harea = H['value'][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
     
     ## Calculate the HRRR percentiles in the boxed area for this run
     HP = np.percentile(Harea, [0,25,50,75,100])
@@ -310,8 +310,8 @@ def plot_for_each_fxx_with_Map(f):
         dBZ[dBZ == -10] = np.ma.masked
         vmax = 80
         vmin = 0
-	H['value'] = dBZ
-    elif var == 'UVGRD:10 m' or var == 'UVGRD:80 m':
+        H['value'] = dBZ
+    elif var in ['UVGRD:10 m', 'UVGRD:80 m', 'GUST:surface']:
         vmax = np.max(Harea)
         vmin = 0
     else:
@@ -364,18 +364,27 @@ def plot_for_each_fxx_with_Map(f):
 
 # List of all hours for yesterday
 DATE = date.today()-timedelta(days=1)
-DATE = date.today()
 #DATE = datetime(2018, 3, 2)
-
-DATES = [datetime(DATE.year, DATE.month, DATE.day, h) for h in range(24)]
 
 # MesoWest Station ID and Info
 stn = 'WBB'     # WBB   HWKC1   DBSU1
 #stn = 'HWKC1'
 #stn = 'DBSU1'
-stn = '26.022,-81.512'
+#stn = '26.022,-81.512'
 
-if len(stn.split(',')) == 0:
+# Box area "radius" for area statistics
+box_radius = 7
+
+VARS = ['TMP:2 m', 'UVGRD:10 m', 'DPT:2 m', 'UVGRD:80 m', 'REFC:entire', 'GUST:surface', 'HGT:500']
+# -----------------------------------------------------------------------------
+
+print 'working on ', DATE, stn
+
+# Get datetimes for every hour of the requested DATE
+DATES = [datetime(DATE.year, DATE.month, DATE.day, h) for h in range(24)]
+
+# Get latitude and longitude of stn or lat,lon string
+if len(stn.split(',')) == 1:
     LD = get_MW_location_dict(stn)
     MWlat = LD[stn]['latitude']
     MWlon = LD[stn]['longitude']
@@ -383,12 +392,6 @@ else:
     MWlat, MWlon = stn.split(',')
     MWlat = float(MWlat)
     MWlon = float(MWlon)
-# Box area "radius" for area statistics
-box_radius = 5
-
-print 'working on ', DATE, stn
-
-# -----------------------------------------------------------------------------
 
 # List of percentiles computed in the percentiles file
 percentiles = [0,1,2,3,4,5,10,25,33,50,66,75,90,95,96,97,98,99,100]
@@ -408,25 +411,19 @@ print '     MesoWest  |  HRRR Nearest Point   '
 print 'lat: %s        |  %s' % (MWlat, lat[x,y])
 print 'lon: %s        |  %s' % (MWlon, lon[x,y])
 
-### Plot with side map
+# Bounding box around the point
 LATS_BOX = lat[x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
 LONS_BOX = lon[x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
 
 top_right_lat = LATS_BOX.max()
 top_right_lon = LONS_BOX.min()
-
 bot_left_lat = LATS_BOX.min()
 bot_left_lon = LONS_BOX.max()
 
-print bot_left_lon, top_right_lon
-print bot_left_lat, top_right_lat
-
-# Area map
+# Draw area map
 am = Basemap(llcrnrlon=MWlon-.3,  urcrnrlon=MWlon+.3,
             llcrnrlat=MWlat-.3, urcrnrlat=MWlat+.3)
 
-## Area Percentiles and Current HRRR
-VARS = ['TMP:2 m', 'UVGRD:10 m', 'DPT:2 m', 'UVGRD:80 m', 'REFC:entire', 'GUST:surface', 'HGT:500']
 
 for var in VARS:
     print var
@@ -440,6 +437,7 @@ for var in VARS:
     ## OSG data directory
     DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/%s/' % (variable)
 
+    # Variable specific variables
     if var == 'TMP:2 m':
         cmap = 'Spectral_r'
         label_units = '2 m Temperature (C)'
@@ -463,30 +461,27 @@ for var in VARS:
         label_units = 'unknown (unknown)'
 
     for D in DATES:
-
         ## Get area OSG percentiles from the bounding box for each percentile
         FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % ((variable, D.month, D.day, D.hour))
         print DIR+FILE
         
+        ## Calculate area percentiles from the OSG percentiles for each percentile
         with h5py.File(DIR+FILE, 'r') as ff:
-            for i in percentiles:
-                pp = ff["p%02d" %i][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
+            for i, percentile in enumerate(percentiles):
+                # The area box for this percentile (converted units if necessary)
+                pp = ff["p%02d" % percentile][x-box_radius:x+box_radius+1,y-box_radius:y+box_radius+1]
+                if var == 'TMP:2 m' or var == 'DPT:2 m':
+                    pp -= 273.15
+                # Percentiles for that box area (percentiles of percentiles)
+                p = np.percentile(pp, [0, 25, 50, 75, 100])
+                # Store in an array
                 if i == 0:
                     PP = pp
+                    area_P = p
                 else:
                     PP = np.dstack([PP, pp])
+                    area_P = np.dstack([area_P, p])
 
-        ## Convert Units
-        if var == 'TMP:2 m' or var == 'DPT:2 m':
-            PP -= 273.15
-
-        ## Clalculate area percentiles from the OSG percentiles
-        for i in range(19):
-            p = np.percentile(PP[:,:,i], [0, 25, 50, 75, 100])
-            if i == 0:
-                area_P = p
-            else:
-                area_P = np.dstack([area_P, p])
         
         # Y axis limits only once (we want the axes to be the same for all plots)
         if D == DATES[0]:
@@ -499,6 +494,7 @@ for var in VARS:
             else:
                 ymax = PP.max()+15
                 ymin = PP.min()-15
+        
         ## For this valid date, loop through each forecast hour
         #p = multiprocessing.Pool(19)
         #p.map(plot_for_each_fxx, range(19))
