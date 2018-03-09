@@ -33,11 +33,11 @@ def LU_MODIS21():
                   [0, 1, 1],            # ! 11 Permanant Wetlands
                   [1, 1, 0],            # 12 Croplands
                   [1, 0, 0],            # 13 Urban and Built-up
-                  [.7, .9, .3],         # ! 14 Cropland/Natual Vegation Mosaic
+                  [.7, .9, .3],         # ! 14 Cropland/Natural Vegetation Mosaic
                   [1, 1, 1],            # ! 15 Snow and Ice
                   [.914, .914, .7],     # 16 Barren or Sparsely Vegetated
                   [.5, .7, 1],          # 17 Water (like oceans)
-                  [.86, .08, .23],      # 18 Wooded Tundra
+                  [1, 0, .74],          # 18 Wooded Tundra
                   [.97, .5, .31],       # ! 19 Mixed Tundra
                   [.91, .59, .48],      # ! 20 Barren Tundra
                   [0, 0, .88]           # ! 21 Lake

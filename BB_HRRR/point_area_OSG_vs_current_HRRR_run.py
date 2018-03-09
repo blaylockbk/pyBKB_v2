@@ -364,18 +364,25 @@ def plot_for_each_fxx_with_Map(f):
 
 # List of all hours for yesterday
 DATE = date.today()-timedelta(days=1)
-DATE = datetime(2018, 3, 2)
+DATE = date.today()
+#DATE = datetime(2018, 3, 2)
+
 DATES = [datetime(DATE.year, DATE.month, DATE.day, h) for h in range(24)]
 
 # MesoWest Station ID and Info
 stn = 'WBB'     # WBB   HWKC1   DBSU1
 #stn = 'HWKC1'
 #stn = 'DBSU1'
+stn = '26.022,-81.512'
 
-LD = get_MW_location_dict(stn)
-MWlat = LD[stn]['latitude']
-MWlon = LD[stn]['longitude']
-
+if len(stn.split(',')) == 0:
+    LD = get_MW_location_dict(stn)
+    MWlat = LD[stn]['latitude']
+    MWlon = LD[stn]['longitude']
+else:
+    MWlat, MWlon = stn.split(',')
+    MWlat = float(MWlat)
+    MWlon = float(MWlon)
 # Box area "radius" for area statistics
 box_radius = 5
 
@@ -434,38 +441,24 @@ for var in VARS:
     DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/%s/' % (variable)
 
     if var == 'TMP:2 m':
-        ymin = -20
-        ymax = 30
         cmap = 'Spectral_r'
         label_units = '2 m Temperature (C)'
     elif var == 'DPT:2 m':
-        ymin = -25
-        ymax = 15
         cmap = 'BrBG'
         label_units = '2 m Dew Point (C)'
     elif var == 'REFC:entire':
-        ymin = -10
-        ymax = 50
         cmap = 'gist_ncar'
         label_units = 'Simulated Reflectivity (dBZ)'
     elif var == 'UVGRD:10 m':
-        ymin = 0
-        ymax = 20
         cmap = 'inferno_r'
         label_units = r'10 m Wind Speed (ms$\mathregular{^{-1}}$)'
     elif var == 'UVGRD:80 m':
-        ymin = 0
-        ymax = 30
         cmap = 'magma_r'
         label_units = r'80 m Wind Speed (ms$\mathregular{^{-1}}$)'
     elif var == 'HGT:500':
-        ymin = 5300
-        ymax = 5900
         cmap = 'Blues'
         label_units = '500 mb Geopotential Height'
     else:
-        ymin = 0
-        ymax = 20
         cmap = 'viridis'
         label_units = 'unknown (unknown)'
 
@@ -495,7 +488,17 @@ for var in VARS:
             else:
                 area_P = np.dstack([area_P, p])
         
-        
+        # Y axis limits only once (we want the axes to be the same for all plots)
+        if D == DATES[0]:
+            if var in ['UVGRD:10 m', 'UVGRD:80 m', 'WIND:10 m', 'GUST:surface']:
+                ymax = PP.max()+10
+                ymin = 0
+            elif var == 'REFC:entire':
+                ymax = 80
+                ymin = -10
+            else:
+                ymax = PP.max()+15
+                ymin = PP.min()-15
         ## For this valid date, loop through each forecast hour
         #p = multiprocessing.Pool(19)
         #p.map(plot_for_each_fxx, range(19))
