@@ -363,8 +363,8 @@ def plot_for_each_fxx_with_Map(f):
 ## --- User Set Up ------------------------------------------------------------
 
 # List of all hours for yesterday
-DATE = date.today()-timedelta(days=1)
-#DATE = datetime(2018, 3, 2)
+#DATE = date.today()-timedelta(days=1)
+DATE = datetime(2018, 3, 2)
 
 # MesoWest Station ID and Info
 stn = 'WBB'     # WBB   HWKC1   DBSU1
