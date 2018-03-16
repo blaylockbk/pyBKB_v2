@@ -8,10 +8,9 @@
 # Return the Name, Lat, Lon, WS, and WD in a dictionary
 
 import numpy as np
-import datetime
+from datetime import datetime
 import json
 import urllib2
-import matplotlib.pyplot as plt
 from get_token import my_token # returns my personal token
 
 # Get your own key and token from here: https://mesowest.org/api/signup/
@@ -21,8 +20,7 @@ within = '15'
 attime = '201506182100'
 
 
-
-def get_mesowest_nearesttime(attime,within,stn,v=False):
+def get_mesowest_nearesttime(attime,stn,within='120', tz='utc', v=False):
     """
     attime: a string in the format YYYYDDMMHHMM used in the API query
     within: a string of the number of minutes to request data from
@@ -33,7 +31,13 @@ def get_mesowest_nearesttime(attime,within,stn,v=False):
     """
     variables = 'wind_speed,wind_direction,air_temp,dew_point_temperature'
     
-    URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token='+token+'&stid='+stn+'&attime='+attime+'&within='+within+'&obtimezone=utc&units=metric&vars='+variables
+    URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token='+token \
+           +'&stid='+stn \
+           +'&attime='+attime \
+           +'&within='+within \
+           +'&obtimezone='+tz \
+           +'&units=metric' \
+           +'&vars='+variables
     #print '!! MESOWEST:',URL
     
     if v==True:
@@ -55,6 +59,7 @@ def get_mesowest_nearesttime(attime,within,stn,v=False):
     wd = np.array([])
     dwpt = np.array([])
     temp = np.array([])
+    tz = np.array([])
 
     
     for i in data['STATION']:
@@ -71,7 +76,10 @@ def get_mesowest_nearesttime(attime,within,stn,v=False):
         try:    
             temp = np.append(temp,i['OBSERVATIONS']['air_temp_value_1']['value'])
             date = i['OBSERVATIONS']['air_temp_value_1']['date_time']
-            converted_time = datetime.datetime.strptime(date,'%Y-%m-%dT%H:%M:%SZ')
+            if tz == 'utc':
+                converted_time = datetime.strptime(date,'%Y-%m-%dT%H:%M:%SZ')
+            else:
+                converted_time = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S-0600')
             DATES = np.append(DATES,converted_time)
         except:
             temp = np.append(temp,np.nan)
@@ -103,7 +111,7 @@ def get_mesowest_nearesttime(attime,within,stn,v=False):
             'DWPT':dwpt,
             'WIND_SPEED':ws,
             'WIND_DIR':wd,
-            'TEMP':temp,
+            'TEMP':temp
             }
             
     return data
