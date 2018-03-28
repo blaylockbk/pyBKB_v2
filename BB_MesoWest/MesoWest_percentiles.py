@@ -14,23 +14,29 @@ from get_token import my_token # returns my personal token
 token = my_token()
 
 
-def get_mesowest_latest(stn, tz='utc', units='metric', v=False):
+def get_mesowest_percentiles(stn, variable='air_temp', percentiles=[0,5,25,50,75,95,100], psource='PERCENTILES2', v=False):
     """
-    For a single station:
+    Station history percentiles for a single station and single variable:
+    Uses a 30 day window centered on the hour.
+    Data at top of each hour of the year, including leap year.
+    DATETIME is set to year 2016 to include leap year, but data is not limited to the year.
     
     stn = a mesowest station ID (only one station)
-    tz = time zone, 'UTC' or 'LOCAL'
-    units = 'METRIC' or 'ENGLISH'
-    v: verbose, print some stuff like the query URL
+    variables = 
+    start = '010100' MMDDHH 
+    end = '123123' MMDDHH
+    psource = 'PERCENTILES2' or 'PERCENTILES_HRRR'
+
     """
-    variables = 'wind_speed,wind_direction,air_temp,dew_point_temperature'
     
-    URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token='+token \
-           +'&stid='+stn \
-           +'&obtimezone='+tz \
-           +'&units='+units
-    #print '!! MESOWEST:',URL
-    
+    URL = 'http://api.synopticlabs.org/v2/percentiles?&token=' + token \
+          + '&start=' + '010100' \
+          + '&end=' + '123123' \
+          + '&vars=' + variable \
+          + '&stid=' + stn \
+          + '&percentiles=' + ','.join([str(p) for p in percentiles]) \
+          + '&psource=' + psource
+
     if v==True:
         # verbose
         print "MesoWest API Query: ",URL    
@@ -38,31 +44,36 @@ def get_mesowest_latest(stn, tz='utc', units='metric', v=False):
     ##Open URL and read the content
     f = urllib2.urlopen(URL)
     data = f.read()
-    
+
     ##Convert that json string into some python readable format
     data = json.loads(data)
     d = data['STATION'][0]
-    
-    return_this = {'URL':URL,
-                   'STID':d['STID'],
-                   'NAME':d['NAME']}
-        
-    date = d['OBSERVATIONS']['air_temp_value_1']['date_time']
-    if tz.upper() == "UTC":
-        return_this['DATE'] = datetime.strptime(date,'%Y-%m-%dT%H:%M:%SZ')
-    else:
-        return_this['DATE'] = datetime.strptime(date[:-5],'%Y-%m-%dT%H:%M:%S')
 
-    for U in data['UNITS']:
-        return_this[U] = {'value':d['OBSERVATIONS'][U+'_value_1']['value'],
-                          'unit':data['UNITS'][U]}
+    return_this = {'URL': URL,
+                    'STID': d['STID'],
+                    'NAME': d['NAME'],
+                    'ELEVATION': float(d['ELEVATION']),
+                    'LATITUDE': float(d['LATITUDE']),
+                    'LONGITUDE': float(d['LONGITUDE']),
+                    'variable': variable,
+                    'counts': np.array(d['PERCENTILES'][variable+'_counts_1'], dtype='int'),
+                    'years': np.array(d['PERCENTILES'][variable+'_years_1'], dtype='int'),
+                    'DATETIME': [datetime(2016, int(DATE[0:2]), int(DATE[2:4]), int(DATE[4:6])) for DATE in d['PERCENTILES']['date_time']]
+                   }
+
+    for i, p in enumerate(percentiles):
+        return_this['p%02d' % p] = [PP[i] for PP in d['PERCENTILES'][variable+'_set_1']]
+    
+
+
+    
             
     return return_this
     
 
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
-    a = get_mesowest_latest('UKBKB')
+    a = get_mesowest_percentile('WBB')
     
     
     
