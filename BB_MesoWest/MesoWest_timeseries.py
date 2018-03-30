@@ -9,7 +9,7 @@ If you have imported this function you can change the "variables" variables
 by reassigning:
 BB_MesoWest.MesoWest_timeseries.get_mesowest_ts.func_globals['variables'] = 'new string'
 except this isn't very useful at the moment because while
-the functin will query the additional data it wont return the additional data.
+the function will query the additional data it wont return the additional data.
 
 To do list:
     [X] Make returned dictionary return just the variables requested.

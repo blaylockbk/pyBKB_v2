@@ -16,28 +16,27 @@ from get_token import my_token # returns my personal token
 # Get your own key and token from here: https://mesowest.org/api/signup/
 token = my_token()
 
-within = '15'
-attime = '201506182100'
+default_vars = 'wind_speed,wind_direction,dew_point_temperature'
 
-
-def get_mesowest_nearesttime(attime,stn,within='120', tz='utc', v=False):
+def get_mesowest_nearesttime(DATE,stn,within='120', tz='utc',
+                             variables=default_vars,
+                             v=False):
     """
-    attime: a string in the format YYYYDDMMHHMM used in the API query
+    attime: datetime object of nearest time to retrieve
     within: a string of the number of minutes to request data from
-    raduis: a string of the location to center the radius, followed by number of miles
+    radius: a string of the location to center the radius, followed by number of miles
             can center on a MesoWest station ID (ksl,30) like the default, or
             can center on a lat/lon (41.5,-120.25,30)
     v: verbose, print some stuff like the query URL
     """
-    variables = 'wind_speed,wind_direction,air_temp,dew_point_temperature'
     
     URL = 'http://api.mesowest.net/v2/stations/nearesttime?&token='+token \
            +'&stid='+stn \
-           +'&attime='+attime \
+           +'&attime='+DATE.strftime('%Y%m%d%H%M') \
            +'&within='+within \
            +'&obtimezone='+tz \
            +'&units=metric' \
-           +'&vars='+variables
+           +'&vars=air_temp,'+variables
     #print '!! MESOWEST:',URL
     
     if v==True:
@@ -51,94 +50,33 @@ def get_mesowest_nearesttime(attime,stn,within='120', tz='utc', v=False):
     ##Convert that json string into some python readable format
     data = json.loads(data)
     
-    
-    name = np.array([])
-    stnid = np.array([])
-    DATES = np.array([])    
-    ws = np.array([])
-    wd = np.array([])
-    dwpt = np.array([])
-    temp = np.array([])
-    tz = np.array([])
+    UNITS = data['UNITS']
 
+    return_this = {}
     
     for i in data['STATION']:
-        name = np.append(name,i['NAME'])
-        stnid = np.append(stnid,i['STID'])
-        try:    
-            wd = np.append(wd,i['OBSERVATIONS']['wind_direction_value_1']['value'])
-        except:
-            wd =np.append(wd,np.nan)
-        try:    
-            ws = np.append(ws,i['OBSERVATIONS']['wind_speed_value_1']['value'])
-        except:
-            ws = np.append(ws,np.nan)
-        try:    
-            temp = np.append(temp,i['OBSERVATIONS']['air_temp_value_1']['value'])
-            date = i['OBSERVATIONS']['air_temp_value_1']['date_time']
-            if tz == 'utc':
-                converted_time = datetime.strptime(date,'%Y-%m-%dT%H:%M:%SZ')
-            else:
-                converted_time = datetime.strptime(date,'%Y-%m-%dT%H:%M:%S-0600')
-            DATES = np.append(DATES,converted_time)
-        except:
-            temp = np.append(temp,np.nan)
-            DATES = np.append(DATES,np.nan)
-        try:    
-            dwpt = np.append(dwpt,i['OBSERVATIONS']['dew_point_temperature_value_1d']['value'])
-        except:
-            dwpt = np.append(dwpt,np.nan)
-        
-        
-        
-        
-    
-    # Convert datatype from Unicode to String or floats
-    name = name.astype(str)
-    stnid = stnid.astype(str)
-    
-    ws = ws.astype(float)
-    wd = wd.astype(float)
-    
-    temp = temp.astype(float)
-    
-    
-    
-    data = {'URL':URL,
-            'NAME':name,
-            'STNID':stnid,
-            'DATES':DATES,
-            'DWPT':dwpt,
-            'WIND_SPEED':ws,
-            'WIND_DIR':wd,
-            'TEMP':temp
-            }
-            
-    return data
+        return_this[i['STID']] = {'NAME': i['NAME'],
+                                  'ELEVATION': i['ELEVATION'],
+                                  'LATITUDE': i['LATITUDE'],
+                                  'LONGTUDE': i['LONGITUDE']
+                                  }
+        for v in i['SENSOR_VARIABLES']:
+            return_this[i['STID']][v] = {}
+            try:
+                return_this[i['STID']][v]['value'] = i['OBSERVATIONS'][v+'_value_1']['value']
+                return_this[i['STID']][v]['DATETIME'] = datetime.strptime(i['OBSERVATIONS'][v+'_value_1']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
+            except:
+                return_this[i['STID']][v]['value'] = i['OBSERVATIONS'][v+'_value_1d']['value']
+                return_this[i['STID']][v]['DATETIME'] = datetime.strptime(i['OBSERVATIONS'][v+'_value_1d']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
+    return return_this
 
-# Wind Calculations
-def wind_spddir_to_uv(wspd,wdir):
-    """
-    calculated the u and v wind components from wind speed and direction
-    Input:
-        wspd: wind speed
-        wdir: wind direction
-    Output:
-        u: u wind component
-        v: v wind component
-    """    
-    
-    rad = 4.0*np.arctan(1)/180.
-    u = -wspd*np.sin(rad*wdir)
-    v = -wspd*np.cos(rad*wdir)
 
-    return u,v
     
 
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
-    a = get_mesowest_nearesttime('201506190000','10,10','wbb,ukbkb')
-    u,v = wind_spddir_to_uv(a['WIND_SPEED'],a['WIND_DIR'])
+    DATE = datetime(2017, 10, 9, 6)
+    a = get_mesowest_nearesttime(DATE,'HWKC1')
     
     
     
