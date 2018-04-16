@@ -322,7 +322,7 @@ def make_plots(inputs):
             m.pcolormesh(gridlon, gridlat, masked,
                 vmax=10, vmin=0,
                 latlon=True,
-                cmap='magma',
+                cmap='RdPu',
                 alpha=alpha)
             cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
             cb.set_label(r'10 m Wind Speed exceeding 95th Percentile (m s$\mathregular{^{-1}}$)')
