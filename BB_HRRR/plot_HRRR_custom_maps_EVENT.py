@@ -106,7 +106,7 @@ def make_plots(inputs):
         lon = stninfo['LON']
 
     # Preload the latitude and longitude grid
-    latlonpath = '/uufs/chpc.utah.edu/common/home/horel-group/archive/HRRR/oper_HRRR_latlon.h5'
+    latlonpath = '/uufs/chpc.utah.edu/common/home/horel-group7/Pando/hrrr/HRRR_latlon.h5'
     latlonh5 = h5py.File(latlonpath, 'r')
     gridlat = latlonh5['latitude'][:]
     gridlon = latlonh5['longitude'][:]
@@ -312,7 +312,7 @@ def make_plots(inputs):
         
         if '10mWind_p95_fill' in plotcode:
             DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/UVGRD_10_m/'
-            FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_10_m', VALIDDATE.month, VALIDDATE.day, VALIDDATE.hour))
+            FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_10_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
             with h5py.File(DIR+FILE, 'r') as f:
                 spd_p95 = f["p95"][:]
             masked = spd-spd_p95
@@ -481,7 +481,7 @@ def make_plots(inputs):
         
         if '2mTemp_p95_fill' in plotcode or '2mTemp_p05_fill' in plotcode:
             DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/TMP_2_m/'
-            FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('TMP_2_m', VALIDDATE.month, VALIDDATE.day, VALIDDATE.hour))
+            FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('TMP_2_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
 
             if '2mTemp_p95_fill' in plotcode:
                 with h5py.File(DIR+FILE, 'r') as f:
@@ -820,7 +820,7 @@ if __name__ == '__main__':
     sDATE = datetime(2018, 4, 12, 0)
     eDATE = datetime(2018, 4, 13, 0)
 
-    EVENT = 'HEAT_anomoly_%s' % sDATE.strftime('%Y-%m-%d')
+    EVENT = 'WIND_anomoly_%s' % sDATE.strftime('%Y-%m-%d')
     model = 'hrrr'
     dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
     location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'
@@ -831,7 +831,8 @@ if __name__ == '__main__':
     #plotcode = 'dBZ_Fill'
     #plotcode = '1hrPrecip_Fill'
     #plotcode = 'SnowCover_Fill'
-    plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
+    #plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
+    plotcode = '10mWind_p95_fill,500HGT_Contour'
     
     hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
     DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
@@ -849,3 +850,4 @@ if __name__ == '__main__':
     p = multiprocessing.Pool(num_proc)
 
     p.map(make_plots, VARS)
+    p.close()
