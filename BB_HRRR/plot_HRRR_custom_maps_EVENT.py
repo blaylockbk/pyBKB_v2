@@ -453,6 +453,49 @@ def make_plots(inputs):
             cb2 = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
             cb2.set_label('Simulated Composite Reflectivity (dBZ)')
 
+    if '2mDPT_p05_fill' in plotcode or '2mDPT_p95_fill' in plotcode:
+        H_dpt = get_hrrr_variable(DATE, 'DPT:2 m',
+                                  model=model, fxx=fxx,
+                                  outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                                  verbose=False, value_only=True)
+
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/DPT_2_m/'
+        FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('DPT_2_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
+        dpt_cb = False
+
+        if '2mDPT_p95_fill' in plotcode:
+            with h5py.File(DIR+FILE, 'r') as f:
+                dpt_p95 = f["p95"][:]
+            masked = H_dpt['value']-dpt_p95
+            masked = np.ma.array(masked)
+            masked[masked < 0] = np.ma.masked
+            
+            m.pcolormesh(gridlon, gridlat, masked,
+                vmax=10, vmin=-10,
+                latlon=True,
+                cmap='BrBG',
+                alpha=alpha)
+            if dpt_cb == False:
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'2 m Dew Point greater/less than 95th/5th Percentile (C)')
+                dpt_cb = True
+        
+        if '2mDPT_p05_fill' in plotcode:
+            with h5py.File(DIR+FILE, 'r') as f:
+                dpt_p05 = f["p05"][:]
+            masked = H_dpt['value']-dpt_p05
+            masked = np.ma.array(masked)
+            masked[masked > 0] = np.ma.masked
+            
+            m.pcolormesh(gridlon, gridlat, masked,
+                vmax=10, vmin=-10,
+                latlon=True,
+                cmap='BrBG',
+                alpha=alpha)
+            if dpt_cb == False:
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'2 m Dew Point greater/less than 95th/5th Percentile (C)')
+                dpt_cb = True
 
     if '2mTemp_Fill' in plotcode or '2mTemp_Freeze' in plotcode or '2mTemp_p95_fill' in plotcode or '2mTemp_p05_fill' in plotcode:
         # Get Data
@@ -820,7 +863,7 @@ if __name__ == '__main__':
     sDATE = datetime(2018, 4, 12, 0)
     eDATE = datetime(2018, 4, 13, 0)
 
-    EVENT = 'WIND_anomoly_%s' % sDATE.strftime('%Y-%m-%d')
+    EVENT = 'DPT_anomoly_%s' % sDATE.strftime('%Y-%m-%d')
     model = 'hrrr'
     dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
     location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'
@@ -832,7 +875,8 @@ if __name__ == '__main__':
     #plotcode = '1hrPrecip_Fill'
     #plotcode = 'SnowCover_Fill'
     #plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
-    plotcode = '10mWind_p95_fill,500HGT_Contour'
+    plotcode = '2mDPT_p95_fill,2mDPT_p05_fill,500HGT_Contour'
+    #plotcode = '10mWind_p95_fill,500HGT_Contour'
     
     hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
     DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
