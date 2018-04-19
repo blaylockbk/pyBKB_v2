@@ -52,33 +52,35 @@ def get_mesowest_percentiles(stn, variable='air_temp',
         # verbose
         print "MesoWest API Query: ",URL    
     
-    ##Open URL and read the content
-    f = urllib2.urlopen(URL)
-    data = f.read()
+    try:
+        ##Open URL and read the content
+        f = urllib2.urlopen(URL)
+        data = f.read()
 
-    ##Convert that json string into some python readable format
-    data = json.loads(data)
-    d = data['STATION'][0]
+        ##Convert that json string into some python readable format
+        data = json.loads(data)
+        d = data['STATION'][0]
 
-    return_this = {'URL': URL,
-                   'STID': d['STID'],
-                   'NAME': d['NAME'],
-                   'ELEVATION': float(d['ELEVATION']),
-                   'LATITUDE': float(d['LATITUDE']),
-                   'LONGITUDE': float(d['LONGITUDE']),
-                   'variable': variable,
-                   'counts': np.array(d['PERCENTILES'][variable+'_counts_1'], dtype='int'),
-                   'DATETIME': np.array([datetime(2016, int(DATE[0:2]), int(DATE[2:4]), int(DATE[4:6])) for DATE in d['PERCENTILES']['date_time']])
-                   }
-    if psource == 'PERCENTILES2':
-        return_this['years'] = np.array(d['PERCENTILES'][variable+'_years_1'], dtype='int')
+        return_this = {'URL': URL,
+                    'STID': d['STID'],
+                    'NAME': d['NAME'],
+                    'ELEVATION': float(d['ELEVATION']),
+                    'LATITUDE': float(d['LATITUDE']),
+                    'LONGITUDE': float(d['LONGITUDE']),
+                    'variable': variable,
+                    'counts': np.array(d['PERCENTILES'][variable+'_counts_1'], dtype='int'),
+                    'DATETIME': np.array([datetime(2016, int(DATE[0:2]), int(DATE[2:4]), int(DATE[4:6])) for DATE in d['PERCENTILES']['date_time']])
+                    }
+        if psource == 'PERCENTILES2':
+            return_this['years'] = np.array(d['PERCENTILES'][variable+'_years_1'], dtype='int')
 
-    all_per = np.array(d['PERCENTILES'][variable+'_set_1'])
-    for i, p in enumerate(data['PERCENTILE_LIST']):
-        return_this['p%02d' % p] = all_per[:,i]
-            
-    return return_this
-    
+        all_per = np.array(d['PERCENTILES'][variable+'_set_1'])
+        for i, p in enumerate(data['PERCENTILE_LIST']):
+            return_this['p%02d' % p] = all_per[:,i]
+                
+        return return_this
+    except:
+        print 'DID NOT WORK:', URL
 
 #--- Example -----------------------------------------------------------------#
 if __name__ == "__main__":
