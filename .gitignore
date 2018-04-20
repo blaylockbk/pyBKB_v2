@@ -2,7 +2,6 @@
 Thumbs.db
 
 get_token.py
-*.png
 *.pyc
 *.out
 *.nc
