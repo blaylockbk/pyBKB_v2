@@ -1020,7 +1020,8 @@ if __name__ == '__main__':
                      'plotcode': '1hrPrecip_Fill'},          
                  }
 
-    for i in plot_codes.keys()[4:5]:
+    for i in range(1,8):
+    #for i in [4]:
         MAP_DIR = plot_codes[i]['MAP_DIR']
         plotcode = plot_codes[i]['plotcode']
         
@@ -1033,7 +1034,7 @@ if __name__ == '__main__':
         # Multiprocessing :)
 
         num_proc = multiprocessing.cpu_count() # use all processors
-        num_proc = 12                           # specify number to use (to be nice)
+        num_proc = 8                           # specify number to use (to be nice)
         p = multiprocessing.Pool(num_proc)
         p.map(make_plots, VARS)
         p.close()
