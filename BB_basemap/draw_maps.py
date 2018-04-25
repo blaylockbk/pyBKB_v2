@@ -198,10 +198,10 @@ def draw_HRRReast(res='i', return_domain_boundaires=False, area_thresh=2000):
 
 def draw_CONUS_HRRR_map(res='i', area_thresh=2000):
     """
-    Draw the Contintental United States HRRR Domain with lambert conformal
+    Draw the Continental United States HRRR Domain with lambert conformal
     projection.
-    Map specifications are from the HRRR's namelis.wps file:
-    http://ruc.noaa.gov/hrrr/namelist.wps.txt
+    Map specifications are from the HRRR's namelist.wps file:
+    https://rapidrefresh.noaa.gov/hrrr/HRRR/static/HRRRv1/namelist.wps
     """
     m = Basemap(resolution=res, projection='lcc', area_thresh=area_thresh, \
                 width=1800*3000, height=1060*3000, \
@@ -219,6 +219,24 @@ def draw_midwest_map(res='i', return_domain_boundaires=False, area_thresh=2000):
     top_right_lon = -80
 
     m = Basemap(resolution=res, projection='cyl', area_thresh=area_thresh, \
+        llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
+        urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
+    if return_domain_boundaires==False:
+        return m
+    else:
+        return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
+
+def draw_ALASKA_cyl_map(res='i', return_domain_boundaires=False):
+    """
+    Draw a basemap of northern utah for the Utah Winter Fine Particulate Study
+    (UWFPS). Contains Utah, Salt Lake, and Cache Counties
+    """
+    bot_left_lat  = 40
+    bot_left_lon  = -205
+    top_right_lat = 80
+    top_right_lon = -115
+    #
+    m = Basemap(resolution=res, projection='cyl', area_thresh=2000, \
         llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
     if return_domain_boundaires==False:

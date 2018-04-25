@@ -18,6 +18,11 @@ Contents:
     The difference between a time series and a pollywog is that:
         - a time series is for the analysis hours, f00, for any length of time.
         - a pollywog is the full forecast cycle, i.e. f00-f18
+
+# (Remove the temporary file)
+#    ?? Is it possible to push the data straight from curl to ??
+#    ?? pygrib, without writing/removing a temp file? and     ??
+#    ?? would that speed up this process?                     ??
 """
 
 
@@ -33,6 +38,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import multiprocessing
 
+import sys
+sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
+from BB_wx_calcs.wind import wind_uv_to_spd
 
 def get_hrrr_variable(DATE, variable,
                       fxx=0,
@@ -69,6 +77,17 @@ def get_hrrr_variable(DATE, variable,
     if verbose is True:
         print outfile
 
+    if model == 'hrrrak' and DATE.hour not in range(0,24,3):
+        print ""
+        print " >> !!! HRRR Alaska only runs every three hours. Date.hour must be 0, 3, 6, 9, 12, 15, 18, or 21"
+        print ""
+        sys.exit()
+    if variable.split(':')[0] == 'UVGRD':
+        # We need both U and V to convert winds from grid-relative to earth-relative
+        get_variable = 'UGRD:' + variable.split(':')[1]
+    else:
+        get_variable = variable
+
     # Dear User,
     # Only HRRR files for the previous day have been transferred to Pando.
     # That means if you are requesting data for today, you need to get it from
@@ -79,7 +98,7 @@ def get_hrrr_variable(DATE, variable,
     #                                             -Sincerely, Brian
     #
     
-    if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=4):
+    if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=6):
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
@@ -104,7 +123,26 @@ def get_hrrr_variable(DATE, variable,
             print "!! I haven't download that Experimental HRRR run from ESRL yet      !!"
             print "-----------------------------------------------------------------------\n"
             return None
-                                        
+        elif model == 'hrrrak':
+            if verbose is True:
+                print "\n-----------------------------------------------------------------------"
+                print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
+                print "!! That's ok, I'll redirect you to the PARALLEL NOMADS server. :)   !!"
+                print "-----------------------------------------------------------------------\n"
+            # URL for the grib2 file (located on the PARALLEL NOMADS server)
+            if model =='hrrrak':
+                DOMAIN = 'alaska'
+            elif model == 'hrrr':
+                DOMAIN = 'conus'
+            NOMADS = 'http://para.nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/para/hrrr.%s/%s/' \
+                        % (DATE.strftime('%Y%m%d'), DOMAIN)
+            FILE = 'hrrr.t%02dz.wrf%sf%02d.ak.grib2' % (DATE.hour, field, fxx)
+            pandofile = NOMADS+FILE    
+            fileidx = pandofile+'.idx'
+
+    if verbose:
+        print pandofile
+
     try:
         # 0) Read in the grib2.idx file
         try:
@@ -126,13 +164,16 @@ def get_hrrr_variable(DATE, variable,
         #    byte range from the next line.
         gcnt = 0
         for g in lines:
-            expr = re.compile(variable)
+            expr = re.compile(get_variable)
             if expr.search(g):
                 if verbose is True:
                     print 'matched a variable', g
                 parts = g.split(':')
                 rangestart = parts[1]
-                parts = lines[gcnt+1].split(':')
+                if variable.split(':')[0] == 'UVGRD':
+                    parts = lines[gcnt+2].split(':')
+                else:
+                    parts = lines[gcnt+1].split(':')
                 rangeend = int(parts[1])-1
                 if verbose is True:
                     print 'range:', rangestart, rangeend
@@ -141,35 +182,98 @@ def get_hrrr_variable(DATE, variable,
                 os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
             gcnt += 1
 
+        # If the file is for Alaska, we have to regrid and change to earth relative winds:
+        if model == 'hrrrak':
+            # wgrib2 documentation: http://www.cpc.ncep.noaa.gov/products/wesley/wgrib2/new_grid.html
+            # command from Taylor McCorkle
+            wgrib2 = '/uufs/chpc.utah.edu/sys/installdir/wgrib2/2.0.2/wgrib2/wgrib2'
+            command2 = '%s %s' % (wgrib2, outfile) + ' -new_grid_winds earth -new_grid latlon -175.75:1800:0.0269 46.863:1000:0.0269 %s' % outfile+'.regrid'
+            os.system(command2)
+            os.system('rm -f %s' % outfile) # remove the original file
+            outfile = outfile+'.regrid'     # assign the `outfile` as the regridded file so we can remove it later
+
+
         # 3) Get data from the file, using pygrib
         grbs = pygrib.open(outfile)
         if value_only is True:
-            value = grbs[1].values
-            # (Remove the temporary file)
-            #    ?? Is it possible to push the data straight from curl to ??
-            #    ?? pygrib, without writing/removing a temp file? and     ??
-            #    ?? would that speed up this process?                     ??
-            if removeFile is True:
-                os.system('rm -f %s' % (outfile))
-            return {'value': value}
+            if variable.split(':')[0] == 'UVGRD':
+                value1 = grbs[1].values
+                value2 = grbs[2].values
+                if removeFile is True:
+                    os.system('rm -f %s' % (outfile))
+                return {'UGRD': value1,
+                        'VGRD': value2,
+                        'SPEED': wind_uv_to_spd(value1, value2)}
+            else:
+                value = grbs[1].values
+                if removeFile is True:
+                    os.system('rm -f %s' % (outfile))
+                return {'value': value}
 
         else:
-            value, lat, lon = grbs[1].data()
-            validDATE = grbs[1].validDate
-            anlysDATE = grbs[1].analDate
-            msg = str(grbs[1])
+            if variable.split(':')[0] == 'UVGRD':
+                value1, lat, lon = grbs[1].data()
+                validDATE = grbs[1].validDate
+                anlysDATE = grbs[1].analDate
+                msg1 = str(grbs[1])
+                value2 = grbs[2].values
+                msg2 = str(grbs[2])
+                #
+                # 4) Remove the temporary file
+                if removeFile == True:
+                    os.system('rm -f %s' % (outfile))
+                #
+                # 5) Return some import stuff from the file
+                if model == 'hrrr' or model == 'hrrrX':
+                    return {'UGRD': value1,
+                            'VGRD': value2,
+                            'SPEED': wind_uv_to_spd(value1, value2),
+                            'lat': lat,
+                            'lon': lon,
+                            'valid': validDATE,
+                            'anlys': anlysDATE,
+                            'msgU': msg1,
+                            'msgV': msg2,
+                            'URL': pandofile}
+                elif model == 'hrrrak':
+                    return {'UGRD': value1,
+                            'VGRD': value2,
+                            'SPEED': wind_uv_to_spd(value1, value2),
+                            'lat': lat,
+                            'lon': lon-360,
+                            'valid': validDATE,
+                            'anlys': anlysDATE,
+                            'msgU': msg1,
+                            'msgV': msg2,
+                            'URL': pandofile}
+            else:
+                value, lat, lon = grbs[1].data()
+                validDATE = grbs[1].validDate
+                anlysDATE = grbs[1].analDate
+                msg = str(grbs[1])
 
-            # 4) Remove the temporary file
-            if removeFile == True:
-                os.system('rm -f %s' % (outfile))
+                # 4) Remove the temporary file
+                if removeFile == True:
+                    os.system('rm -f %s' % (outfile))
 
-            # 5) Return some import stuff from the file
-            return {'value': value,
-                    'lat': lat,
-                    'lon': lon,
-                    'valid': validDATE,
-                    'anlys': anlysDATE,
-                    'msg':msg}
+                # 5) Return some import stuff from the file
+                if model == 'hrrr' or model == 'hrrrX':
+                    return {'value': value,
+                            'lat': lat,
+                            'lon': lon,
+                            'valid': validDATE,
+                            'anlys': anlysDATE,
+                            'msg': msg,
+                            'URL': pandofile}
+                elif model == 'hrrrak':
+                    return {'value': value,
+                            'lat': lat,
+                            'lon': lon-360,
+                            'valid': validDATE,
+                            'anlys': anlysDATE,
+                            'msg': msg,
+                            'URL': pandofile}
+            
 
     except:
         print " _______________________________________________________________"
@@ -186,7 +290,8 @@ def get_hrrr_variable(DATE, variable,
                 'lon' : np.nan,
                 'valid' : np.nan,
                 'anlys' : np.nan,
-                'msg' : np.nan}
+                'msg' : np.nan,
+                'URL': pandofile}
 
 
 def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='sfc', removeFile=True):
@@ -796,6 +901,7 @@ if __name__ == "__main__":
     print 'timer single map:', datetime.now() - timer1
     """
 
+    """
     # Time Series (25 seconds to make a 5 day time series on 8 processors)
     timer2 = datetime.now()
     START = datetime(2016, 3, 1)
@@ -811,3 +917,17 @@ if __name__ == "__main__":
     plt.show(block=False)
 
     print 'timer time series:', datetime.now() - timer2
+    """
+    from mpl_toolkits.basemap import Basemap
+    import matplotlib.pyplot as plt
+
+    m = Basemap()
+    m.drawcoastlines()
+
+    AK = get_hrrr_variable(datetime(2018, 2, 24, 15), 'TMP:2 m', fxx=0, model='hrrrak')
+    H = get_hrrr_variable(datetime(2018, 2, 24, 15), 'TMP:2 m', fxx=0, model='hrrr')
+
+    m.pcolormesh(AK['lon'], AK['lat'], AK['value'], latlon=True, vmax=320, vmin=240)
+    m.pcolormesh(H['lon'], H['lat'], H['value'], latlon=True, vmax=310, vmin=210)
+    plt.colorbar()
+    plt.show()
