@@ -51,43 +51,89 @@ def get_hrrr_variable(DATE, variable,
                       verbose=True,
                       outDIR='./'):
     """
-    Uses cURL to grab just one variable from a HRRR grib2 file on the MesoWest
-    HRRR archive.
+    Uses cURL to grab the requested variable from a HRRR grib2 file in the
+    HRRR archive. Uses the the requested variable string to search the .idx
+    file and determine the byte range. When the byte range of a variable is
+    known, cURL is capable of downloading a single variable from a larger GRIB2
+    file. This function packages the data in a dictionary.
 
     Input:
-        DATE - the datetime(year, month, day, hour) for the HRRR file you want
-               This must be in UTC, obviouslly.
-        variable - a string describing the variable you are looking for.
-                   Refer to the .idx files here: https://api.mesowest.utah.edu/archive/HRRR/
-                   You want to put the variable short name and the level information
-                   For example, for 2m temperature: 'TMP:2 m above ground'
-        fxx - the forecast hour you desire. Default is the anlaysis hour.
-        model - the model you want. Options include ['hrrr', 'hrrrX', 'hrrrak']
-        field - the file type your variable is in. Options include ['sfc', 'prs']
-        removeFile - True will remove the grib2 file after downloaded. False will not.
-        value_only - Only return the values. Fastest return speed if set to True, when all you need is the value.
-                     Return Time .75-1 Second if False, .2 seconds if True.
-        verbose - prints some stuff out
+        DATE       - The datetime(year, month, day, hour) for the HRRR file you
+                     want. This is the same as the model run time, in UTC.
+        variable   - A string describing the variable you are looking for in the
+                     GRIB2 file. Refer to the .idx files. For example:
+                        https://pando-rgw01.chpc.utah.edu/hrrr/sfc/20180101/hrrr.t00z.wrfsfcf00.grib2.idx
+                     You want to put the variable short name and the level
+                     information. For example, for 2m temperature:
+                        variable='TMP:2 m above ground'
+        fxx        - The forecast hour you desire. Default is the analysis hour,
+                     or f00.
+        model      - The model you want. Options include ['hrrr', 'hrrrX', 'hrrrak']
+        field      - The file output type. Options include ['sfc', 'prs']
+        removeFile - True: remove the GRIB2 file after it is downloaded
+                     False: do not remove the GRIB2 file after it is downloaded
+        value_only - True: only return the values, not the lat/lon.
+                        Returns output in 0.2 seconds
+                     False: returns value and lat/lon, grib message, analysis and valid datetime.
+                        Returns output in 0.75-1 seconds
+        verbose    - Prints some diagnostics
+        outDIR     - Specify where the downloaded data should be downloaded.
+                     Default is the current directory. 
+
+    Tips:
+        1. The DATE you request represents the model run time. If you want to
+           retrieve the file based on the model's valid time, you need to
+           offset the DATE with the forecast lead time. For example:
+                VALID_DATE = datetime(year, month, day, hour)   # We want the model data valid at this time
+                fxx = 15                                        # Forecast lead time
+                RUN_DATE = VALID_DATE-timedelta(hours=fxx)      # The model run datetime that produced the data
+                get_hrrr_variable(RUN_DATE, 'TMP:2 m', fxx=fxx) # The returned data will be a forecast for the requested valid time and lead time
+        
+        2. You can request both U and V components at a level by using
+                variable='UVGRD:10 m'
+            This special request will return the U and V component winds
+            converted from grid-relative to earth-relative, as well as the 
+            calculated wind speed.
+            Note: You can still get the grid-relative winds by requesting both
+                  'UGRD:10 m' and 'VGRD:10 m' individually.
     """
 
-    # Temp file name has to be very unique, else when we use multiprocessing we
-    # might accidentally delete files before we are done with them.
-    outfile = '%stemp_%04d%02d%02d%02d_f%02d_%s.grib2' % (outDIR, DATE.year, DATE.month, DATE.day, DATE.hour, fxx, variable[:3])
+    ## --- Catch Errors -------------------------------------------------------
+    if model not in ['hrrr', 'hrrrX', 'hrrrak']:
+        raise ValueError("Requested model must be 'hrrr', 'hrrrX', or 'hrrrak'")
+    if field not in ['prs', 'sfc']:
+        raise ValueError("Requested field must be 'prs' or 'sfc'. We do not store other fields in the archive")
+    if model == 'hrrr' and fxx not in range(19):
+        raise ValueError("HRRR: fxx must be between 0 and 18")
+    elif model == 'hrrrX' and fxx != 0:
+        raise ValueError("HRRRx: fxx must be 0. We do not store other forecasts in the archive.")
+    elif model == 'hrrrak' and fxx not in range(37):
+        raise ValueError("HRRRak: fxx must be between 0 and 37")
+    ## ---(Catch Errors)-------------------------------------------------------
+
+
+    ## --- Temporary File Name ---
+    # Temporary file name has to be unique, or else when we use multiprocessing
+    # we might accidentally delete files before we are done with them.
+    outfile = '%stemp_%s_f%02d_%s.grib2' % (outDIR, DATE.strftime('%Y%m%d%H'), fxx, variable[:3])
 
     if verbose is True:
-        print outfile
+        print 'Dowloading tempfile: %s' % outfile
 
-    if model == 'hrrrak' and DATE.hour not in range(0,24,3):
-        print ""
-        print " >> !!! HRRR Alaska only runs every three hours. Date.hour must be 0, 3, 6, 9, 12, 15, 18, or 21"
-        print ""
-        sys.exit()
+
+    ## --- Requested Variable ---
+    # A special variable request is 'UVGRD:[level]' which will get both the U
+    # and V wind components converted to earth-relative direction in a single
+    # download. Since UGRD always proceeds VGRD, we will set the get_variable
+    # as UGRD. Else, set get_variable as variable.
     if variable.split(':')[0] == 'UVGRD':
         # We need both U and V to convert winds from grid-relative to earth-relative
         get_variable = 'UGRD:' + variable.split(':')[1]
     else:
         get_variable = variable
 
+
+    ## --- Data Source ---
     # Dear User,
     # Only HRRR files for the previous day have been transferred to Pando.
     # That means if you are requesting data for today, you need to get it from
@@ -96,7 +142,6 @@ def get_hrrr_variable(DATE, variable,
     # requesting is not for today's date. If it is, then I'll send you to
     # NOMADS. Deal? :)
     #                                             -Sincerely, Brian
-    #
     
     if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=6):
         # Get HRRR from Pando
@@ -187,10 +232,11 @@ def get_hrrr_variable(DATE, variable,
             # wgrib2 documentation: http://www.cpc.ncep.noaa.gov/products/wesley/wgrib2/new_grid.html
             # command from Taylor McCorkle
             wgrib2 = '/uufs/chpc.utah.edu/sys/installdir/wgrib2/2.0.2/wgrib2/wgrib2'
-            command2 = '%s %s' % (wgrib2, outfile) + ' -new_grid_winds earth -new_grid latlon -175.75:1800:0.0269 46.863:1000:0.0269 %s' % outfile+'.regrid'
-            os.system(command2)
+            # regrid = 'latlon -175.75:1800:0.0269 46.863:1000:0.0269' # Old Alaska Domain
+            regrid = 'nps:225.000000:60.000000 185.117126:1299:3000.000000 41.612949:919:3000.000000'
+            os.system('%s %s -new_grid_winds earth -new_grid %s %s' % (wgrib2, outfile, regrid, outfile+'.earth'))
             os.system('rm -f %s' % outfile) # remove the original file
-            outfile = outfile+'.regrid'     # assign the `outfile` as the regridded file so we can remove it later
+            outfile = outfile+'.earth'     # assign the `outfile` as the regridded file so we can remove it later
 
 
         # 3) Get data from the file, using pygrib
@@ -218,6 +264,8 @@ def get_hrrr_variable(DATE, variable,
                 msg1 = str(grbs[1])
                 value2 = grbs[2].values
                 msg2 = str(grbs[2])
+                if model == 'hrrrak':
+                    lon[lon>0] -= 360
                 #
                 # 4) Remove the temporary file
                 if removeFile == True:
@@ -240,7 +288,7 @@ def get_hrrr_variable(DATE, variable,
                             'VGRD': value2,
                             'SPEED': wind_uv_to_spd(value1, value2),
                             'lat': lat,
-                            'lon': lon-360,
+                            'lon': lon,
                             'valid': validDATE,
                             'anlys': anlysDATE,
                             'msgU': msg1,
@@ -251,6 +299,8 @@ def get_hrrr_variable(DATE, variable,
                 validDATE = grbs[1].validDate
                 anlysDATE = grbs[1].analDate
                 msg = str(grbs[1])
+                if model == 'hrrrak':
+                    lon[lon>0] -= 360
 
                 # 4) Remove the temporary file
                 if removeFile == True:
@@ -268,7 +318,7 @@ def get_hrrr_variable(DATE, variable,
                 elif model == 'hrrrak':
                     return {'value': value,
                             'lat': lat,
-                            'lon': lon-360,
+                            'lon': lon,
                             'valid': validDATE,
                             'anlys': anlysDATE,
                             'msg': msg,
