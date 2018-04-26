@@ -8,11 +8,16 @@ Requires cURL, wgrib2, and pygrib
 Contents:
     get_hrrr_variable()            - Returns dict of single HRRR variable.
     pluck_hrrr_point()             - Returns valid time and plucked value from lat/lon
-    points_for_multipro()          - Feeds variables from multiprocessing for timeseries
-    point_hrrr_time_series()       - Returns HRRR time serience (main function)
-    point_hrrr_time_series_multi() - Returns dictionary of the HRRR timeseris for multiple stations
+    hrrr_subset                    - Returns a subset of the model domain
+    hrrr_area_stats                - Returns statistics for the subset
+
+    pluck_point_MultiPro()         - Feeds variables from multiprocessing for timeseries
+    pluck_LocDic_MultiPro()        - Feeds variables from multiprocessing for timeseries for a Location Dictionary
+
+    point_hrrr_time_series()       - Returns HRRR time series (main function)
+    point_hrrr_time_series_multi() - Returns dictionary of the HRRR timeseries at multiple points
     get_hrrr_pollywog()            - Returns vector of the HRRR pollywog
-    get_hrrr_pollywog_multi()      - Returns dictionary of the HRRR pollywog for multiple stations
+    get_hrrr_pollywog_multi()      - Returns dictionary of the HRRR pollywog at multiple points
 
     The difference between a time series and a pollywog is that:
         - a time series is for the all analyses (f00) or all forecast hours (fxx) for multiple runs
@@ -125,7 +130,7 @@ def get_hrrr_variable(DATE, variable,
     outfile = '%stemp_%s_%s_f%02d_%s.grib2' % (outDIR, model, DATE.strftime('%Y%m%d%H'), fxx, variable[:3])
 
     if verbose is True:
-        print 'Dowloading tempfile: %s' % outfile
+        print ' >> Dowloading tempfile: %s' % outfile
 
 
     ## --- Requested Variable -------------------------------------------------
@@ -230,7 +235,7 @@ def get_hrrr_variable(DATE, variable,
             expr = re.compile(get_variable)
             if expr.search(g):
                 if verbose is True:
-                    print '>> Matched a variable: ', g
+                    print ' >> Matched a variable: ', g
                 parts = g.split(':')
                 rangestart = parts[1]
                 if variable.split(':')[0] == 'UVGRD':
@@ -239,7 +244,7 @@ def get_hrrr_variable(DATE, variable,
                     parts = lines[gcnt+1].split(':')      # Grab range for requested variable only
                 rangeend = int(parts[1])-1
                 if verbose is True:
-                    print '>> Byte Range:', rangestart, rangeend
+                    print ' >> Byte Range:', rangestart, rangeend
                 byte_range = str(rangestart) + '-' + str(rangeend)
             gcnt += 1
         ## 2) When the byte range is discovered, use cURL to download the file.
@@ -255,7 +260,7 @@ def get_hrrr_variable(DATE, variable,
         # https://github.com/blaylockbk/pyBKB_v2/blob/master/demos/HRRR_earthRelative_vs_gridRelative_winds.ipynb
         if variable.split(':')[0] == 'UVGRD':
             if verbose:
-                print '>> Converting winds to earth-relative'
+                print ' >> Converting winds to earth-relative'
             wgrib2 = '/uufs/chpc.utah.edu/sys/installdir/wgrib2/2.0.2/wgrib2/wgrib2'
             if model == 'hrrrak':
                 regrid = 'nps:225.000000:60.000000 185.117126:1299:3000.000000 41.612949:919:3000.000000'
@@ -334,18 +339,21 @@ def get_hrrr_variable(DATE, variable,
 
 
 
-def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
+def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True, XY_only=False):
     """
     Pluck the value from the nearest lat/lon location in the HRRR grid.
+    
     Input:
-        H   - is a dictionary as returned from get_hrrr_variable
-        lat - is the desired latitude location you want. Default is KSLC
-        lon - is the desired longitude location you want. Default is KSLC
+        H       - A dictionary as returned from get_hrrr_variable()
+        lat     - The desired latitude location you want. Default is KSLC
+        lon     - The desired longitude location you want. Default is KSLC
+        XY_only - False: return the valid date and the value at the point
+                  True:  return the x and y value for the point
     Return:
-        value from pluked location
+        [valid time, value from plucked location]
     """
     try:
-        # 1) Compute the abosulte difference between the grid lat/lon and the point
+        # 1) Compute the absolute difference between the grid lat/lon and the point
         abslat = np.abs(H['lat']-lat)
         abslon = np.abs(H['lon']-lon)
 
@@ -354,113 +362,110 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
 
         # 3) The index of the minimum maxima (which is the nearest lat/lon)
         x, y = np.where(c == np.min(c))
+        x = x[0]
+        y = y[0]
+        if verbose:
+                print " >> Requested Center lat: %s\t lon: %s" % (lat, lon)
+                print " >>     Plucked HRRR lat: %s\t lon: %s" % (H['lat'][x, y], H['lon'][x, y])
+                print " >>     Plucked from   x: %s\t   y: %s" % (x, y)
+        if XY_only:
+            return [x, y]
+        
         # 4) Value of the variable at that location
-        plucked = H['value'][x[0], y[0]]
+        plucked = H['value'][x, y]
         valid = H['valid']
-        if verbose == True:
-            print "requested lat: %s lon: %s" % (lat, lon)
-            print "plucked %s from lat: %s lon: %s" % (plucked, H['lat'][x[0], y[0]], H['lon'][x[0], y[0]])
+        if verbose:
+            print " >> Plucked value: %s" % (plucked)
 
-        # Returns the valid time and the plucked value
+        # 5) Return the valid time and the plucked value
         return [valid, plucked]
+
     except:
         print "\n------------------------------------!"
-        print " !> ERROR <! ERROR in pluck_hrrr_point() %s" % (H['msg']), lat, lon
+        print " !> ERROR in pluck_hrrr_point(): %s" % (H['msg']), lat, lon
         print "------------------------------------!\n"
         return [np.nan, np.nan]
 
-def hrrr_subset(H, half_box=9, lat=40.771, lon=-111.965):
+
+
+def hrrr_subset(H, half_box=9, lat=40.771, lon=-111.965, verbose=True):
     """
-    Cut up the HRRR data based on a center point and the half box surrounding
-    the point.
-    half_box - number of gridpoints half the size the box surrounding the center point.
+    Trim the HRRR data to a box around a center point.
+
+    Input:
+        H        - A dictionary as returned from get_hrrr_variable()
+        half_box - The number of gridpoints equal to half the length of the box
+                   surrounding the center point.
+        lat      - The center latitude
+        lon      - The center longitude
+    Return:
+        A dictionary of the values and lat/lon grids for the subset.
     """
-    # 1) Compute the abosulte difference between the grid lat/lon and the point
-    abslat = np.abs(H['lat']-lat)
-    abslon = np.abs(H['lon']-lon)
-
-    # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
-    c = np.maximum(abslon, abslat)
-
-    # 3) The index of the minimum maxima (which is the nearest lat/lon)
-    x, y = np.where(c == np.min(c))
-    xidx = x[0]
-    yidx = y[0]
-
-    print 'x:%s, y:%s' % (xidx, yidx)
-
-    subset = {'lat': H['lat'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box],
-              'lon': H['lon'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box],
-              'value': H['value'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box]}
+    x, y = pluck_hrrr_point(H, lat=lat, lon=lon, verbose=verbose, XY_only=True)
+    
+    subset = {'lats': H['lat'][x-half_box:x+half_box, y-half_box:y+half_box],
+              'lons': H['lon'][x-half_box:x+half_box, y-half_box:y+half_box],
+              'value': H['value'][x-half_box:x+half_box, y-half_box:y+half_box],
+              'x': x,
+              'y': y}
+    if verbose:
+        print ' >> Size of subset: %s x %s grid points' % np.shape(subset['value'])
 
     return subset
 
 
+
 def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
     """
-    Pluck the value from the nearest lat/lon location in the HRRR grid.
+    Calculated statistics for a subset of the model domain.
+
     Input:
-        H        - is a dictionary as returned from get_hrrr_variable
-        half_box - is the number of grid boxes to +/- from center lat/lon
-                   For the HRRR model, 5 reprsents a 30kmx30km box
-                   5 for the number of grids in each direction from the center
-                   point (so we get a 10x10 grid box) and multiply by 3km for
+        H        - A dictionary returned from get_hrrr_variable()
+        half_box - The number of grid boxes to +/- from the center lat/lon.
+                   For the HRRR model, 5 represents a 30km x 30km box.
+                   5 is the number of grids in each direction from the center
+                   point, a 10 x 10 grid box, and multiplied by 3km for the
                    size of each grid box.
-        lat      - is the center of the box. Default is KSLC
-        lon      - is the desired longitude location you want. Default is KSLC
+        lat      - The center latitude of the box. Default is KSLC
+        lon      - The center longitude of the box. Default is KSLC
+    
     Return:
-        Dictionary of the stats around each point.
+        Dictionary of the stats around the point for the subset
     """
-    if verbose is True:
-        print "half_box is set to %s, so your box will be %s-km2 centered at %s %s" % (half_box, half_box*2*3, lat, lon)
-
     try:
-        # 1) Compute the abosulte difference between the grid lat/lon and the point
-        abslat = np.abs(H['lat']-lat)
-        abslon = np.abs(H['lon']-lon)
-
-        # 2) Element-wise maxima. (Plot this with pcolormesh to see what I've done.)
-        c = np.maximum(abslon, abslat)
-
-        # 3) The index of the minimum maxima (which is the nearest lat/lon)
-        x, y = np.where(c == np.min(c))
-        xidx = x[0]
-        yidx = y[0]
-
         if verbose is True:
-            print 'hrrr latlon:', H['lat'][x[0], y[0]], H['lon'][x[0], y[0]]
-            print 'requested:', lat, lon
+            print " >> Half_box is set to %s. Your box will be %s-km2." % (half_box, half_box*2*3)
+        
+        box = hrrr_subset(H, half_box=half_box, lat=lat, lon=lon, verbose=verbose)
 
-        # 4) Get desired data box and perform statistics
-        box = H['value'][xidx-half_box:xidx+half_box, yidx-half_box:yidx+half_box]
-
-        p = np.percentile(box, [1, 5, 10, 90, 95, 99])
+        p = np.percentile(box['value'], [1, 5, 10, 90, 95, 99])
 
         return_this = {'half box': half_box,
-                       'center': [lat, lon],
-                       'valid':H['valid'],
-                       'box center':H['value'][x[0], y[0]],
-                       'min':np.nanmin(box),
-                       'p1':p[0],
-                       'p5':p[1],
-                       'p10':p[2],
-                       'mean':np.nanmean(box),
-                       'p90':p[3],
-                       'p95':p[4],
-                       'p99':p[5],
-                       'max':np.nanmax(box),
+                       'requested center': [lat, lon],
+                       'valid': H['valid'],
+                       'box center value': H['value'][box['x'],box['y']],
+                       'min': np.nanmin(box['value']),
+                       'p1': p[0],
+                       'p5': p[1],
+                       'p10': p[2],
+                       'mean': np.nanmean(box['value']),
+                       'p90': p[3],
+                       'p95': p[4],
+                       'p99': p[5],
+                       'max': np.nanmax(box['value']),
+                       'lats': box['lats'],
+                       'lons': box['lons']
                       }
-
-        # Returns the valid time and the plucked value
         return return_this
+    
     except:
         print "\n------------------------------------!"
-        print " !> ERROR <! ERROR in hrrr_area_stats. Returning a nan value."
+        print " !> ERROR <! ERROR in hrrr_area_stats. Returning nan values."
         print "------------------------------------!\n"
         return {'half box': half_box,
-                'center': [lat, lon],
+                'requested center': [lat, lon],
                 'valid':np.nan,
-                'box center':np.nan,
+                'box center value':np.nan,
                 'min':np.nan,
                 'p1':np.nan,
                 'p5':np.nan,
@@ -469,12 +474,15 @@ def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
                 'p90':np.nan,
                 'p95':np.nan,
                 'p99':np.nan,
-                'max':np.nan,
+                'max':np.nan
                }
 
-def points_for_multipro(multi_vars):
+
+############# FUNCTIONS FOR MULTIPROCESSING ###################################
+
+def pluck_point_MultiPro(multi_vars):
     """
-    Need to feed a bunch of variables to these functions for multiprocessing
+    Use multiprocessing to pluck a point from many HRRR grids
     """
     DATE = multi_vars[0]
     VAR = multi_vars[1]
@@ -484,17 +492,22 @@ def points_for_multipro(multi_vars):
     MODEL = multi_vars[5]
     FIELD = multi_vars[6]
     VERBOSE = multi_vars[7]
+    
     if VERBOSE == True:
-        print 'working on', multi_vars
+        print '>>Pluck Points MultiPro: Working on', multi_vars
+    
     H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD, verbose=VERBOSE)
-    value = pluck_hrrr_point(H, LAT, LON, verbose=VERBOSE)
+    value = pluck_hrrr_point(H, lat=LAT, lon=LON, verbose=VERBOSE)
     del H # does this help prevent multiprocessing from hanging??
+    
     return value
 
-def points_for_multipro2(multi_vars):
+
+
+def pluck_LocDic_MultiPro(multi_vars):
     """
-    Need to feed a bunch of variables to these functions for multiprocessing
-    With the location_dic as an input
+    Use multiprocessing to pluck a point from many HRRR grids for all 
+    locations in a location dictionary.
     """
     DATE = multi_vars[0]
     LOC_DIC = multi_vars[1]
@@ -504,78 +517,92 @@ def points_for_multipro2(multi_vars):
     FIELD = multi_vars[5]
     STATS = multi_vars[6]
     VERBOSE = multi_vars[7]
+    
     if VERBOSE == True:
-        print 'working on', multi_vars
-        if STATS != False:
-            print 'NOTICE! Getting time series for Area Statistics for a %s-km2 box centerd at the location' % (STATS*2*3)
+        print ' >> Pluck LocDic MultiPro: Working on', multi_vars
+        
+    return_this = {'DATETIME':DATE}
 
-    values = {'DATETIME':DATE}
-
-    # Download the HRRR field once, and pluck values from it at locations
+    # Download the HRRR field once, and pluck values from it at all locations
     H = get_hrrr_variable(DATE, VAR, fxx=FXX, model=MODEL, field=FIELD, verbose=VERBOSE)
+    
     for l in LOC_DIC.keys():
-        if STATS is False:
-            value = pluck_hrrr_point(H, LOC_DIC[l]['latitude'], LOC_DIC[l]['longitude'],
-                                     verbose=VERBOSE)
-            values[l] = value[1] # only need to store the value, and not the date
+        if STATS != False:
+            # Store all the area statistics
+            return_this[l] = hrrr_area_stats(H, half_box=STATS, lat=LOC_DIC[l]['latitude'], lon=LOC_DIC[l]['longitude'], verbose=VERBOSE)
         else:
-            value = hrrr_area_stats(H, half_box=STATS,
-                                    lat=LOC_DIC[l]['latitude'],
-                                    lon=LOC_DIC[l]['longitude'],
-                                    verbose=VERBOSE)
-            values[l] = value
+             # Only store the value, and not the date
+            return_this[l] = pluck_hrrr_point(H, LOC_DIC[l]['latitude'], LOC_DIC[l]['longitude'], verbose=VERBOSE)[1]       
     del H # does this help prevent multiprocessing from hanging??
-    return values
+    return return_this
+
+###############################################################################
+###############################################################################
 
 
-def point_hrrr_time_series(start, end, variable='TMP:2 m',
+
+def point_hrrr_time_series(sDATE, eDATE, variable='TMP:2 m',
                            lat=40.771, lon=-111.965,
                            fxx=0, model='hrrr', field='sfc',
                            verbose=True,
                            reduce_CPUs=2):
     """
-    Produce a time series of HRRR data for a specified variable at a lat/lon
-    location. Use multiprocessing to speed this up :)
+    Produce a time series of HRRR data at a point for a specified variable
+    at a lat/lon location. Use multiprocessing to speed this up :)
     Input:
-        start - datetime begining time
-        end - datetime ending time
-        variable - the desired variable string from a line in the .idx file.
-                   Refer https://api.mesowest.utah.edu/archive/HRRR/
-        lat - latitude of the point
-        lon - longitude of the point
-        fxx - forecast hour
-        model - model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
-        field - field type. Choose one: ['sfc', 'prs']
+        sDATE       - Valid time Start datetime
+        eDATE       - Valid time End datetime
+        variable    - The desired variable string from a line in the .idx file.
+        lat         - Latitude of the point. Default is KSLC.
+        lon         - Longitude of the point. Default is KSLC.
+        fxx         - Forecast lead time for the time series, in hours.
+                      Default is the model analysis, or F00. fxx=18 would make
+                      a time series of all 18-hr forecasts.
+        model       - Model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
+        field       - Field type. Choose one: ['sfc', 'prs']
         reduce_CPUs - How many CPUs do you not want to use? Default is to use
-                      all except 2, to be nice to others using the computer.
-                      If you are working on a wx[1-4] you can safely reduce 0.
+                      all except 2.
+    Return:
+        A tuple of the valid datetime and the point value for each datetime.
     """
 
-    # 1) Create a range of dates and inputs for multiprocessing
-    #    the get_hrrr_variable and pluck_point_functions.
-    #    Each processor needs these: [DATE, variable, lat, lon, fxx, model, field]
-    base = start
-    hours = (end-start).days * 24 + (end-start).seconds / 3600
-    date_list = [base + timedelta(hours=x) for x in range(0, hours)]
-    multi_vars = [[d, variable, lat, lon, fxx, model, field, verbose] for d in date_list]
+    ## 1) Create a range of dates and inputs for multiprocessing the
+    #     get_hrrr_variable() and pluck_point_MultiPro(). Adjust the requested
+    #     valid datetime to the model run datetime
+    RUN_sDATE = sDATE - timedelta(hours=fxx)
+    
+    if model == 'hrrrak' and RUN_sDATE not in range(0,24,3):
+        print " >> HRRR Alaska not run for hour %s. Finding previous run." % RUN_sDATE.hour,
+        while RUN_sDATE.hour not in range(0,24,3):
+            RUN_sDATE -= timedelta(hours=1)
+        print " Found hour %s." % RUN_sDATE    
+    
+    hours = (eDATE-sDATE).days * 24 + (eDATE-sDATE).seconds / 3600
+    if model == 'hrrrak':
+        RUN_DATES = np.array([RUN_sDATE + timedelta(hours=x) for x in range(0, hours, 3)])
+        VALID_DATES = np.array([sDATE + timedelta(hours=x) for x in range(0, hours, 3)])
+    else:
+        RUN_DATES = np.array([RUN_sDATE + timedelta(hours=x) for x in range(0, hours)])
+        VALID_DATES = np.array([sDATE + timedelta(hours=x) for x in range(0, hours)])
+    multi_vars = [[d, variable, lat, lon, fxx, model, field, verbose] for d in RUN_DATES]
 
-    # 2) Use multiprocessing to get the plucked values from each map.
+    ## 2) Use multiprocessing to get the plucked values from each map.
     cpu_count = multiprocessing.cpu_count() - reduce_CPUs
     p = multiprocessing.Pool(cpu_count)
     timer_MP = datetime.now()
-    ValidValue = p.map(points_for_multipro, multi_vars)
+    ValidValue = np.array(p.map(pluck_point_MultiPro, multi_vars))
     p.close()
-    print "f%02d: finished multiprocessing in %s on %s processers" % (fxx, datetime.now()-timer_MP, cpu_count)
+    print "Time Series F%02d: Finished with multiprocessing in %s on %s processors." % (fxx, datetime.now()-timer_MP, cpu_count)
 
-    # Convert to numpy array so the columns can be indexed
-    ValidValue = np.array(ValidValue)
+    valid = ValidValue[:, 0] # First item is the valid datetime
+    value = ValidValue[:, 1] # Second item is the value at that datetime
 
-    valid = ValidValue[:, 0] # First returned is the valid datetime
-    value = ValidValue[:, 1] # Second returned is the value at that datetime
+    # Return the VALID_DATES instead of valid so there are no nans dates.
+    return VALID_DATES, value
 
-    return valid, value
 
-def point_hrrr_time_series_multi(start, end, location_dic,
+
+def point_hrrr_time_series_multi(sDATE, eDATE, location_dic,
                                  variable='TMP:2 m',
                                  fxx=0, model='hrrr', field='sfc',
                                  area_stats=False,
@@ -584,66 +611,69 @@ def point_hrrr_time_series_multi(start, end, location_dic,
     """
     Produce a time series of HRRR data for a specified variable at multiple
     lat/lon locations. Use multiprocessing to speed this up :)
+    
     Input:
-        start - datetime begining time
-        end - datetime ending time
-        location_dic - a dictionary {'name':{'latitude':xxx, 'longitude':xxx}}
-        variable - the desired variable string from a line in the .idx file.
-                   Refer https://api.mesowest.utah.edu/archive/HRRR/
-        fxx - forecast hour
-        model - model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
-        field - field type. Choose one: ['sfc', 'prs']
-        area_stats - default is False (does not return area statistics)
-                     or, if you want the statistics for an area around a point,
-                     set to a number that represents the number of grid
-                     points around the point (length of half the box).
-                     The number will be the number of grid points to +/- from
-                     the location lat/lon point. To convert the number to the
-                     size of the box in km2, multiply by 6 (ie. if you set this
-                     to 5, then you will get a 30x30 km2 box centered at lat/lon)
+        sDATE        - Valid time Start datetime
+        eDATE        - Valid time End datetime
+        location_dic - A dictionary of a locations lat/lon in the form:
+                       LocDoc = {'name':{'latitude':xxx, 'longitude':xxx}}
+        variable     - The desired variable string from a line in the .idx file.
+        fxx          - Forecast lead time for the time series, in hours.
+                       Default is the model analysis, or F00. fxx=18 would make
+                       a time series of all 18-hr forecasts.
+        model        - Model type. Choose one: ['hrrr', 'hrrrX', 'hrrrAK']
+        field        - Field type. Choose one: ['sfc', 'prs']
+        area_stats   - False: Does not return area statistics. (default)
+                       integer: Returns statistics around a point. The integer
+                       set here represents the half_box around the location.
+                       The number will be the number of grid points to +/- from
+                       the location lat/lon point.
         reduce_CPUs - How many CPUs do you not want to use? Default is to use
-                      all except 2, to be nice to others using the computer.
-                      If you are working on a wx[1-4] you can safely reduce 0.
+                      all except 2.
+    
     Output:
-        a dictinary of the data for the requested variable and the stations
+        A dictionary of the data for the requested variable and the stations
         and has the keys ['DATETIME', 'stid1', 'stnid2', 'stnid3']
 
         *The DATETIME returned is the valid time.
     """
 
     # 1) Create a range of dates
-    base = start
-    hours = (end-start).days * 24 + (end-start).seconds / 3600
-    date_list = [base + timedelta(hours=x) for x in range(0, hours)]
+    RUN_sDATE = sDATE - timedelta(hours=fxx)
+    
+    if model == 'hrrrak' and RUN_sDATE not in range(0,24,3):
+        print " >> HRRR Alaska not run for hour %s. Finding previous run." % RUN_sDATE.hour,
+        while RUN_sDATE.hour not in range(0,24,3):
+            RUN_sDATE -= timedelta(hours=1)
+        print " Found hour %s." % RUN_sDATE    
+    
+    hours = (eDATE-sDATE).days * 24 + (eDATE-sDATE).seconds / 3600
+    if model == 'hrrrak':
+        RUN_DATES = np.array([RUN_sDATE + timedelta(hours=x) for x in range(0, hours, 3)])
+        VALID_DATES = np.array([sDATE + timedelta(hours=x) for x in range(0, hours, 3)])
+    else:
+        RUN_DATES = np.array([RUN_sDATE + timedelta(hours=x) for x in range(0, hours)])
+        VALID_DATES = np.array([sDATE + timedelta(hours=x) for x in range(0, hours)])
 
-    # Remember to add the fxx to the date list to get vaild date
-    valid_dates = [D+timedelta(hours=fxx) for D in date_list]
-
-    # 2) Intialzie dicitonary to store data with the valid_dates. Each station
-    #    will also be a key, and the value is empty until we fill it.
-    return_this = {'DATETIME':valid_dates}
+    # 2) Initialize dictionary to store data for the valid dates. Each location
+    #    name will also be a key.
+    return_this = {'DATETIME':VALID_DATES}
     for l in location_dic:
         return_this[l] = np.array([])
 
-    # 3) Create and inputs for multiprocessing
-    #    the get_hrrr_variable and pluck_point functions.
-    #    Each processor needs these: [DATE, location_dic, variable, fxx, model, field]
-
-    multi_vars = [[d, location_dic, variable, fxx, model, field, area_stats, verbose] for d in date_list]
+    # 3) Create inputs list for multiprocessing used for get_hrrr_variable() and pluck_hrrr_point().
+    multi_vars = [[d, location_dic, variable, fxx, model, field, area_stats, verbose] for d in RUN_DATES]
 
     # 2) Use multiprocessing to get the plucked values from each map.
     cpu_count = multiprocessing.cpu_count() - reduce_CPUs
     p = multiprocessing.Pool(cpu_count)
     timer_MP = datetime.now()
-    ValidValue = p.map(points_for_multipro2, multi_vars)
+    ValidValue = np.array(p.map(pluck_LocDic_MultiPro, multi_vars))
     p.close()
-    print "finished multiprocessing in %s on %s processers" % (datetime.now()-timer_MP, cpu_count)
-
-    # Convert to numpy array so the columns can be indexed
-    ValidValue = np.array(ValidValue)
+    print "LocDic Time Series F%02d: Finished multiprocessing in %s on %s processors" % (fxx, datetime.now()-timer_MP, cpu_count)
 
     # REPACKAGE THE RETURNED VALUES FROM MULTIPROCESSING so that each key value
-    # is the station name, and contains the time sereis for that station.
+    # is the station name, and contains the time series for that station.
     for l in location_dic:
         num = range(len(ValidValue))
         if area_stats is False:
@@ -659,7 +689,7 @@ def point_hrrr_time_series_multi(start, end, location_dic,
                               'p95':np.array([ValidValue[i][l]['p95'] for i in num]),
                               'p99':np.array([ValidValue[i][l]['p99'] for i in num]),
                               'max':np.array([ValidValue[i][l]['max'] for i in num]),
-                              'box center':np.array([ValidValue[i][l]['box center'] for i in num])
+                              'box center value':np.array([ValidValue[i][l]['box center value'] for i in num])
                              }
 
     return return_this
@@ -745,7 +775,7 @@ def get_hrrr_pollywog_multi(DATE, variable, location_dic, forecast_limit=18, ver
 
     return return_this
 
-def get_hrrr_hovmoller(start, end, location_dic,
+def get_hrrr_hovmoller(sDATE, eDATE, location_dic,
                        variable='TMP:2 m',
                        area_stats=False,
                        fxx=range(19),
@@ -757,8 +787,8 @@ def get_hrrr_hovmoller(start, end, location_dic,
     I plot the vaild time on the x-axis across the bottom. It helps you see how
     the forecasts are changing over time
 
-    start - a python datetime object
-    end   - a python datetime object
+    sDATE - a python datetime object
+    eDATE   - a python datetime object
     location_dic - Dictionary of locations that include the 'latitude' and 'longitude'.
                    location_dic = {'name':{'latitude':###,'longitude':###}}
     area_stats - a half box you want to calculate statistics for, with point at center of the box
@@ -768,8 +798,8 @@ def get_hrrr_hovmoller(start, end, location_dic,
     """
     data = {}
     for f in fxx:
-        sOffset = start - timedelta(hours=f)
-        eOffset = end - timedelta(hours=f)
+        sOffset = sDATE - timedelta(hours=f)
+        eOffset = eDATE - timedelta(hours=f)
         data[f] = point_hrrr_time_series_multi(sOffset, eOffset, location_dic,
                                                variable=variable,
                                                fxx=f,
@@ -834,9 +864,9 @@ if __name__ == "__main__":
     """
     # Time Series (25 seconds to make a 5 day time series on 8 processors)
     timer2 = datetime.now()
-    START = datetime(2016, 3, 1)
+    sDATE = datetime(2016, 3, 1)
     END = datetime(2016, 4, 1)
-    dates, data = point_hrrr_time_series(START, END, variable='SOILW:0.04', lat=40.5, lon=-113.5, fxx=0, model='hrrr', field='prs')
+    dates, data = point_hrrr_time_series(sDATE, END, variable='SOILW:0.04', lat=40.5, lon=-113.5, fxx=0, model='hrrr', field='prs')
     fig, ax = plt.subplots(1)
     plt.plot(dates, data-273.15) # convert degrees K to degrees C
     plt.title('4 cm layer soil moisture at SLC')
