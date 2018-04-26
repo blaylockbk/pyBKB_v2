@@ -3,11 +3,10 @@
 
 """
 Get data from a HRRR grib2 file on the MesoWest HRRR S3 Archive
-Requires cURL
+Requires cURL, wgrib2, and pygrib
 
 Contents:
-    get_hrrr_variable()            - Returns dict of sinlge HRRR variable
-    get_hrrr_variable_multi()      - Returns dict of multiple HRRR variables
+    get_hrrr_variable()            - Returns dict of single HRRR variable.
     pluck_hrrr_point()             - Returns valid time and plucked value from lat/lon
     points_for_multipro()          - Feeds variables from multiprocessing for timeseries
     point_hrrr_time_series()       - Returns HRRR time serience (main function)
@@ -16,8 +15,8 @@ Contents:
     get_hrrr_pollywog_multi()      - Returns dictionary of the HRRR pollywog for multiple stations
 
     The difference between a time series and a pollywog is that:
-        - a time series is for the analysis hours, f00, for any length of time.
-        - a pollywog is the full forecast cycle, i.e. f00-f18
+        - a time series is for the all analyses (f00) or all forecast hours (fxx) for multiple runs
+        - a pollywog is a time series for the full forecast cycle of a single run, i.e. f00-f18
 
 # (Remove the temporary file)
 #    ?? Is it possible to push the data straight from curl to ??
@@ -30,12 +29,9 @@ import os
 import pygrib
 from datetime import datetime, timedelta
 import urllib2
-from ftplib import FTP
 import ssl
 import re
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import multiprocessing
 
 import sys
@@ -99,29 +95,40 @@ def get_hrrr_variable(DATE, variable,
     """
 
     ## --- Catch Errors -------------------------------------------------------
+    # Check that you requested the right model name and field name
     if model not in ['hrrr', 'hrrrX', 'hrrrak']:
         raise ValueError("Requested model must be 'hrrr', 'hrrrX', or 'hrrrak'")
     if field not in ['prs', 'sfc']:
         raise ValueError("Requested field must be 'prs' or 'sfc'. We do not store other fields in the archive")
+    
+    # Check that you requested the right forecasts available for the model
     if model == 'hrrr' and fxx not in range(19):
         raise ValueError("HRRR: fxx must be between 0 and 18")
     elif model == 'hrrrX' and fxx != 0:
         raise ValueError("HRRRx: fxx must be 0. We do not store other forecasts in the archive.")
     elif model == 'hrrrak' and fxx not in range(37):
         raise ValueError("HRRRak: fxx must be between 0 and 37")
+    
+    # Check that the requested hour exists for the model
+    if model == 'hrrrak' and DATE.hour not in range(0,24,3):
+        raise ValueError("HRRRak: DATE.hour must be 0, 3, 6, 9, 12, 15, 18, or 21")
+
+    # Check that the request datetime has happened
+    if DATE > datetime.utcnow():
+        raise ValueError("The datetime you requested hasn't happened yet")
     ## ---(Catch Errors)-------------------------------------------------------
 
 
-    ## --- Temporary File Name ---
+    ## --- Set Temporary File Name --------------------------------------------
     # Temporary file name has to be unique, or else when we use multiprocessing
     # we might accidentally delete files before we are done with them.
-    outfile = '%stemp_%s_f%02d_%s.grib2' % (outDIR, DATE.strftime('%Y%m%d%H'), fxx, variable[:3])
+    outfile = '%stemp_%s_%s_f%02d_%s.grib2' % (outDIR, model, DATE.strftime('%Y%m%d%H'), fxx, variable[:3])
 
     if verbose is True:
         print 'Dowloading tempfile: %s' % outfile
 
 
-    ## --- Requested Variable ---
+    ## --- Requested Variable -------------------------------------------------
     # A special variable request is 'UVGRD:[level]' which will get both the U
     # and V wind components converted to earth-relative direction in a single
     # download. Since UGRD always proceeds VGRD, we will set the get_variable
@@ -133,63 +140,72 @@ def get_hrrr_variable(DATE, variable,
         get_variable = variable
 
 
-    ## --- Data Source ---
-    # Dear User,
-    # Only HRRR files for the previous day have been transferred to Pando.
-    # That means if you are requesting data for today, you need to get it from
-    # the NOMADS website. Good news, it's an easy fix. All we need to do is 
-    # redirect you to the NOMADS URLs. I'll check that the date you are
-    # requesting is not for today's date. If it is, then I'll send you to
-    # NOMADS. Deal? :)
-    #                                             -Sincerely, Brian
+    ## --- Set Data Source ----------------------------------------------------
+    """
+    Dear User,
+      Only HRRR files are only downloaded and added to Pando every 3 hours.
+      That means if you are requesting data for today that hasn't been copied
+      to Pando yet, you will need to get it from the NOMADS website instead.
+      But good news! It's an easy fix. All we need to do is redirect you to the
+      NOMADS server. I'll check that the date you are requesting is not for
+      today's date. If it is, then I'll send you to NOMADS. Deal? :)
+                                                  -Sincerely, Brian
+    """
     
-    if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=6):
+    # If the datetime requested is less than six hours ago, then the file is 
+    # most likely on Pando. Else, download from NOMADS. 
+    #if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=6):
+    if DATE < datetime.utcnow()-timedelta(hours=12):
         # Get HRRR from Pando
         if verbose is True:
             print "Oh, good, you requested a date that should be on Pando."
-        pandofile = 'https://pando-rgw01.chpc.utah.edu/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
+        grib2file = 'https://pando-rgw01.chpc.utah.edu/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
                     % (model, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
-        fileidx = pandofile+'.idx'
+        fileidx = grib2file+'.idx'
     else:
         # Get operational HRRR from NOMADS
         if model == 'hrrr':
             if verbose is True:
-                print "\n-----------------------------------------------------------------------"
-                print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
-                print "!! That's ok, I'll redirect you to the NOMADS server. :)            !!"
-                print "-----------------------------------------------------------------------\n"
-            # URL for the grib2 file (located on NOMADS server)
-            pandofile = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
+                print "/n---------------------------------------------------------------------------"
+                print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
+                print "!! That's ok, I'll redirect you to the NOMADS server. :)                 !!"
+                print "---------------------------------------------------------------------------\n"
+            grib2file = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
                         % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
-            fileidx = pandofile+'.idx'
-        # or, get experiemtnal HRRR from ESRL
+            fileidx = grib2file+'.idx'
         elif model == 'hrrrX':
-            print "\n-----------------------------------------------------------------------"
-            print "!! I haven't download that Experimental HRRR run from ESRL yet      !!"
-            print "-----------------------------------------------------------------------\n"
+            print "\n-------------------------------------------------------------------------"
+            print "!! Sorry, I haven't download that Experimental HRRR run from ESRL yet  !!"
+            print "!! Try again in a few hours.                                           !!"
+            print "-------------------------------------------------------------------------\n"
             return None
         elif model == 'hrrrak':
             if verbose is True:
-                print "\n-----------------------------------------------------------------------"
-                print "!! Hey! You are requesting a date that is not on the Pando archive  !!"
-                print "!! That's ok, I'll redirect you to the PARALLEL NOMADS server. :)   !!"
-                print "-----------------------------------------------------------------------\n"
-            # URL for the grib2 file (located on the PARALLEL NOMADS server)
+                print "/n---------------------------------------------------------------------------"
+                print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
+                print "!! That's ok, I'll redirect you to the PARALLEL NOMADS server. :)        !!"
+                print "---------------------------------------------------------------------------\n"
             if model =='hrrrak':
                 DOMAIN = 'alaska'
+                SHORT = 'ak.'
             elif model == 'hrrr':
                 DOMAIN = 'conus'
-            NOMADS = 'http://para.nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/para/hrrr.%s/%s/' \
-                        % (DATE.strftime('%Y%m%d'), DOMAIN)
-            FILE = 'hrrr.t%02dz.wrf%sf%02d.ak.grib2' % (DATE.hour, field, fxx)
-            pandofile = NOMADS+FILE    
-            fileidx = pandofile+'.idx'
+                SHORT = ''
+            PARA_NOMADS = 'http://para.nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/para/hrrr.%s/%s/' \
+                           % (DATE.strftime('%Y%m%d'), DOMAIN)
+            FILE = 'hrrr.t%02dz.wrf%sf%02d.%sgrib2' % (DATE.hour, field, fxx, SHORT)
+            grib2file = PARA_NOMADS+FILE    
+            fileidx = grib2file+'.idx'
 
     if verbose:
-        print pandofile
+        print 'GRIB2 File: %s' % grib2file
+        print ' .idx File: %s' % fileidx
+        print ""
 
+
+    ## --- Download Requested Variable ----------------------------------------
     try:
-        # 0) Read in the grib2.idx file
+        ## 0) Read the grib2.idx file
         try:
             # ?? Ignore ssl certificate (else urllib2.openurl wont work).
             #    Depends on your version of python.
@@ -204,125 +220,98 @@ def get_hrrr_variable(DATE, variable,
 
         lines = idxpage.readlines()
 
-        # 1) Find the byte range for the variable. Need to first find where the
-        #    variable is located. Keep a count (gcnt) so we can get the end
-        #    byte range from the next line.
+        ## 1) Find the byte range for the requested variable. First find where
+        #     in the .idx file the variable is located. We need the byte number
+        #     The variable begins on. Keep a count (gcnt) of the line number so
+        #     we can also get the beginning byte of the next variable. This is 
+        #     our byte range.
         gcnt = 0
         for g in lines:
             expr = re.compile(get_variable)
             if expr.search(g):
                 if verbose is True:
-                    print 'matched a variable', g
+                    print '>> Matched a variable: ', g
                 parts = g.split(':')
                 rangestart = parts[1]
                 if variable.split(':')[0] == 'UVGRD':
-                    parts = lines[gcnt+2].split(':')
+                    parts = lines[gcnt+2].split(':')      # Grab range between U and V variables
                 else:
-                    parts = lines[gcnt+1].split(':')
+                    parts = lines[gcnt+1].split(':')      # Grab range for requested variable only
                 rangeend = int(parts[1])-1
                 if verbose is True:
-                    print 'range:', rangestart, rangeend
+                    print '>> Byte Range:', rangestart, rangeend
                 byte_range = str(rangestart) + '-' + str(rangeend)
-                # 2) When the byte range is discovered, use cURL to download.
-                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
             gcnt += 1
-
-        # If the file is for Alaska, we have to regrid and change to earth relative winds:
-        if model == 'hrrrak':
-            # wgrib2 documentation: http://www.cpc.ncep.noaa.gov/products/wesley/wgrib2/new_grid.html
-            # command from Taylor McCorkle
+        ## 2) When the byte range is discovered, use cURL to download the file.
+        os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, grib2file))
+        
+        
+        ## --- Convert winds to earth-relative --------------------------------
+        # If the requested variable is 'UVGRD:[level]', then we have to change
+        # the wind direction from grid-relative to earth-relative.
+        # You can still get the grid-relative winds by requesting 'UGRD:[level]'
+        # and # 'VGRD:[level] independently.
+        # !!! See more information on why/how to do this here:
+        # https://github.com/blaylockbk/pyBKB_v2/blob/master/demos/HRRR_earthRelative_vs_gridRelative_winds.ipynb
+        if variable.split(':')[0] == 'UVGRD':
+            if verbose:
+                print '>> Converting winds to earth-relative'
             wgrib2 = '/uufs/chpc.utah.edu/sys/installdir/wgrib2/2.0.2/wgrib2/wgrib2'
-            # regrid = 'latlon -175.75:1800:0.0269 46.863:1000:0.0269' # Old Alaska Domain
-            regrid = 'nps:225.000000:60.000000 185.117126:1299:3000.000000 41.612949:919:3000.000000'
-            os.system('%s %s -new_grid_winds earth -new_grid %s %s' % (wgrib2, outfile, regrid, outfile+'.earth'))
+            if model == 'hrrrak':
+                regrid = 'nps:225.000000:60.000000 185.117126:1299:3000.000000 41.612949:919:3000.000000'
+            if model == 'hrrr' or model == 'hrrrX':
+                regrid = 'lambert:262.500000:38.500000:38.500000:38.500000 237.280472:1799:3000.000000 21.138123:1059:3000.000000'
+            os.system('%s %s -new_grid_winds earth -new_grid %s %s.earth' % (wgrib2, outfile, regrid, outfile))
             os.system('rm -f %s' % outfile) # remove the original file
-            outfile = outfile+'.earth'     # assign the `outfile` as the regridded file so we can remove it later
+            outfile = outfile+'.earth'      # assign the `outfile`` as the regridded file
+        
 
-
-        # 3) Get data from the file, using pygrib
+        ## 3) Get data from the file, using pygrib and return what we want to use
         grbs = pygrib.open(outfile)
-        if value_only is True:
+        
+        # Note: Returning only the variable value is a bit faster than returning 
+        #       the variable value with the lat/lon and other details. You can
+        #       specify this when you call the function.
+        if value_only:
             if variable.split(':')[0] == 'UVGRD':
-                value1 = grbs[1].values
-                value2 = grbs[2].values
-                if removeFile is True:
-                    os.system('rm -f %s' % (outfile))
-                return {'UGRD': value1,
-                        'VGRD': value2,
-                        'SPEED': wind_uv_to_spd(value1, value2)}
+                return_this = {'UGRD': grbs[1].values,
+                                'VGRD': grbs[2].values,
+                                'SPEED': wind_uv_to_spd(grbs[1].values, grbs[2].values)}
             else:
-                value = grbs[1].values
-                if removeFile is True:
-                    os.system('rm -f %s' % (outfile))
-                return {'value': value}
-
+                return_this = {'value': grbs[1].values}
+            if removeFile:
+                os.system('rm -f %s' % (outfile))
+            return return_this
         else:
             if variable.split(':')[0] == 'UVGRD':
                 value1, lat, lon = grbs[1].data()
-                validDATE = grbs[1].validDate
-                anlysDATE = grbs[1].analDate
-                msg1 = str(grbs[1])
-                value2 = grbs[2].values
-                msg2 = str(grbs[2])
                 if model == 'hrrrak':
                     lon[lon>0] -= 360
-                #
-                # 4) Remove the temporary file
-                if removeFile == True:
-                    os.system('rm -f %s' % (outfile))
-                #
-                # 5) Return some import stuff from the file
-                if model == 'hrrr' or model == 'hrrrX':
-                    return {'UGRD': value1,
-                            'VGRD': value2,
-                            'SPEED': wind_uv_to_spd(value1, value2),
-                            'lat': lat,
-                            'lon': lon,
-                            'valid': validDATE,
-                            'anlys': anlysDATE,
-                            'msgU': msg1,
-                            'msgV': msg2,
-                            'URL': pandofile}
-                elif model == 'hrrrak':
-                    return {'UGRD': value1,
-                            'VGRD': value2,
-                            'SPEED': wind_uv_to_spd(value1, value2),
-                            'lat': lat,
-                            'lon': lon,
-                            'valid': validDATE,
-                            'anlys': anlysDATE,
-                            'msgU': msg1,
-                            'msgV': msg2,
-                            'URL': pandofile}
+                return_this = {'UGRD': value1,
+                               'VGRD': grbs[2].values,
+                               'SPEED': wind_uv_to_spd(value1, grbs[2].values),
+                               'lat': lat,
+                               'lon': lon,
+                               'valid': grbs[1].validDate,
+                               'anlys': grbs[1].analDate,
+                               'msgU': str(grbs[1]),
+                               'msgV': str(grbs[2]),
+                               'URL': grib2file}
             else:
                 value, lat, lon = grbs[1].data()
-                validDATE = grbs[1].validDate
-                anlysDATE = grbs[1].analDate
-                msg = str(grbs[1])
                 if model == 'hrrrak':
                     lon[lon>0] -= 360
+                return_this = {'value': value,
+                               'lat': lat,
+                               'lon': lon,
+                               'valid': grbs[1].validDate,
+                               'anlys': grbs[1].analDate,
+                               'msg': str(grbs[1]),
+                               'URL': grib2file}                
+            if removeFile:
+                os.system('rm -f %s' % (outfile))
 
-                # 4) Remove the temporary file
-                if removeFile == True:
-                    os.system('rm -f %s' % (outfile))
-
-                # 5) Return some import stuff from the file
-                if model == 'hrrr' or model == 'hrrrX':
-                    return {'value': value,
-                            'lat': lat,
-                            'lon': lon,
-                            'valid': validDATE,
-                            'anlys': anlysDATE,
-                            'msg': msg,
-                            'URL': pandofile}
-                elif model == 'hrrrak':
-                    return {'value': value,
-                            'lat': lat,
-                            'lon': lon,
-                            'valid': validDATE,
-                            'anlys': anlysDATE,
-                            'msg': msg,
-                            'URL': pandofile}
+            return return_this
             
 
     except:
@@ -331,7 +320,7 @@ def get_hrrr_variable(DATE, variable,
         print " !! Valid Date Requested :", DATE+timedelta(hours=fxx)
         print " !!     Current UTC time :", datetime.utcnow()
         print " !! ------------------------------------------------------------"
-        print " !! ERROR downloading from:", pandofile
+        print " !! ERROR downloading GRIB2:", grib2file
         print " !! Is the variable right?", variable
         print " !! Does the .idx file exist?", fileidx
         print " ---------------------------------------------------------------"
@@ -341,120 +330,8 @@ def get_hrrr_variable(DATE, variable,
                 'valid' : np.nan,
                 'anlys' : np.nan,
                 'msg' : np.nan,
-                'URL': pandofile}
+                'URL': grib2file}
 
-
-def get_hrrr_variable_multi(DATE, variable, next=2, fxx=0, model='hrrr', field='sfc', removeFile=True):
-    """
-    Uses cURL to grab a range of variables from a HRRR grib2 file on the
-    MesoWest HRRR archive.
-
-    Input:
-        DATE - the datetime(year, month, day, hour) for the HRRR file you want
-        variable - a string describing the variable you are looking for.
-                   Refer to the .idx files here: https://api.mesowest.utah.edu/archive/HRRR/
-                   You want to put the variable short name and the level information
-                   For example, for 2m temperature: 'TMP:2 m above ground'
-        fxx - the forecast hour you desire. Default is the anlaysis hour.
-        model - the model you want. Options include ['hrrr', 'hrrrX', 'hrrrAK']
-        field - the file type your variable is in. Options include ['sfc', 'prs']
-        removeFile - True will remove the grib2 file after downloaded. False will not.
-    """
-    # Model direcotry names are named differently than the model name.
-    if model == 'hrrr':
-        model_dir = 'oper'
-    elif model == 'hrrrX':
-        model_dir = 'exp'
-    elif model == 'hrrrAK':
-        model_dir = 'alaska'
-
-    if removeFile is True:
-        if DATE.hour % 2 == 0:
-            try:
-                outfile = '/scratch/local/brian_hrrr/temp_%04d%02d%02d%02d.grib2' \
-                          % (DATE.year, DATE.month, DATE.day, DATE.hour)
-            except:
-                outfile = './temp_%04d%02d%02d%02d.grib2' \
-                          % (DATE.year, DATE.month, DATE.day, DATE.hour)
-        else:
-            outfile = './temp_%04d%02d%02d%02d.grib2' \
-                       % (DATE.year, DATE.month, DATE.day, DATE.hour)
-
-    else:
-        # Save the grib2 file as a temporary file (that isn't removed)
-        outfile = './temp_%04d%02d%02d%02d.grib2' \
-                  % (DATE.year, DATE.month, DATE.day, DATE.hour)
-
-    print "Hour %s out file: %s" % (DATE.hour, outfile)
-
-    # URL for the grib2 idx file
-    fileidx = 'https://api.mesowest.utah.edu/archive/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2.idx' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
-
-    # URL for the grib2 file (located on PANDO S3 archive)
-    pandofile = 'https://pando-rgw01.chpc.utah.edu/HRRR/%s/%s/%04d%02d%02d/%s.t%02dz.wrf%sf%02d.grib2' \
-                % (model_dir, field, DATE.year, DATE.month, DATE.day, model, DATE.hour, field, fxx)
-    try:
-        try:
-            # ?? Ignore ssl certificate (else urllib2.openurl wont work).
-            #    (Depends on your version of python.)
-            # See here:
-            # http://stackoverflow.com/questions/19268548/python-ignore-certicate-validation-urllib2
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            idxpage = urllib2.urlopen(fileidx, context=ctx)
-        except:
-            idxpage = urllib2.urlopen(fileidx)
-
-        lines = idxpage.readlines()
-
-        # 1) Find the byte range for the variable. Need to first find where the
-        #    variable is located. Keep a count (gcnt) so we can get the end
-        #    byte range from the next line.
-        gcnt = 0
-        for g in lines:
-            expr = re.compile(variable)
-            if expr.search(g):
-                print 'matched a variable', g
-                parts = g.split(':')
-                rangestart = parts[1]
-                parts = lines[gcnt+next].split(':')
-                rangeend = int(parts[1])-1
-                print 'range:', rangestart, rangeend
-                byte_range = str(rangestart) + '-' + str(rangeend)
-
-                # 2) When the byte range is discovered, use cURL to download.
-                os.system('curl -s -o %s --range %s %s' % (outfile, byte_range, pandofile))
-            gcnt += 1
-
-        return_this = {'msg':np.array([])}
-
-        # 3) Get data from the file
-        grbs = pygrib.open(outfile)
-        for i in range(1, next+1):
-            return_this[grbs[i]['name']], return_this['lat'], return_this['lon'] = grbs[1].data()
-            return_this['msg'] = np.append(return_this['msg'], str(grbs[i]))
-        return_this['valid'] = grbs[1].validDate
-        return_this['anlys'] = grbs[1].analDate
-
-        # 4) Remove the temporary file
-        if removeFile is True:
-            os.system('rm -f %s' % (outfile))
-
-        # 5) Return some import stuff from the file
-        return return_this
-
-    except:
-        print " ! Could not get the file:", pandofile
-        print " ! Is the variable right?", variable
-        print " ! Does the file exist?", fileidx
-        return {'value' : np.nan,
-                'lat' : np.nan,
-                'lon' : np.nan,
-                'valid' : np.nan,
-                'anlys' : np.nan,
-                'msg' : np.nan}
 
 
 def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True):
@@ -932,6 +809,9 @@ def get_hrrr_hovmoller(start, end, location_dic,
 
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    
     """
     DATE = datetime(2017, 3, 11, 0)
     variable = 'TMP:2 m'
