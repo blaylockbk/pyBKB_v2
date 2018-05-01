@@ -435,16 +435,16 @@ def hrrr_subset(H, half_box=9, lat=40.771, lon=-111.965, verbose=True):
     x, y = pluck_hrrr_point(H, lat=lat, lon=lon, verbose=verbose, XY_only=True)
     
     if 'UGRD' in H:
-        subset = {'lats': H['lat'][x-half_box:x+half_box, y-half_box:y+half_box],
-                  'lons': H['lon'][x-half_box:x+half_box, y-half_box:y+half_box],
+        subset = {'lat': H['lat'][x-half_box:x+half_box, y-half_box:y+half_box],
+                  'lon': H['lon'][x-half_box:x+half_box, y-half_box:y+half_box],
                   'UGRD': H['UGRD'][x-half_box:x+half_box, y-half_box:y+half_box],
                   'VGRD': H['VGRD'][x-half_box:x+half_box, y-half_box:y+half_box],
                   'SPEED': H['SPEED'][x-half_box:x+half_box, y-half_box:y+half_box],                
                   'x': x,
                   'y': y}
     else:
-        subset = {'lats': H['lat'][x-half_box:x+half_box, y-half_box:y+half_box],
-                  'lons': H['lon'][x-half_box:x+half_box, y-half_box:y+half_box],
+        subset = {'lat': H['lat'][x-half_box:x+half_box, y-half_box:y+half_box],
+                  'lon': H['lon'][x-half_box:x+half_box, y-half_box:y+half_box],
                   'value': H['value'][x-half_box:x+half_box, y-half_box:y+half_box],
                   'x': x,
                   'y': y}
@@ -497,8 +497,8 @@ def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
                            'p95': (U_p[4],V_p[4],S_p[4]),
                            'p99': (U_p[5],V_p[5],S_p[5]),
                            'max': (np.nanmax(box['UGRD']), np.nanmax(box['VGRD']), np.nanmax(box['SPEED'])), 
-                           'lats': box['lats'],
-                           'lons': box['lons']
+                           'lat': box['lat'],
+                           'lon': box['lon']
                            }
         else:
             p = np.percentile(box['value'], [1, 5, 10, 90, 95, 99])
