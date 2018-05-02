@@ -56,7 +56,7 @@ from BB_cmap.NWS_standard_cmap import *
 ###############################################################################
 ###############################################################################
 
-def load_lats_lons():
+def load_lats_lons(model):
     """
     Preload the latitude and longitude grid
     """
@@ -72,7 +72,10 @@ def load_lats_lons():
     return [lats, lons]
 
 
-def draw_map_base(map_res='l', plot_title=True):
+def draw_map_base(model, dsize, background,
+                  location, lat, lon,
+                  RUNDATE, VALIDDATE, fxx,
+                  map_res='l', plot_title=True):
     """
     Create basemap with the base image (arcgis image, model terrain, model landuse)
 
@@ -104,15 +107,15 @@ def draw_map_base(map_res='l', plot_title=True):
             half_box = 15                # Half box for subset when plotting barbs
             alpha = .75                  # Alpha (pcolormesh transparency)
         elif dsize == 'medium':
-            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = .85
+            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = .5
         elif dsize == 'large':
-            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = .85
+            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = .5
         elif dsize == 'xlarge':
             plus_minus_latlon = 5;   barb_thin = 12; arcgis_res = 700;  half_box = 210; alpha = .85
         elif dsize == 'xxlarge':
-            plus_minus_latlon = 10;  barb_thin = 25; arcgis_res = 700;  half_box = 430; alpha = .85
+            plus_minus_latlon = 10;  barb_thin = 25; arcgis_res = 700;  half_box = 430; alpha = 1
         elif dsize == 'xxxlarge':
-            plus_minus_latlon = 15;  barb_thin = 35; arcgis_res = 1000; half_box = 700; alpha = .85
+            plus_minus_latlon = 15;  barb_thin = 35; arcgis_res = 1000; half_box = 700; alpha = 1
         
         m = Basemap(resolution=map_res,
                     projection='cyl',
@@ -131,7 +134,11 @@ def draw_map_base(map_res='l', plot_title=True):
     m.drawstates(zorder=1500)
     m.drawcoastlines(zorder=1500)
     if dsize in ['small', 'medium', 'large']:
-        m.drawcounties(zorder=1500)
+        try:
+            m.drawcounties(zorder=1500)
+        except:
+            "Will not work for [URL].cgi images"
+            pass
     
     if background == 'terrain':
         # Get data
@@ -185,7 +192,12 @@ def draw_map_base(map_res='l', plot_title=True):
 
 
 
-def draw_wind(level='10 m',
+def draw_wind(m, lons, lats,
+              model, dsize, background,
+              location, lat, lon,
+              RUNDATE, VALIDDATE, fxx,
+              alpha, half_box, barb_thin,
+              level='10 m',
               Fill=False,
               Shade=False,
               Barbs=False,
@@ -210,7 +222,7 @@ def draw_wind(level='10 m',
                      cmap=cm_wind(),
                      vmin=0, vmax=60,
                      alpha=alpha)
-        cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+        cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink, extend='max')
         cb.set_label(r'%s Wind Speed (m s$\mathregular{^{-1}}$)' % level)
 
     if Shade:
@@ -231,6 +243,8 @@ def draw_wind(level='10 m',
             color = 'darkred'
         elif level == '500 mb':
             color = 'navy'
+        else:
+            color='k'
 
         # For small domain plots, trimming the edges significantly reduces barb plotting time
         if barb_thin < 20:
@@ -311,7 +325,11 @@ def draw_wind(level='10 m',
 
 
 
-def draw_gust():
+def draw_gust(m, lons, lats,
+              model, dsize, background,
+              location, lat, lon,
+              RUNDATE, VALIDDATE, fxx,
+              alpha, half_box, barb_thin):
     """
     hatch fill for wind gust
     """
@@ -336,7 +354,12 @@ def draw_gust():
 
 
 
-def draw_refc(Fill=False,
+def draw_refc(m, lons, lats,
+              model, dsize, background,
+              location, lat, lon,
+              RUNDATE, VALIDDATE, fxx,
+              alpha, half_box, barb_thin,
+              Fill=False,
               Contour=False, contours = range(10, 81, 10)):
     """
     Composite reflectivity
@@ -378,7 +401,12 @@ def draw_refc(Fill=False,
 
 
 
-def draw_tmp_dpt(variable='TMP:2 m',
+def draw_tmp_dpt(m, lons, lats,
+                 model, dsize, background,
+                 location, lat, lon,
+                 RUNDATE, VALIDDATE, fxx,
+                 alpha, half_box, barb_thin,
+                 variable='TMP:2 m',
                  Fill=False,
                  Contour=False, contours = [0],
                  p05p95=False,                 
@@ -459,7 +487,12 @@ def draw_tmp_dpt(variable='TMP:2 m',
 
 
 
-def draw_rh(level='2 m'):
+def draw_rh(m, lons, lats,
+            model, dsize, background,
+            location, lat, lon,
+            RUNDATE, VALIDDATE, fxx,
+            alpha, half_box, barb_thin,
+            level='2 m'):
     """
     Relative Humidity, calculated for levels != '2 m'
     """
@@ -489,7 +522,12 @@ def draw_rh(level='2 m'):
 
 
 
-def draw_hgt(level='500 mb'):
+def draw_hgt(m, lons, lats,
+             model, dsize, background,
+             location, lat, lon,
+             RUNDATE, VALIDDATE, fxx,
+             alpha, half_box, barb_thin,
+             level='500 mb'):
     H = get_hrrr_variable(RUNDATE, 'HGT:%s' % level,
                           model=model, fxx=fxx,
                           outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
@@ -505,7 +543,12 @@ def draw_hgt(level='500 mb'):
 
 
 
-def draw_mslp(Fill=False,
+def draw_mslp(m, lons, lats,
+              model, dsize, background,
+              location, lat, lon,
+              RUNDATE, VALIDDATE, fxx,
+              alpha, half_box, barb_thin,
+              Fill=False,
               Contour=False):
     H = get_hrrr_variable(RUNDATE, 'MSLMA:mean sea level',
                           model=model, fxx=fxx,
@@ -528,7 +571,12 @@ def draw_mslp(Fill=False,
                     zorder=400)
 
 
-def draw_redflag(RH=25, SPEED=6.7,
+def draw_redflag(m, lons, lats,
+                 model, dsize, background,
+                 location, lat, lon,
+                 RUNDATE, VALIDDATE, fxx,
+                 alpha, half_box, barb_thin,
+                 RH=25, SPEED=6.7,
                  Fill=False,
                  Contour=False,
                  Fill_Potential=False):
@@ -605,7 +653,13 @@ def draw_redflag(RH=25, SPEED=6.7,
 
 
 
-def draw_variable(variable, masked=False):
+def draw_variable(m, lons, lats,
+                 model, dsize, background,
+                 location, lat, lon,
+                 RUNDATE, VALIDDATE, fxx,
+                 alpha, half_box, barb_thin,
+                 variable='APCP:surface:0',
+                 masked=False):
     """
     Uses pcolormesh to plot a variableiable for the domain.
 
@@ -720,8 +774,10 @@ if __name__ == '__main__':
     lats, lons = load_lats_lons()
 
     
-    m, alpha, half_box, barb_thin = draw_map_base()
+    m, alpha, half_box, barb_thin = draw_map_base(model, dsize, background,
+                                                  location, lat, lon,
+                                                  RUNDATE, VALIDDATE, fxx)
     
-    draw_wind(Fill=True)
+    
 
     plt.show()
