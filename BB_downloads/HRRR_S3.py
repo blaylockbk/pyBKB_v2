@@ -313,8 +313,10 @@ def get_hrrr_variable(DATE, variable,
                                'lon': lon,
                                'valid': grbs[1].validDate,
                                'anlys': grbs[1].analDate,
-                               'msgU': str(grbs[1]),
-                               'msgV': str(grbs[2]),
+                               'msg': [str(grbs[1]), str(grbs[2])],
+                               'name': [grbs[1].name, grbs[2].name],
+                               'units': [grbs[1].units, grbs[2].units],
+                               'level': [grbs[1].level, grbs[2].level],
                                'URL': grib2file}
             else:
                 value, lat, lon = grbs[1].data()
@@ -326,6 +328,9 @@ def get_hrrr_variable(DATE, variable,
                                'valid': grbs[1].validDate,
                                'anlys': grbs[1].analDate,
                                'msg': str(grbs[1]),
+                               'name': grbs[1].name,
+                               'units': grbs[1].units,
+                               'level': grbs[1].level,
                                'URL': grib2file}                
             if removeFile:
                 os.system('rm -f %s' % (outfile))
