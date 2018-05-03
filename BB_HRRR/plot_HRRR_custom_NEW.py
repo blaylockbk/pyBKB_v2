@@ -186,7 +186,7 @@ def draw_map_base(model, dsize, background,
         else:
             plt.title('%s' % (model.upper()), fontweight='bold')
         plt.title('Run: %s F%02d' % (RUNDATE.strftime('%Y-%m-%d %H:%M UTC'), fxx), loc='left')
-        plt.title('Valid: %s' % (VALIDDATE+timedelta(hours=fxx)).strftime('%Y-%m-%d %H:%M UTC') , loc='right')
+        plt.title('Valid: %s' % VALIDDATE.strftime('%Y-%m-%d %H:%M UTC') , loc='right')
 
     return [m, alpha, half_box, barb_thin]
 
@@ -451,7 +451,7 @@ def draw_tmp_dpt(m, lons, lats,
     
     if Contour:
         m.contour(lons, lats, H['value']-273.15,
-                  colors='slategrey',
+                  colors='k',
                   linewidths=.8,
                   levels=contours,
                   zorder=400,
@@ -471,6 +471,7 @@ def draw_tmp_dpt(m, lons, lats,
         mesh_depression = m.pcolormesh(lons, lats, masked,
                                     vmax=10, vmin=-10,
                                     latlon=True,
+                                    zorder=500,
                                     cmap=cmapOSG)
         
         ### Plot Exceedance
@@ -483,6 +484,7 @@ def draw_tmp_dpt(m, lons, lats,
         mesh_exceedance = m.pcolormesh(lons, lats, masked,
                                     vmax=10, vmin=-10,
                                     latlon=True,
+                                    zorder=501,
                                     cmap=cmapOSG)
 
 
@@ -654,12 +656,12 @@ def draw_redflag(m, lons, lats,
 
 
 def draw_variable(m, lons, lats,
-                 model, dsize, background,
-                 location, lat, lon,
-                 RUNDATE, VALIDDATE, fxx,
-                 alpha, half_box, barb_thin,
-                 variable='APCP:surface:0',
-                 masked=False):
+                  model, dsize, background,
+                  location, lat, lon,
+                  RUNDATE, VALIDDATE, fxx,
+                  alpha, half_box, barb_thin,
+                  variable='APCP:surface:0',
+                  masked=False):
     """
     Uses pcolormesh to plot a variableiable for the domain.
 
@@ -704,11 +706,6 @@ def draw_variable(m, lons, lats,
     elif variable == 'POT:2 m':
         cmap = 'Oranges'
         label = '2 m Potential Temperature (C)'
-        vmax = H['value'].max()
-        vmin = H['value'].min()
-    elif variable == 'TMP:surface':
-        cmap = 'Spectral_r'
-        label = 'Skin Temperature (C)'
         vmax = H['value'].max()
         vmin = H['value'].min()
     elif variable == 'PWAT':
