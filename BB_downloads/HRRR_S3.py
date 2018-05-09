@@ -454,7 +454,7 @@ def hrrr_subset(H, half_box=9, lat=40.771, lon=-111.965, verbose=True):
                   'x': x,
                   'y': y}
     if verbose:
-        print ' >> Size of subset: %s x %s grid points' % np.shape(subset['lats'])
+        print ' >> Size of subset: %s x %s grid points' % np.shape(subset['lat'])
 
     return subset
 
@@ -520,8 +520,8 @@ def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
                            'p95': p[4],
                            'p99': p[5],
                            'max': np.nanmax(box['value']),
-                           'lats': box['lats'],
-                           'lons': box['lons']
+                           'lat': box['lat'],
+                           'lon': box['lon']
                            }
         return return_this
     

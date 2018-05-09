@@ -91,7 +91,7 @@ def draw_map_base(model, dsize, background,
         if model != 'hrrrak':
             barb_thin = 70
             #m = draw_CONUS_HRRR_map(res=map_res)
-            m = np.load('HRRR_CONUS_map_object_'+map_res+'.npy').item() # premade HRRR conus object for faster processing
+            m = np.load('/uufs/chpc.utah.edu/common/home/u0553130/public_html/Brian_Blaylock/cgi-bin/HRRR_CONUS_map_object_'+map_res+'.npy').item() # premade HRRR conus object for faster processing
         else:
             barb_thin = 75
             m = draw_ALASKA_cyl_map(res=map_res)
@@ -130,12 +130,12 @@ def draw_map_base(model, dsize, background,
         elif background == 'arcgisRoad':
             m.arcgisimage(service='NatGeo_World_Map', xpixels=arcgis_res, verbose=False)
     
-    m.drawcountries(zorder=1500)
-    m.drawstates(zorder=1500)
-    m.drawcoastlines(zorder=1500)
+    m.drawcountries(zorder=100)
+    m.drawstates(zorder=100)
+    m.drawcoastlines(zorder=100)
     if dsize in ['small', 'medium', 'large']:
         try:
-            m.drawcounties(zorder=1500)
+            m.drawcounties(zorder=100)
         except:
             "Will not work for [URL].cgi images"
             pass
@@ -221,6 +221,7 @@ def draw_wind(m, lons, lats,
                      latlon=True,
                      cmap=cm_wind(),
                      vmin=0, vmax=60,
+                     zorder=2,
                      alpha=alpha)
         cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink, extend='max')
         cb.set_label(r'%s Wind Speed (m s$\mathregular{^{-1}}$)' % level)
@@ -231,7 +232,7 @@ def draw_wind(m, lons, lats,
                        colors=('yellow', 'orange', 'red'),
                        alpha=alpha,
                        extend='max',
-                       zorder=1,
+                       zorder=3,
                        latlon=True)
             cb = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
             cb.set_label(r'%s Wind Speed (ms$\mathregular{^{-1}}$)' % level)
@@ -257,14 +258,14 @@ def draw_wind(m, lons, lats,
         if Barbs:
             m.barbs(subset['lon'][::thin,::thin], subset['lat'][::thin,::thin],
                     subset['UGRD'][::thin,::thin], subset['VGRD'][::thin,::thin],
-                    zorder=200, length=5.5, color=color,
+                    zorder=10, length=5.5, color=color,
                     barb_increments={'half':2.5, 'full':5,'flag':25},
                     latlon=True)
 
         if Quiver:
             Q = m.quiver(subset['lon'][::thin,::thin], subset['lat'][::thin,::thin],
                          subset['UGRD'][::thin,::thin], subset['VGRD'][::thin,::thin],
-                         zorder=350,
+                         zorder=10,
                          units='inches',
                          scale=40, color=color,
                          latlon=True)    
@@ -286,6 +287,7 @@ def draw_wind(m, lons, lats,
         m.pcolormesh(lons, lats, masked,
                      vmax=10, vmin=0,
                      latlon=True,
+                     zorder=9,
                      cmap='viridis',
                      alpha=alpha)
         cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
@@ -305,6 +307,7 @@ def draw_wind(m, lons, lats,
 
             m.pcolormesh(lons, lats, vort,
                         latlon=True, cmap='bwr',
+                        zorder=8,
                         vmax=np.max(vort),
                         vmin=-np.max(vort))
             cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
@@ -318,6 +321,7 @@ def draw_wind(m, lons, lats,
 
             m.pcolormesh(lons, lats, conv,
                         latlon=True, cmap='bwr',
+                        zorder=8,
                         vmax=np.max(conv),
                         vmin=-np.max(conv))
             cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
@@ -342,14 +346,14 @@ def draw_gust(m, lons, lats,
                hatches=[None, '.', '\\\\', '*'],
                colors='none',
                extend='max',
-               zorder=10,
+               zorder=9,
                latlon=True)
     cb = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
     cb.set_label(r'Surface Wind Gust (m s$\mathregular{^{-1}}$)')
     m.contour(lons, lats, H['value'],
                 levels=[10, 15, 20, 25],
                 colors='k',
-                zorder=10,
+                zorder=9,
                 latlon=True)
 
 
@@ -385,6 +389,7 @@ def draw_refc(m, lons, lats,
                      cmap=reflect_ncdc(),
                      vmax=80, vmin=0,
                      alpha=alpha,
+                     zorder=5,
                      latlon=True)
         cb2 = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
         cb2.set_label('Simulated Composite Reflectivity (dBZ)')
@@ -396,7 +401,7 @@ def draw_refc(m, lons, lats,
                          levels=contours,
                          vmax=80, vmin=0,
                          latlon=True,
-                         zorder=50)
+                         zorder=5)
         plt.clabel(cREF, cREF.levels[::2], fmt='%2.0f', colors='k', fontsize=9)
 
 
@@ -444,7 +449,7 @@ def draw_tmp_dpt(m, lons, lats,
                      cmap=cmap,
                      alpha=alpha,
                      vmin=vmin, vmax=vmax,
-                     zorder=3, latlon=True)
+                     zorder=2, latlon=True)
         cbT = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad, extend='both')
         cbT.set_label(label)
         cbT.set_ticks(range(vmin,vmax+1,5))
@@ -454,7 +459,7 @@ def draw_tmp_dpt(m, lons, lats,
                   colors='k',
                   linewidths=.8,
                   levels=contours,
-                  zorder=400,
+                  zorder=10,
                   latlon=True)
 
     if p05p95:
@@ -471,7 +476,7 @@ def draw_tmp_dpt(m, lons, lats,
         mesh_depression = m.pcolormesh(lons, lats, masked,
                                     vmax=10, vmin=-10,
                                     latlon=True,
-                                    zorder=500,
+                                    zorder=3,
                                     cmap=cmapOSG)
         
         ### Plot Exceedance
@@ -484,9 +489,11 @@ def draw_tmp_dpt(m, lons, lats,
         mesh_exceedance = m.pcolormesh(lons, lats, masked,
                                     vmax=10, vmin=-10,
                                     latlon=True,
-                                    zorder=501,
+                                    zorder=3,
                                     cmap=cmapOSG)
-
+        
+        cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink, extend='both')
+        cb.set_label(r'5$\mathregular{^{th}}$/95$\mathregular{^{th}}$ percentile Depression/Exceedance %s' % label)
 
 
 def draw_rh(m, lons, lats,
@@ -517,7 +524,7 @@ def draw_rh(m, lons, lats,
 
     m.pcolormesh(lons, lats, H['value'], cmap="RdYlGn",
                     vmin=0, vmax=100,
-                    zorder=3,
+                    zorder=2,
                     latlon=True)
     cbT = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
     cbT.set_label('%s Relative Humidity (%%)' % level)
@@ -540,8 +547,8 @@ def draw_hgt(m, lons, lats,
                     linewidths=1.7,
                     colors='k', 
                     latlon=True,
-                    zorder=400)
-    plt.clabel(CS, inline=1, fmt='%2.f')
+                    zorder=100)
+    plt.clabel(CS, inline=1, fmt='%2.f',zorder=50)
 
 
 
@@ -559,7 +566,9 @@ def draw_mslp(m, lons, lats,
 
     if Fill:
         m.pcolormesh(lons, lats, H['value']/100., 
-               latlon=True, cmap='viridis')
+                     latlon=True,
+                     cmap='viridis',
+                     zorder=2)
         cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
         cb.set_label('Mean Sea Level Pressure (hPa)')
     
@@ -568,7 +577,7 @@ def draw_mslp(m, lons, lats,
                            latlon=True,
                            levels=range(952, 1200, 4),
                            colors='k',
-                           zorder=400)
+                           zorder=9)
             CS.clabel(inline=1, fmt='%2.f',
                     zorder=400)
 
@@ -605,7 +614,7 @@ def draw_redflag(m, lons, lats,
         m.pcolormesh(lons, lats, masked,
                      cmap="YlOrRd_r",
                      alpha=alpha,
-                     zorder=4, latlon=True)
+                     zorder=5, latlon=True)
 
     if Contour:
         try:
@@ -614,7 +623,7 @@ def draw_redflag(m, lons, lats,
                             colors='darkred',
                             linewidths=.75,
                             levels=[0],
-                            zorder=400)
+                            zorder=10)
         except:
             # maybe there isn't any contours in this domain
             pass
