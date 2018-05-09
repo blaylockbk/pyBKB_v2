@@ -1,4 +1,4 @@
-v<img src='./OSG_logo.jpg' height='200px' alt="Open Science Grid">
+<img src='./OSG_logo.jpg' height='200px' alt="Open Science Grid">
 
 #### High Resolution Rapid Refresh Model Analytics on the Open Science Grid
 # Lessons Learned Using the Open Science Grid
