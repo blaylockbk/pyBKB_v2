@@ -697,6 +697,11 @@ def draw_variable(m, lons, lats,
         cmap = cm_precip()
         vmin = 0
         vmax = 762
+    elif variable == 'TCDC:entire':
+        label = 'Total Cloud Cover'
+        cmap = cm_sky()
+        vmin = 0
+        vmax = 90
     elif variable == 'SNOWC':
         label = 'Snow Cover (%)'
         cmap = 'Blues'
