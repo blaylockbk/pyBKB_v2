@@ -132,9 +132,10 @@ def get_hrrr_variable(DATE, variable,
     if model == 'hrrrak' and DATE.hour not in range(0,24,3):
         raise ValueError("HRRRak: DATE.hour must be 0, 3, 6, 9, 12, 15, 18, or 21\nYou requested %s" % DATE.hour)
 
-    # Check that the request datetime has happened
-    if DATE > datetime.utcnow():
-        print "Warning: The datetime you requested hasn't happened yet\nDATE: %s F%02d\n UTC: %s" % (DATE, fxx, datetime.utcnow())
+    if verbose:
+        # Check that the request datetime has happened
+        if DATE > datetime.utcnow():
+            print "Warning: The datetime you requested hasn't happened yet\nDATE: %s F%02d\n UTC: %s" % (DATE, fxx, datetime.utcnow())
     ## ---(Catch Errors)-------------------------------------------------------
 
 
@@ -176,7 +177,7 @@ def get_hrrr_variable(DATE, variable,
     #if DATE+timedelta(hours=fxx) < datetime.utcnow()-timedelta(hours=6):
     if DATE < datetime.utcnow()-timedelta(hours=12):
         # Get HRRR from Pando
-        if verbose is True:
+        if verbose:
             print "Oh, good, you requested a date that should be on Pando."
         grib2file = 'https://pando-rgw01.chpc.utah.edu/%s/%s/%s/%s.t%02dz.wrf%sf%02d.grib2' \
                     % (model, field,  DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
@@ -184,7 +185,7 @@ def get_hrrr_variable(DATE, variable,
     else:
         # Get operational HRRR from NOMADS
         if model == 'hrrr':
-            if verbose is True:
+            if verbose:
                 print "/n---------------------------------------------------------------------------"
                 print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
                 print "!! That's ok, I'll redirect you to the NOMADS server. :)                 !!"
@@ -199,7 +200,7 @@ def get_hrrr_variable(DATE, variable,
             print "-------------------------------------------------------------------------\n"
             return None
         elif model == 'hrrrak':
-            if verbose is True:
+            if verbose:
                 print "/n---------------------------------------------------------------------------"
                 print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
                 print "!! That's ok, I'll redirect you to the PARALLEL NOMADS server. :)        !!"
@@ -339,15 +340,16 @@ def get_hrrr_variable(DATE, variable,
             
 
     except:
-        print " _______________________________________________________________"
-        print " !!   Run Date Requested :", DATE, "F%02d" % fxx 
-        print " !! Valid Date Requested :", DATE+timedelta(hours=fxx)
-        print " !!     Current UTC time :", datetime.utcnow()
-        print " !! ------------------------------------------------------------"
-        print " !! ERROR downloading GRIB2:", grib2file
-        print " !! Is the variable right?", variable
-        print " !! Does the .idx file exist?", fileidx
-        print " ---------------------------------------------------------------"
+        if verbose:
+            print " _______________________________________________________________"
+            print " !!   Run Date Requested :", DATE, "F%02d" % fxx 
+            print " !! Valid Date Requested :", DATE+timedelta(hours=fxx)
+            print " !!     Current UTC time :", datetime.utcnow()
+            print " !! ------------------------------------------------------------"
+            print " !! ERROR downloading GRIB2:", grib2file
+            print " !! Is the variable right?", variable
+            print " !! Does the .idx file exist?", fileidx
+            print " ---------------------------------------------------------------"
         return {'value' : np.nan,
                 'lat' : np.nan,
                 'lon' : np.nan,
@@ -526,9 +528,10 @@ def hrrr_area_stats(H, half_box=5, lat=40.771, lon=-111.965, verbose=True):
         return return_this
     
     else:
-        print "\n------------------------------------!"
-        print " !> ERROR <! ERROR in hrrr_area_stats. Returning nan values."
-        print "------------------------------------!\n"
+        if verbose:
+            print "\n------------------------------------!"
+            print " !> ERROR <! ERROR in hrrr_area_stats. Returning nan values."
+            print "------------------------------------!\n"
         return {'half box': half_box,
                 'requested center': [lat, lon],
                 'valid':np.nan,
