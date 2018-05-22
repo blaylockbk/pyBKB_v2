@@ -156,6 +156,94 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
             'rgb_tuple': colorTuple}
 
 
+def get_GOES16_firetemperature(FILE, only_RGB=False):
+    """
+    Uses Channel 7, 6, 5, to create a "True Color" image. 
+    Recipe from Chad Gravelle (chad.gravell@noaa.gov)
+
+    Input:
+        FILE - name of the netcdf file. Must be the multiband formatted data file.
+               i.e. OR_ABI-L2-MCMIPC-M3_G16_s20172651517227_e20172651520000_c20172651520109.nc
+        only_RGB - if True, only returns the RGB value, and not the additional details
+    """
+    
+    # Open the file
+    try:
+        C = Dataset(FILE, 'r')
+        print "Fetching:", FILE
+    except:
+        print "Can't open file:", FILE
+        return None
+
+    # Load the RGB arrays and apply a gamma correction (a power, usually the square root)
+    gamma = .40
+    
+    # Load the RGB arrays and apply a gamma correction (square root)
+    R = C.variables['CMI_C07'][:].data # Band 7 is red (0.3.9 um, shortwave)
+    # Normalize R
+    R = (R-273)/(333-273)
+    # Gamma correct R
+    R = np.power(R, gamma)
+
+    G = C.variables['CMI_C06'][:].data # Band 6 is "green" (0.2.2 um, cloud particle)
+    G[G==-1] = np.nan
+
+    B = C.variables['CMI_C05'][:].data # Band 5 is blue (0.1.6 um, snow/ice)
+    B[B==-1] = np.nan
+    print '\n   Gamma correction: %s' % gamma
+
+    # The final RGB array :)
+    RGB = np.dstack([R, G, B])
+
+    # don't need the other file info or processing? 
+    if only_RGB:
+        return RGB
+
+    # Seconds since 2000-01-01 12:00:00
+    add_seconds = C.variables['t'][0]
+    DATE = datetime(2000, 1, 1, 12) + timedelta(seconds=add_seconds)
+
+    # Satellite height
+    sat_h = C.variables['goes_imager_projection'].perspective_point_height
+
+    # Satellite longitude
+    sat_lon = C.variables['goes_imager_projection'].longitude_of_projection_origin
+
+    # Satellite sweep
+    sat_sweep = C.variables['goes_imager_projection'].sweep_angle_axis
+
+    # The projection x and y coordinates equals
+    # the scanning angle (in radians) multiplied by the satellite height (http://proj4.org/projections/geos.html)
+    X = C.variables['x'][:] * sat_h
+    Y = C.variables['y'][:] * sat_h
+
+    C.close()
+
+    # map object with pyproj
+    p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep)
+
+    # Convert map points to latitude and longitude with the magic provided by Pyproj
+    XX, YY = np.meshgrid(X, Y)
+    lons, lats = p(XX, YY, inverse=True)
+
+    # Create a color tuple for pcolormesh
+    rgb = RGB[:,:-1,:] # Using one less column is very important, else your image will be scrambled! (This is the stange nature of pcolormesh)
+    #rgb = RGB[:,:,:] # Other times you need all the columns. Not sure why???
+    rgb = np.minimum(rgb, 1) # Force the maximum possible RGB value to be 1 (the lowest should be 0).
+    colorTuple = rgb.reshape((rgb.shape[0] * rgb.shape[1]), 3) # flatten array, becuase that's what pcolormesh wants.
+    colorTuple = np.insert(colorTuple, 3, 1.0, axis=1) # adding an alpha channel will plot faster?? according to stackoverflow.
+
+
+    return {'TrueColor': RGB,
+            'lat': lats,
+            'lon': lons,
+            'DATE': DATE,
+            'Satellite Height': sat_h,
+            'lon_0': sat_lon,
+            'X': X,
+            'Y': Y,
+            'rgb_tuple': colorTuple}
+
 if __name__ == '__main__':
 
     import matplotlib.pyplot as plt
