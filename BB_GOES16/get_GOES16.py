@@ -175,22 +175,31 @@ def get_GOES16_firetemperature(FILE, only_RGB=False):
         print "Can't open file:", FILE
         return None
 
-    # Load the RGB arrays and apply a gamma correction (a power, usually the square root)
-    gamma = .40
-    
-    # Load the RGB arrays and apply a gamma correction (square root)
+    # Load the RGB arrays
     R = C.variables['CMI_C07'][:].data # Band 7 is red (0.3.9 um, shortwave)
-    # Normalize R
-    R = (R-273)/(333-273)
-    # Gamma correct R
-    R = np.power(R, gamma)
-
     G = C.variables['CMI_C06'][:].data # Band 6 is "green" (0.2.2 um, cloud particle)
-    G[G==-1] = np.nan
-
     B = C.variables['CMI_C05'][:].data # Band 5 is blue (0.1.6 um, snow/ice)
+
+    # Turn empty values in nans (empty space in top left of figure)
+    R[R==-1] = np.nan
+    G[G==-1] = np.nan
     B[B==-1] = np.nan
-    print '\n   Gamma correction: %s' % gamma
+
+    # Apply range limit for G and B channel
+    R = np.maximum(R, 273)
+    R = np.minimum(R, 333)
+    G = np.maximum(G, 0)
+    G = np.minimum(G, 1)
+    B = np.maximum(B, 0)
+    B = np.minimum(B, .75)
+
+    # Normalize each channel by the appropriate range of values
+    R = (R-273)/(333-273)
+    G = (G-0)/(1-0)
+    B = (B-0)/(.75-0)
+
+    # Apply a gamma correction to Red channel
+    R = np.power(R, 2.5)
 
     # The final RGB array :)
     RGB = np.dstack([R, G, B])
