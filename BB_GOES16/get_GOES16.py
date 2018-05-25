@@ -5,6 +5,7 @@
 Functions that return GOES-16 data with latitude and longitude.
 Typically works with the multiband formatted files stored on Pando Archive and
 NOAA GOES-16 archvie on Amazon.
+New fire temperature.
 
 When plotting the true color image with plt.pcolormesh(), pay attention to the
 specifics. 
