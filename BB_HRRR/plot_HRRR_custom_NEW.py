@@ -276,7 +276,7 @@ def draw_wind(m, lons, lats,
             qk.text.set_backgroundcolor('w')
 
     if p95:
-        DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/UVGRD_%s/' % level.replace(' ', '_')
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/UVGRD_%s/' % level.replace(' ', '_')
         FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_%s' % level.replace(' ', '_'), VALIDDATE.month, VALIDDATE.day, VALIDDATE.hour))
         with h5py.File(DIR+FILE, 'r') as f:
             spd_p95 = f["p95"][:]
@@ -463,7 +463,7 @@ def draw_tmp_dpt(m, lons, lats,
                   latlon=True)
 
     if p05p95:
-        DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/%s_%s/' % (VAR, level.replace(' ', '_'))
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/%s_%s/' % (VAR, level.replace(' ', '_'))
         FILE = 'OSG_HRRR_%s_%s_m%02d_d%02d_h%02d_f00.h5' % (VAR, level.replace(' ', '_'), VALIDDATE.month, VALIDDATE.day, VALIDDATE.hour)
 
         ### Plot Depression
