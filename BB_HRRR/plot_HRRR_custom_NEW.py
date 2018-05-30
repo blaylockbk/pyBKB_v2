@@ -50,6 +50,7 @@ from BB_basemap.draw_maps import Basemap, draw_CONUS_HRRR_map, draw_ALASKA_cyl_m
 from BB_downloads.HRRR_S3 import *
 from BB_MesoWest.MesoWest_STNinfo import get_station_info
 from BB_wx_calcs.humidity import Tempdwpt_to_RH
+from BB_wx_calcs.pressure import vapor_pressure_deficit
 from BB_cmap.NWS_standard_cmap import *
 
 
@@ -528,6 +529,57 @@ def draw_rh(m, lons, lats,
                     latlon=True)
     cbT = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
     cbT.set_label('%s Relative Humidity (%%)' % level)
+
+
+
+def draw_vpd(m, lons, lats,
+             model, dsize, background,
+             location, lat, lon,
+             RUNDATE, VALIDDATE, fxx,
+             alpha, half_box, barb_thin,
+             level='2 m',
+             Fill=False,
+             Crossover=False):
+    """
+    Vapor Pressure Deficit: calculated from Temperature and Relative Humidity
+    """
+    if level == '2 m':
+        H_RH = get_hrrr_variable(RUNDATE, 'RH:%s' % level,
+                                 model=model, fxx=fxx,
+                                 outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                                 verbose=False, value_only=True)
+        H_TMP = get_hrrr_variable(RUNDATE, 'TMP:%s' % level,
+                                  model=model, fxx=fxx,
+                                  outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                                  verbose=False, value_only=True)
+    else:
+        # Must compute the RH from TMP and DPT
+        H_DPT = get_hrrr_variable(RUNDATE, 'DPT:%s' % level,
+                              model=model, fxx=fxx,
+                              outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                              verbose=False, value_only=True)
+        H_TMP = get_hrrr_variable(RUNDATE, 'TMP:%s' % level,
+                                model=model, fxx=fxx,
+                                outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                                verbose=False, value_only=True)
+        H_RH = {'value':Tempdwpt_to_RH(H_TMP['value']-273.15, H_DPT['value']-273.15)}
+
+    if Fill:
+        H_VPD = {'value': vapor_pressure_deficit(H_TMP['value']-273.15, H_RH['value'])}
+        m.pcolormesh(lons, lats, H_VPD['value'], cmap="magma_r",
+                        vmin=0, vmax=70,
+                        zorder=2,
+                        latlon=True)
+        cbT = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+        cbT.set_label('%s Vapor Pressure Deficit (hPa)' % level)
+    if Crossover:
+        difference = H_RH['value']-(H_TMP['value']-273.15)
+        m.contour(lons, lats, difference,
+                  colors='white',
+                  linewidths=1.2,
+                  levels=[0],
+                  zorder=10,
+                  latlon=True)
 
 
 

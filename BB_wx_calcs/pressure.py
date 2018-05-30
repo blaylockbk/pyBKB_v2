@@ -43,3 +43,35 @@ def alt_to_pres(alt_hPa, h_m):
     pres_hPa = 33.8639 * pres_inHg
 
     return pres_hPa
+
+
+def saturation_vapor_pressure(tmp_C):
+    """
+    Source:
+        Rogers and Yau "Short Course in Cloud Physics" Equation 2.17
+
+    Equation: Empirical fit to the integrated Clausius-Clapeyron equation
+        Saturation Vapor Pressure (es) = 6.112 * exp((17.67T) / (T+243.5)
+        Where T is temperature in Celsius and es is in hPa
+    """
+    es = 6.112 * np.exp((17.67 * tmp_C)/(tmp_C+243.5))
+    return es # returned units in hPa
+
+def vapor_pressure_deficit(tmp_C, RH):
+    """
+    Source:
+        https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit/35022#35022?newreg=1550370399fc4ae183515472df76c113
+    
+    Equation:
+        vpd = es * (100-RH)/100
+
+    Why this is a meaningful measurement: 
+    "The strain under which an organism is placed in maintaining a 
+    water balance during temperature changes is much more clearly shown
+    by noting the vapor pressure deficit than by recording the relative
+    humidity."
+        Anderson, D. B. 1936. Relative humidity or vapor pressure deficit. 
+        Ecology 17, no. 2: 277-282.
+    """
+    vpd = saturation_vapor_pressure(tmp_C) * (100-RH)/100.
+    return vpd
