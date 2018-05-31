@@ -245,6 +245,16 @@ def draw_ALASKA_cyl_map(res='i', return_domain_boundaires=False):
         return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
 
+def draw_GOES_East_geo(res='i'):
+    """
+    Draw GOES-16 East geostationary projection
+    """
+    m = Basemap(projection='geos', lon_0='-75.0',
+                resolution='i', area_thresh=1000,
+                llcrnrx=-3626269.5, llcrnry=1584175.9,
+                urcrnrx=1381770.0, urcrnry=4588198.0)
+    return m
+
 if __name__ == "__main__":
 
     print 'drawing Utah map...',
