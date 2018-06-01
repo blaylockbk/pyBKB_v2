@@ -15,7 +15,7 @@ import zipfile
 
 
 def get_fires(DATE=datetime.utcnow(),
-              min_size=1000, max_size=3000000,
+              min_size=500, max_size=3000000,
               AK=False, HI=False,
               verbose=True):
     """
@@ -49,9 +49,14 @@ def get_fires(DATE=datetime.utcnow(),
         verbose  - True: print some stuff to the screen (default)
                    False: do not print some stuff
     """
-    # Build URL and make request
-    URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % DATE.strftime('%Y-%m-%d')
-    text = urllib2.urlopen(URL)
+    try:
+        # Build URL and make request
+        URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % DATE.strftime('%Y-%m-%d')
+        text = urllib2.urlopen(URL)
+    except:
+        # Maybe today's file isn't up yet. Try yesterdays...
+        URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
+        text = urllib2.urlopen(URL)
     if verbose:
         print 'Got fire data from Active Fire Mapping Program: %s' % URL       
 

@@ -2,7 +2,7 @@
 # May 31, 2018                            Poor GOES-17 is having cooling issues
 
 """
-Match data collected from the GOES-16 Geostationary Lightning Maper (GLM) with
+Match data collected from the GOES-16 Geostationary Lightning Mapper (GLM) with
 the Advanced Baseline Imager (ABI) data collection windows.
 
 New GLM files are created every 20 seconds
@@ -36,10 +36,10 @@ sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/')
 sys.path.append('B:\pyBKB_v2')
 
 
-def get_GLM_for_ABI(FILE):
+def get_GLM_files_for_ABI(FILE):
     """
-    Get all the GLM 'flashes' data the occurred within the 5-minute scan window
-    for an ABI scan.
+    Get all the GLM 'flashes' data file names that occurred within the 5-minute
+    scan window for an ABI scan.
 
     Input:
         FILE - the path and file name of an ABI scan
@@ -85,14 +85,57 @@ def get_GLM_for_ABI(FILE):
     return return_this
 
 
+def accumulate_GLM_flashes_for_ABI(FILE, data_type='flash'):
+    """
+    Accumulate all the GLM 'flash' data that occurred within the 5-minute
+    scan window for an ABI file and return the latitude, longitude, and energy
+    of all the flashes.
+
+    Input:
+        FILE      - The file name of an ABI scan
+        data_type - Data to retrieve. Default is 'flash' data. Other options 
+                    are 'event' and 'group' which have messed up latitude and
+                    longitude, so don't use them unless you figure them out.
+    
+    Output:
+        A dictionary containing the latitudes, longitudes, and energy of each
+        flash (or event or group). The num_per_20_seconds is a list of length
+        of observations per file. If you need to, you can separate the data
+        values by the data's 20-second intervals rather than the 5-minute lump.
+    """
+    # Get a list of GLM file names for the ABI file of interest
+    GLM = get_GLM_files_for_ABI(FILE)
+
+    # Initialize arrays for latitude, longitude, and flash energy
+    lats = np.array([])
+    lons = np.array([])
+    energy = np.array([])
+    num_per_20_seconds = np.array([])
+
+    # Read the data
+    for i, FILE in enumerate(GLM['Files']):
+        G = Dataset(FILE, 'r')
+        lats = np.append(lats, G.variables[data_type+'_lat'][:])
+        lons = np.append(lons, G.variables[data_type+'_lon'][:])
+        energy = np.append(energy, G.variables[data_type+'_energy'][:])
+        num_per_20_seconds = np.append(num_per_20_seconds, len(G.variables[data_type+'_lat'][:]))
+        G.close()
+
+    return {'latitude': lats,
+            'longitude': lons,
+            'energy': energy,
+            'number of values each 20 seconds': num_per_20_seconds,
+            'DATETIME': GLM['Range']}
+
+
 if __name__ == '__main__':
     ## ABI File
     #ABI_FILE = 'OR_ABI-L2-MCMIPC-M3_G16_s20181280332199_e20181280334572_c20181280335091.nc'
     ABI = 'OR_ABI-L2-MCMIPC-M3_G16_s20181282357201_e20181282359574_c20181290000075.nc'
 
     ## Get Cooresponding GLM files
-    GLM = get_GLM_for_ABI(ABI)
-
+    GLM = accumulate_GLM_flashes_for_ABI(ABI)
+    
     ## Make a new map object for the HRRR model domain map projection
     mH = Basemap(resolution='i', projection='lcc', area_thresh=5000, \
                 width=1800*3000, height=1060*3000, \
@@ -102,17 +145,12 @@ if __name__ == '__main__':
     ## Plot each GLM file on the map
     plt.figure(figsize=[15, 10])
 
-    print 'Datetime Range:', GLM['Range']
+    print 'Datetime Range:', GLM['DATETIME']
 
-    colors = ['k','b','r','g','crimson','dodgerblue','darkgrey', 'coral']*2
-    for i, FILE in enumerate(GLM['Files']):
-        G = Dataset(FILE, 'r')
-        # Marker for each flash
-        mH.scatter(G.variables['flash_lon'][:], G.variables['flash_lat'][:],
+    mH.scatter(GLM['longitude'], GLM['latitude'],
                 marker='+',
-                color=colors[i],
+                color='yellow',
                 latlon=True)
-        G.close()
 
     mH.drawmapboundary(fill_color='k')
     mH.drawcoastlines(color='w')
@@ -120,4 +158,4 @@ if __name__ == '__main__':
     mH.drawstates(color='w')
 
     plt.title('GOES-16 GLM Flashes', fontweight='semibold', fontsize=15)
-    plt.title('Start: %s\nEnd: %s' % (GLM['Range'][0].strftime('%H:%M:%S UTC %d %B %Y'), GLM['Range'][1].strftime('%H:%M:%S UTC %d %B %Y')), loc='right')    
+    plt.title('Start: %s\nEnd: %s' % (GLM['DATETIME'][0].strftime('%H:%M:%S UTC %d %B %Y'), GLM['DATETIME'][1].strftime('%H:%M:%S UTC %d %B %Y')), loc='right')    
