@@ -9,6 +9,7 @@ New fire temperature.
 
 When plotting the true color image with plt.pcolormesh(), pay attention to the
 specifics. 
+
 """
 
 from datetime import datetime, timedelta
@@ -43,7 +44,16 @@ def files_on_pando(DATE):
     flist = rclone_out.split('\n')
     flist = np.array([l for l in flist if '.nc' in l]) # only include .nc files
     flist.sort()
-    return flist
+    return np.array(flist)
+
+def file_nearest(DATE):
+    """
+    Return the file name nearest the requested date
+    """
+    flist = files_on_pando(DATE)
+    date_diff = map(lambda x: abs(datetime.strptime(x.split('_')[3], 's%Y%j%H%M%S%f')-DATE), flist)
+    return '/uufs/chpc.utah.edu/common/home/horel-group7/Pando/GOES16/ABI-L2-MCMIPC/%s/%s' % (DATE.strftime('%Y%m%d'), flist[np.argmin(date_diff)])
+
 
 def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
     """
