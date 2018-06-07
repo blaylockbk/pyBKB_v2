@@ -156,19 +156,19 @@ def draw_map_base(model, dsize, background,
         H_ter = get_hrrr_variable(RUNDATE, 'HGT:surface',
                                   model=model, fxx=fxx,
                                   outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
-                                  verbose=False, value_only=True)
+                                  verbose=False, value_only=False)
         H_land = get_hrrr_variable(RUNDATE, 'LAND:surface',
                                    model=model, fxx=fxx,
                                    outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
                                    verbose=False, value_only=True)        
         # Plot the terrain
-        m.contourf(lons, lats, H_ter['value'],
+        m.contourf(H_ter['lon'], H_ter['lat'], H_ter['value'],
                    levels=range(0, 4000, 200),
                    cmap='Greys_r',
                    zorder=1,
                    latlon=True)
         # Plot Water area
-        m.contour(lons, lats, H_land['value'],
+        m.contour(H_ter['lon'], H_ter['lat'], H_land['value'],
                   levels=[0, 1],
                   colors='b',
                   zorder=1,
@@ -182,10 +182,10 @@ def draw_map_base(model, dsize, background,
         H_LU = get_hrrr_variable(RUNDATE, VGTYP,
                                  model=model, fxx=fxx,
                                  outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
-                                 verbose=False, value_only=True)
+                                 verbose=False, value_only=False)
         # Plot the terrain
         cm, labels = LU_MODIS21()
-        m.pcolormesh(lons, lats, H_LU['value'],
+        m.pcolormesh(H_LU['lon'], H_LU['lat'], H_LU['value'],
                      cmap=cm, vmin=1, vmax=len(labels) + 1,
                      zorder=1,
                      latlon=True)
