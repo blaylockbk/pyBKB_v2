@@ -76,12 +76,13 @@ def load_lats_lons(model):
 def draw_map_base(model, dsize, background,
                   location, lat, lon,
                   RUNDATE, VALIDDATE, fxx,
-                  map_res='l', plot_title=True):
+                  map_res='l',
+                  plot_title=True):
     """
     Create basemap with the base image (arcgis image, model terrain, model landuse)
 
     Inputs:
-        map_res - Map resolution: 'l' for low, 'i' for intermediate, 'h' for high
+        map_res - Map resolution: 'l' for low, 'i' for intermediate, 'h' for high, 'f' for full
         title   - True: Add a title to the plot
                   False: Do not add a title
 
@@ -91,8 +92,8 @@ def draw_map_base(model, dsize, background,
     if dsize == 'full':
         if model != 'hrrrak':
             barb_thin = 70
-            #m = draw_CONUS_HRRR_map(res=map_res)
-            m = np.load('/uufs/chpc.utah.edu/common/home/u0553130/public_html/Brian_Blaylock/cgi-bin/HRRR_CONUS_map_object_'+map_res+'.npy').item() # premade HRRR conus object for faster processing
+            #m = draw_CONUS_HRRR_map(res=map_res, area_thresh=2000)
+            m = np.load('/uufs/chpc.utah.edu/common/home/u0553130/public_html/Brian_Blaylock/cgi-bin/HRRR_CONUS_map_object_'+map_res+'.npy').item() # premade HRRR conus object, it is faster processing??
         else:
             barb_thin = 75
             m = draw_ALASKA_cyl_map(res=map_res)
@@ -107,20 +108,29 @@ def draw_map_base(model, dsize, background,
             arcgis_res = 1000            # ArcGIS image resolution
             half_box = 15                # Half box for subset when plotting barbs
             alpha = .75                  # Alpha (pcolormesh transparency)
+            area_thresh = 1              # Area Threshold for features (island and water bodies)
+            if map_res != 'f':
+                map_res = 'h'                # overwrite the map res default to be high if not requesting full.
         elif dsize == 'medium':
-            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = .5
+            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = .5; area_thresh=1
+            if map_res != 'f':
+                map_res = 'h'
         elif dsize == 'large':
-            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = .5
+            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = .5; area_thresh=50
+            if map_res != 'f':
+                map_res = 'h'
         elif dsize == 'xlarge':
-            plus_minus_latlon = 5;   barb_thin = 12; arcgis_res = 700;  half_box = 210; alpha = .85
+            plus_minus_latlon = 5;   barb_thin = 12; arcgis_res = 700;  half_box = 210; alpha = .85; area_thresh=500
+            if map_res != 'f':
+                map_res = 'i'
         elif dsize == 'xxlarge':
-            plus_minus_latlon = 10;  barb_thin = 25; arcgis_res = 700;  half_box = 430; alpha = 1
+            plus_minus_latlon = 10;  barb_thin = 25; arcgis_res = 700;  half_box = 430; alpha = 1; area_thresh=500
         elif dsize == 'xxxlarge':
-            plus_minus_latlon = 15;  barb_thin = 35; arcgis_res = 1000; half_box = 700; alpha = 1
+            plus_minus_latlon = 15;  barb_thin = 35; arcgis_res = 1000; half_box = 700; alpha = 1;  area_thresh=1200
         
         m = Basemap(resolution=map_res,
                     projection='cyl',
-                    area_thresh=3000,
+                    area_thresh=area_thresh,
                     llcrnrlon=lon-plus_minus_latlon, llcrnrlat=lat-plus_minus_latlon,
                     urcrnrlon=lon+plus_minus_latlon, urcrnrlat=lat+plus_minus_latlon,)
         
