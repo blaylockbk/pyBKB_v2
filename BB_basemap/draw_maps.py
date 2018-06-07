@@ -226,7 +226,7 @@ def draw_midwest_map(res='i', return_domain_boundaires=False, area_thresh=2000):
     else:
         return m, {'bllat':bot_left_lat,'bllon':bot_left_lon,'trlat':top_right_lat,'trlon':top_right_lon}
 
-def draw_ALASKA_cyl_map(res='i', return_domain_boundaires=False):
+def draw_ALASKA_cyl_map(res='i', area_thresh=3000, return_domain_boundaires=False):
     """
     Draw a basemap of northern utah for the Utah Winter Fine Particulate Study
     (UWFPS). Contains Utah, Salt Lake, and Cache Counties
@@ -236,7 +236,7 @@ def draw_ALASKA_cyl_map(res='i', return_domain_boundaires=False):
     top_right_lat = 80
     top_right_lon = -115
     #
-    m = Basemap(resolution=res, projection='cyl', area_thresh=2000, \
+    m = Basemap(resolution=res, projection='cyl', area_thresh=area_thresh, \
         llcrnrlon=bot_left_lon, llcrnrlat=bot_left_lat, \
         urcrnrlon=top_right_lon, urcrnrlat=top_right_lat)
     if return_domain_boundaires==False:

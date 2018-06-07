@@ -96,7 +96,7 @@ def draw_map_base(model, dsize, background,
             m = np.load('/uufs/chpc.utah.edu/common/home/u0553130/public_html/Brian_Blaylock/cgi-bin/HRRR_CONUS_map_object_'+map_res+'.npy').item() # premade HRRR conus object, it is faster processing??
         else:
             barb_thin = 75
-            m = draw_ALASKA_cyl_map(res=map_res)
+            m = draw_ALASKA_cyl_map(res=map_res, area_thresh=2500)
         alpha = 1
         half_box = None
         m.fillcontinents(color='tan',lake_color='lightblue', zorder=0)
@@ -263,6 +263,9 @@ def draw_wind(m, lons, lats,
             subset = hrrr_subset(H_UV, half_box=half_box, lat=lat, lon=lon, verbose=False)
         else:
             subset = H_UV
+
+        # Need to rotate vectors for map projection
+        subset['UGRD'], subset['VGRD'] = m.rotate_vector(subset['UGRD'], subset['VGRD'], subset['lon'], subset['lat'])
 
         thin = barb_thin
         # Add to plot
