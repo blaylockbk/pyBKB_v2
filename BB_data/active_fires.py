@@ -130,32 +130,37 @@ def get_incidents(inctype="Wildfire", recent_days=3, limit_num=10, verbose=True)
     for i in items:
         if len(return_this.keys()) >= limit_num:
             continue
-        # Only grab fires updated in within recent_dates
-        published = i.find('published').text
-        DATE = datetime.strptime(published[5:22], "%d %b %Y %H:%M")
-        if DATE > datetime.utcnow()-timedelta(days=recent_days):
-            # Only grab requested incident type
-            title = i.find('title').text
-            if title.split(' ')[-1] == '(%s)' % inctype:
-                # Remove unnecessary names from title
-                title = title.replace(' Fire (%s)' % inctype, '')
-                title = title.replace(' Fire  (%s)' % inctype, '')
-                title = title.replace(' (%s)' % inctype, '')
-                title = title.replace('  (%s)' % inctype, '')
-                title = title.upper()
-                lat, lon = i.find('{http://www.georss.org/georss}point').text.split(' ')
-                return_this[title] = {'incident number': np.nan,
-                                      'cause': np.nan,
-                                      'report date': np.nan,
-                                      'start date': np.nan,
-                                      'IMT Type': np.nan,
-                                      'state': np.nan,
-                                      'area': np.nan,
-                                      'percent contained': np.nan,
-                                      'expected containment': np.nan,
-                                      'latitude': float(lat),
-                                      'longitude': float(lon),
-                                      'is MesoWest': False} 
+        try:
+            # Only grab fires updated in within recent_dates
+            published = i.find('published').text
+            DATE = datetime.strptime(published[5:22], "%d %b %Y %H:%M")
+            if DATE > datetime.utcnow()-timedelta(days=recent_days):
+                # Only grab requested incident type
+                title = i.find('title').text
+                if title.split(' ')[-1] == '(%s)' % inctype:
+                    # Remove unnecessary names from title
+                    title = title.replace(' Fire (%s)' % inctype, '')
+                    title = title.replace(' Fire  (%s)' % inctype, '')
+                    title = title.replace(' (%s)' % inctype, '')
+                    title = title.replace('  (%s)' % inctype, '')
+                    title = title.upper()
+                    lat, lon = i.find('{http://www.georss.org/georss}point').text.split(' ')
+                    return_this[title] = {'incident number': np.nan,
+                                        'cause': np.nan,
+                                        'report date': np.nan,
+                                        'start date': np.nan,
+                                        'IMT Type': np.nan,
+                                        'state': np.nan,
+                                        'area': np.nan,
+                                        'percent contained': np.nan,
+                                        'expected containment': np.nan,
+                                        'latitude': float(lat),
+                                        'longitude': float(lon),
+                                        'is MesoWest': False} 
+        except:
+            print "XLM !ERROR!, had to skip an incident. Probably a bad lat/lon??"
+            continue
+
     return return_this
 
 

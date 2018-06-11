@@ -56,5 +56,28 @@ def reflect_ncdc():
     
     return reflect_ncdc_coltbl
 
-if __name__ == '_main_':
+if __name__ == '__main__':
+    
+    cm_dBZ = reflect_ncdc()
+    
     print 'try this colormap'
+    import sys
+    sys.path.append('/uufs/chpc.utah.edu/sys/pkg/python/2.7.3_rhel6/lib/python2.7/site-packages/')
+    sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2')
+    from BB_downloads.HRRR_S3 import *
+
+    import matplotlib.pyplot as plt
+
+    H = get_hrrr_variable(datetime(2018, 6, 8, 1), 'REFC:entire')
+
+dBZ = H['value']
+dBZ = np.ma.array(dBZ)
+dBZ[dBZ == -10] = np.ma.masked
+
+plt.figure(1)
+plt.pcolormesh(dBZ, cmap=cm_dBZ)
+plt.colorbar()
+
+plt.figure(2)
+plt.pcolormesh(dBZ, cmap='gist_ncar')
+plt.colorbar()

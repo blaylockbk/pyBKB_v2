@@ -52,6 +52,7 @@ from BB_MesoWest.MesoWest_STNinfo import get_station_info
 from BB_wx_calcs.humidity import Tempdwpt_to_RH
 from BB_wx_calcs.pressure import vapor_pressure_deficit
 from BB_cmap.NWS_standard_cmap import *
+from BB_cmap.reflectivity_colormap import reflect_ncdc
 
 
 ###############################################################################
@@ -383,7 +384,6 @@ def draw_refc(m, lons, lats,
     Composite reflectivity
         dBZ_contours    - list of values to contour if Contour=True
     """
-    from BB_cmap.reflectivity_colormap import reflect_ncdc
     if model in ['hrrr', 'hrrrak']:
         REFC = 'REFC:entire'
     else:
