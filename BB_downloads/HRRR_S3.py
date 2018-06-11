@@ -416,7 +416,7 @@ def pluck_hrrr_point(H, lat=40.771, lon=-111.965, verbose=True, XY_only=False):
 
     except:
         if 'UGRD' in H:
-            message = H['msgU']+'\n'+H['msgV']
+            message = H['msg'][0]+'\n'+H['msg'][1]
         else:
             message = H['msg']
         print "\n------------------------------------!"

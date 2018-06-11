@@ -70,14 +70,14 @@ if __name__ == '__main__':
 
     H = get_hrrr_variable(datetime(2018, 6, 8, 1), 'REFC:entire')
 
-dBZ = H['value']
-dBZ = np.ma.array(dBZ)
-dBZ[dBZ == -10] = np.ma.masked
+    dBZ = H['value']
+    dBZ = np.ma.array(dBZ)
+    dBZ[dBZ == -10] = np.ma.masked
 
-plt.figure(1)
-plt.pcolormesh(dBZ, cmap=cm_dBZ)
-plt.colorbar()
+    plt.figure(1)
+    plt.pcolormesh(dBZ, cmap=cm_dBZ)
+    plt.colorbar()
 
-plt.figure(2)
-plt.pcolormesh(dBZ, cmap='gist_ncar')
-plt.colorbar()
+    plt.figure(2)
+    plt.pcolormesh(dBZ, cmap='gist_ncar')
+    plt.colorbar()
