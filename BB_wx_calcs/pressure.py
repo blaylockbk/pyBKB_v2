@@ -57,6 +57,27 @@ def saturation_vapor_pressure(tmp_C):
     es = 6.112 * np.exp((17.67 * tmp_C)/(tmp_C+243.5))
     return es # returned units in hPa
 
+
+def saturation_vapor_pressure_NEW(tmp_C):
+    """
+    Source: A Simple Accurate Formula for Calculating Saturation Vapor Pressure of Water and Ice (Huang 2018)
+            https://journals.ametsoc.org/doi/full/10.1175/JAMC-D-17-0334.1
+    
+    Equation: Empirical fit to integrated Clausius-Clapeyron equation
+    
+    Input : Temperature in Degrees Celsius
+    Output: Saturation Vapor Pressure in hPa (millibars) 
+    """
+    if tmp_C > 0:
+        print '--> Saturation vapor pressure over water'
+        Ps = np.exp(34.494 - (4924.99/(tmp_C + 237.1)))/((tmp_C + 105)**1.57)
+    else:
+        print '--> Saturation vapor pressure over ice'
+        Ps = np.exp(43.494 - (6545.8/(tmp_C + 278)))/((tmp_C + 868)**2)
+
+    return Ps/100 # returned in hPa
+
+
 def vapor_pressure_deficit(tmp_C, RH):
     """
     Source:

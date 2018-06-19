@@ -10,6 +10,12 @@ New fire temperature.
 When plotting the true color image with plt.pcolormesh(), pay attention to the
 specifics. 
 
+Functions:
+    contrast_correction()        - Contrast adjustment for an RGB image.
+    files_on_pando()             - List GOES16 ABI file names for a specific date.
+    file_nearest()               - List the file closest to the requested time.
+    get_GOES16_truecolor()       - Build the RGB for a true color image from ABI.
+    get_GOES16_firetemperature() - Build the RGB for a fire temperature image from ABI.
 """
 
 from datetime import datetime, timedelta
@@ -19,7 +25,7 @@ from pyproj import Proj
 import subprocess
 
 
-def contrast_correction(color, C):
+def contrast_correction(color, contrast):
     """
     Modify the contrast of an R, G, or B color channel
     See: #www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
@@ -27,7 +33,7 @@ def contrast_correction(color, C):
     Input:
         C - contrast level
     """
-    F = (259*(C + 255))/(255.*259-C)
+    F = (259*(contrast + 255))/(255.*259-contrast)
     COLOR = F*(color-.5)+.5
     COLOR = np.minimum(COLOR, 1)
     COLOR = np.maximum(COLOR, 0)
@@ -74,49 +80,68 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
         print "Can't open file:", FILE
         return None
 
-    # Load the RGB arrays and apply a gamma correction (a power, usually the squar root)
-    gamma = .40
-    R = np.power(C.variables['CMI_C02'][:], gamma) # Band 2 is red (0.64 um)
-    G = np.power(C.variables['CMI_C03'][:], gamma) # Band 3 is "green" (0.865 um)
-    B = np.power(C.variables['CMI_C01'][:], gamma) # Band 1 is blue (0.47 um)
-    #R = np.power(C.variables['CMI_C02'][:].data, gamma) # Band 2 is red (0.64 um)
-    #G = np.power(C.variables['CMI_C03'][:].data, gamma) # Band 3 is "green" (0.865 um)
-    #B = np.power(C.variables['CMI_C01'][:].data, gamma) # Band 1 is blue (0.47 um)
+    # Load the RGB arrays
+    R = C.variables['CMI_C02'][:].data
+    G = C.variables['CMI_C03'][:].data
+    B = C.variables['CMI_C01'][:].data
+
+    # Turn empty values into nans
+    R[R==-1] = np.nan
+    G[G==-1] = np.nan
+    B[B==-1] = np.nan
+
+    # Apply range limits for each channel becuase RGB values must be between 0 and 1
+    R = np.maximum(R, 0)
+    R = np.minimum(R, 1)
+    G = np.maximum(G, 0)
+    G = np.minimum(G, 1)
+    B = np.maximum(B, 0)
+    B = np.minimum(B, 1)
+
+    # Apply the gamma correction
+    gamma = 0.4
+    R = np.power(R, gamma)
+    G = np.power(G, gamma)
+    B = np.power(B, gamma)
     print '\n   Gamma correction: %s' % gamma
 
-    # Modify the RGB color contrast:
-    contrast = 150
-    print "   Contrast correction: %s\n" % contrast
-    F = (259*(contrast + 255))/(255.*259-contrast)
-    R = contrast_correction(R, contrast)
-    G = contrast_correction(G, contrast)
-    B = contrast_correction(B, contrast)
-    
-    # "True Green" is some linear interpolation between the three channels
+    # Calculate the "True" Green
     G_true = 0.48358168 * R + 0.45706946 * B + 0.06038137 * G
+    G_true = np.maximum(G_true, 0)
+    G_true = np.minimum(G_true, 1)
+
+    # Modify the RGB color contrast:
+    contrast = 125
+    RGB_contrast = contrast_correction(np.dstack([R, G_true, B]), contrast)
+    print '\n   contrast correction: %s' % contrast
 
     if night_IR == True:
         # Prepare the Clean IR band by converting brightness temperatures to greyscale values
         # From: https://github.com/occ-data/goes16-play/blob/master/plot.py
-        cleanir = C.variables['CMI_C13'][:]
-        #cleanir = C.variables['CMI_C13'][:].data
-        cir_min = 90.0
-        cir_max = 313.0
-        cleanir_c = (cleanir - cir_min) / (cir_max - cir_min) # normalize array between 0 and 1
-        cleanir_c = np.maximum(cleanir_c, 0.0)
-        cleanir_c = np.minimum(cleanir_c, 1.0)
-        cleanir_c = (1.0 - np.float64(cleanir_c))
+        cleanIR = C.variables['CMI_C13'][:].data
+        cleanIR[cleanIR==-1] = np.nan
 
-        # This method makes some cold cloud tops more white near the day/night boundary.
-        cleanir_c = cleanir_c/1.5 # Lower scale of IR: 
-                                  # trying to make cold clouds near day/night
-                                  # boundary not be changed too much
-        RGB = np.dstack([np.maximum(R, cleanir_c), np.maximum(G_true, cleanir_c), np.maximum(B, cleanir_c)])
+        # Apply range limits for clean IR channel
+        cleanIR = np.maximum(cleanIR, 90)
+        cleanIR = np.minimum(cleanIR, 313)
+
+        # Normalize the channel between a range
+        cleanIR = (cleanIR-90)/(313-90)
+
+        # Invert colors
+        cleanIR = 1 - cleanIR
+
+        # Lessen the brightness of the coldest clouds so they don't appear so bright near the day/night line
+        cleanIR = cleanIR/1.5
+        
+        # Return the final RGB array with CleanIR...
+        RGB = np.dstack([np.maximum(RGB_contrast[:,:,0], cleanIR), np.maximum(RGB_contrast[:,:,1], cleanIR), np.maximum(RGB_contrast[:,:,2], cleanIR)])
     
     else:
-        # The final RGB array :)
-        RGB = np.dstack([R, G_true, B])
+        # The final RGB array, withouth CleanIR :)
+        RGB = RGB_contrast
     
+
     # don't need the other file info or processing? 
     if only_RGB:
         return RGB
@@ -157,6 +182,7 @@ def get_GOES16_truecolor(FILE, only_RGB=False, night_IR=True):
 
 
     return {'TrueColor': RGB,
+            'file': FILE,
             'lat': lats,
             'lon': lons,
             'DATE': DATE,

@@ -1,5 +1,5 @@
 # Brian Blaylock
-# May 31, 2018                            Poor GOES-17 is having cooling issues
+# May 31, 2018                             Poor GOES-17. It has cooling issues.
 
 """
 Match data collected from the GOES-16 Geostationary Lightning Mapper (GLM) with
@@ -21,6 +21,11 @@ Approximate Timeline of 5 minutes of ABI and GLM data collection:
         - (dash) is 10 seconds of data collection
         _ (underscore) is 10 seconds of no data collection
         . (period) is the interval that the GLM writes a file
+
+Functions:
+    get_GLM_files_for_range() - Get GLM file names for a date range
+    get_GLM_files_for_ABI()   - Get GLM file names for an ABI image
+    accumulate_GLM()          - Return list of point data for a list of files
 """
 
 import os 
@@ -36,44 +41,27 @@ sys.path.append('/uufs/chpc.utah.edu/common/home/u0553130/pyBKB_v2/')
 sys.path.append('B:\pyBKB_v2')
 
 
-def get_GLM_files_for_ABI(FILE):
+def get_GLM_files_for_range(sDATE, eDATE):
     """
-    Get all the GLM 'flashes' data file names that occurred within the 5-minute
-    scan window for an ABI scan.
+    Get all the GLM 'flashes' data file names that occurred within a range of
+    DATES
 
     Input:
-        FILE - the path and file name of an ABI scan
+        sDATE - the begining date you want GLM data for
+        eDATE - the ending date you want GLM data for (exclusive)
     """
     # GOES16 ABI and GLM data is stored on horel-group7 and on Pando
-    HG7 = '/uufs/chpc.utah.edu/common/home/horel-group7/Pando/GOES16'
+    HG7 = '/uufs/chpc.utah.edu/common/home/horel-group7/Pando/GOES16/GLM-L2-LCFA/'
 
-    # Get info from the file name
-    FILE_SPLIT = FILE.split('_')
-    product = '-'.join(FILE_SPLIT[1].split('-')[:-1]) # remove the scan mode
-    sDATE = datetime.strptime(FILE_SPLIT[3], 's%Y%j%H%M%S%f')
-    eDATE = sDATE + timedelta(minutes=5)
+    # List range of dates by hour. Each hour is a directory we need to grab files from.
+    hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24 + 1
+    DATES = [sDATE+timedelta(hours=h) for h in range(hours)]
 
-    # Build path of file on horel-group7
-    ABI = '%s/%s/%s/%s' % (HG7, product, sDATE.strftime('%Y%m%d'), FILE)
-
-    # Need to pay attention to weather or not the sDATE.hour and eDATE.hour 
-    # are equal. If they are not, then we need to grab GLM data from two 
-    # dirtories because the ABI scan spans two different hours.
-
-    if sDATE.hour == eDATE.hour:
-        GLM_DIR = '%s/GLM-L2-LCFA/%s/%02d' % (HG7, sDATE.strftime('%Y%m%d'), sDATE.hour)
-        GLM = os.listdir(GLM_DIR)
-        GLM = ['%s/%s' % (GLM_DIR, i) for i in GLM]
-    else:
-        GLM_DIR1 = '%s/GLM-L2-LCFA/%s/%02d' % (HG7, sDATE.strftime('%Y%m%d'), sDATE.hour)
-        GLM1 = os.listdir(GLM_DIR1)
-        GLM1 = ['%s/%s' % (GLM_DIR1, i) for i in GLM1]
-
-        GLM_DIR2 = '%s/GLM-L2-LCFA/%s/%02d' % (HG7, eDATE.strftime('%Y%m%d'), eDATE.hour)
-        GLM2 = os.listdir(GLM_DIR2)
-        GLM2 = ['%s/%s' % (GLM_DIR2, i) for i in GLM2]
-        
-        GLM = GLM1 + GLM2
+    GLM = []
+    for i in DATES:
+        DIR = '%s/%s/' % (HG7, i.strftime('%Y%m%d/%H'))
+        for f in os.listdir(DIR):
+            GLM.append(DIR+f)
 
     GLM_FILES = filter(lambda x: datetime.strptime(x.split('_')[4], 'e%Y%j%H%M%S%f') < eDATE
                             and  datetime.strptime(x.split('_')[4], 'e%Y%j%H%M%S%f') >= sDATE, GLM)
@@ -85,14 +73,53 @@ def get_GLM_files_for_ABI(FILE):
     return return_this
 
 
-def accumulate_GLM_flashes_for_ABI(FILE, data_type='flash'):
+def get_GLM_files_for_ABI(FILE, next_minutes=5):
+    """
+    Get all the GLM 'flashes' data file names that occurred within a range of
+    DATES
+
+    Input:
+        FILE         - The file name of an ABI image
+        next_minutes - Time time duration to collect GLM file names. Default is
+                       5 minutes which is the timedelta between ABI scans.
+    """
+    # GOES16 ABI and GLM data is stored on horel-group7 and on Pando
+    HG7 = '/uufs/chpc.utah.edu/common/home/horel-group7/Pando/GOES16/GLM-L2-LCFA/'
+
+    # List range of dates by hour. Each hour is a directory we need to grab files from.
+    # Get info from the file name
+    FILE_SPLIT = FILE.split('_')
+    sDATE = datetime.strptime(FILE_SPLIT[3], 's%Y%j%H%M%S%f')
+    eDATE = sDATE + timedelta(minutes=next_minutes)
+
+    hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24 + 1
+    DATES = [sDATE+timedelta(hours=h) for h in range(hours)]
+
+    GLM = []
+    for i in DATES:
+        DIR = '%s/%s/' % (HG7, i.strftime('%Y%m%d/%H'))
+        for f in os.listdir(DIR):
+            GLM.append(DIR+f)
+
+    GLM_FILES = filter(lambda x: datetime.strptime(x.split('_')[4], 'e%Y%j%H%M%S%f') < eDATE
+                            and  datetime.strptime(x.split('_')[4], 'e%Y%j%H%M%S%f') >= sDATE, GLM)
+
+    return_this = {'Files': GLM_FILES,
+                   'Range': [sDATE, eDATE]                  
+                  }
+    
+    return return_this
+
+
+def accumulate_GLM(GLM, data_type='flash'):
     """
     Accumulate all the GLM 'flash' data that occurred within the 5-minute
     scan window for an ABI file and return the latitude, longitude, and energy
     of all the flashes.
 
     Input:
-        FILE      - The file name of an ABI scan
+        GLM       - A list of GLM files or the dictionary returned by 
+                    get_GLM_files_for_range() or get_GLM_files_for_ABI().
         data_type - Data to retrieve. Default is 'flash' data. Other options 
                     are 'event' and 'group' which have messed up latitude and
                     longitude, so don't use them unless you figure them out.
@@ -103,8 +130,9 @@ def accumulate_GLM_flashes_for_ABI(FILE, data_type='flash'):
         of observations per file. If you need to, you can separate the data
         values by the data's 20-second intervals rather than the 5-minute lump.
     """
-    # Get a list of GLM file names for the ABI file of interest
-    GLM = get_GLM_files_for_ABI(FILE)
+    # If GLM is not a dictionary with a key 'Files', then package it as a dict
+    if type(GLM) is not dict:
+        GLM = {'Files':GLM}
 
     # Initialize arrays for latitude, longitude, and flash energy
     lats = np.array([])
@@ -159,3 +187,4 @@ if __name__ == '__main__':
 
     plt.title('GOES-16 GLM Flashes', fontweight='semibold', fontsize=15)
     plt.title('Start: %s\nEnd: %s' % (GLM['DATETIME'][0].strftime('%H:%M:%S UTC %d %B %Y'), GLM['DATETIME'][1].strftime('%H:%M:%S UTC %d %B %Y')), loc='right')    
+    plt.show()

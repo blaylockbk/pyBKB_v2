@@ -15,7 +15,7 @@ import zipfile
 
 
 def get_fires(DATE=datetime.utcnow(),
-              min_size=500, max_size=3000000,
+              min_size=1000, max_size=3000000,
               AK=False, HI=False,
               verbose=True):
     """
