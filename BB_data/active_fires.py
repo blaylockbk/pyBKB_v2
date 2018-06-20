@@ -57,8 +57,6 @@ def get_fires(DATE=datetime.utcnow(),
         # Maybe today's file isn't up yet. Try yesterdays...
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
         text = urllib2.urlopen(URL)
-    if verbose:
-        print 'Got fire data from Active Fire Mapping Program: %s' % URL       
 
     # Initialize the return dictionary
     return_this = {'DATE Requested':DATE,
@@ -79,7 +77,7 @@ def get_fires(DATE=datetime.utcnow(),
                                       'cause': F[2],
                                       'report date': datetime.strptime(F[3], '%d-%b-%y') if F[3] != 'Not Reported' else 'Not Reported',
                                       'start date': datetime.strptime(F[4], '%d-%b-%y') if F[4] != 'Not Reported' else 'Not Reported',
-                                      'IMT Type': int(F[5]) if F[5] != '' else 'Not Reported',
+                                      'IMT Type': F[5],
                                       'state': F[6],
                                       'area': int(F[7]),
                                       'percent contained': F[8],
@@ -87,7 +85,11 @@ def get_fires(DATE=datetime.utcnow(),
                                       'latitude': float(F[10]),
                                       'longitude': float(F[11]),
                                       'is MesoWest': False} # MesoWest station ID if you want to include the observed data in plot
+    if verbose:
+        print 'Got fire data from Active Fire Mapping Program: %s' % URL       
+
     return return_this
+
 
 
 def get_incidents(inctype="Wildfire", recent_days=3, limit_num=10, verbose=True):
@@ -115,9 +117,7 @@ def get_incidents(inctype="Wildfire", recent_days=3, limit_num=10, verbose=True)
     # Built URL and make request
     URL = 'https://inciweb.nwcg.gov/feeds/rss/incidents/'
     xml = urllib2.urlopen(URL)
-    if verbose:
-        print 'Got incident data from InciWeb: %s' % URL   
-
+    
     # Parse the xml data
     tree = ET.parse(xml)
 
@@ -160,6 +160,9 @@ def get_incidents(inctype="Wildfire", recent_days=3, limit_num=10, verbose=True)
         except:
             print "XLM !ERROR!, had to skip an incident. Probably a bad lat/lon??"
             continue
+
+    if verbose:
+        print 'Got incident data from InciWeb: %s' % URL   
 
     return return_this
 

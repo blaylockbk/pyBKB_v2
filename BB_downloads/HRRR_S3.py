@@ -142,7 +142,7 @@ def get_hrrr_variable(DATE, variable,
     ## --- Set Temporary File Name --------------------------------------------
     # Temporary file name has to be unique, or else when we use multiprocessing
     # we might accidentally delete files before we are done with them.
-    outfile = '%stemp_%s_%s_f%02d_%s.grib2' % (outDIR, model, DATE.strftime('%Y%m%d%H'), fxx, variable[:3])
+    outfile = '%stemp_%s_%s_f%02d_%s.grib2' % (outDIR, model, DATE.strftime('%Y%m%d%H'), fxx, variable[:3].replace(":", ''))
 
     if verbose is True:
         print ' >> Dowloading tempfile: %s' % outfile

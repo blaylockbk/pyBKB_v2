@@ -174,7 +174,7 @@ class WindroseAxes(PolarAxes):
 
         def get_labels():
             labels = np.copy(self._info['bins'])
-            labels = ["[%.1f : %0.1f] miles" %(labels[i], labels[i+1]) \
+            labels = ["[%0.1f : %0.1f] miles" %(labels[i], labels[i+1]) \
                       for i in range(len(labels)-1)]
             return labels
 
