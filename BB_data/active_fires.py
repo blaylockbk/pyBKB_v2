@@ -16,6 +16,9 @@ import zipfile
 
 def get_fires(DATE=datetime.utcnow(),
               min_size=1000, max_size=3000000,
+              max_containment=60,
+              west_of=-100,
+              limit_num=10,
               AK=False, HI=False,
               verbose=True):
     """
@@ -66,12 +69,18 @@ def get_fires(DATE=datetime.utcnow(),
     # Fill the FIRES key with a dictionary of each fire information
     for i, line in enumerate(text):
         F = line.split('\t')
+        if len(return_this['FIRES']) >= limit_num:
+            continue
         if i==0 or int(F[7]) < min_size or int(F[7]) > max_size:
             continue # Skip header, small fires, and large fires
+        if F[8] != 'Not Reported' and int(F[8]) > max_containment:
+            continue # Skip fires that are mostly contained
         if AK is False and F[6] == 'Alaska':
             continue # Skip Alaska
         if HI is False and F[6] == 'Hawaii':
             continue # Skip Hawaii
+        if float(F[11]) > west_of:
+            continue # Skip fires east of the west longitude
 
         return_this['FIRES'][F[0]] = {'incident number': F[1],
                                       'cause': F[2],
@@ -80,7 +89,7 @@ def get_fires(DATE=datetime.utcnow(),
                                       'IMT Type': F[5],
                                       'state': F[6],
                                       'area': int(F[7]),
-                                      'percent contained': F[8],
+                                      'percent contained': int(F[8]) if F[8] != 'Not Reported' else 'Not Reported',
                                       'expected containment': datetime.strptime(F[9], '%d-%b-%y')  if F[9] != 'Not Reported' else 'Not Reported',
                                       'latitude': float(F[10]),
                                       'longitude': float(F[11]),
@@ -210,4 +219,4 @@ def download_fire_perimeter_shapefile(active=True):
 
 if __name__ == "__main__":
     
-    get_fires()
+    f = get_fires()

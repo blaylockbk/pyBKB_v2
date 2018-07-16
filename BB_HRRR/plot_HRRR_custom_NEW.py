@@ -113,15 +113,15 @@ def draw_map_base(model, dsize, background,
             if map_res != 'f':
                 map_res = 'h'                # overwrite the map res default to be high if not requesting full.
         elif dsize == 'medium':
-            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = .5; area_thresh=1
+            plus_minus_latlon = .75; barb_thin = 2;  arcgis_res = 2500; half_box = 35;  alpha = 1; area_thresh=1
             if map_res != 'f':
                 map_res = 'h'
         elif dsize == 'large':
-            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = .5; area_thresh=50
+            plus_minus_latlon = 2.5; barb_thin = 6;  arcgis_res = 800;  half_box = 110; alpha = 1; area_thresh=50
             if map_res != 'f':
                 map_res = 'h'
         elif dsize == 'xlarge':
-            plus_minus_latlon = 5;   barb_thin = 12; arcgis_res = 700;  half_box = 210; alpha = .85; area_thresh=500
+            plus_minus_latlon = 5;   barb_thin = 12; arcgis_res = 700;  half_box = 210; alpha = 1; area_thresh=500
             if map_res != 'f':
                 map_res = 'i'
         elif dsize == 'xxlarge':

@@ -190,8 +190,10 @@ def get_hrrr_variable(DATE, variable,
                 print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
                 print "!! That's ok, I'll redirect you to the NOMADS server. :)                 !!"
                 print "---------------------------------------------------------------------------\n"
-            grib2file = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
-                        % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+            #grib2file = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/%s.t%02dz.wrf%sf%02d.grib2' \
+            #            % (DATE.strftime('%Y%m%d'), model, DATE.hour, field, fxx)
+            grib2file = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/conus/hrrr.t%02dz.wrf%sf%02d.grib2' \
+                        % (DATE.strftime('%Y%m%d'), DATE.hour, field, fxx)
             fileidx = grib2file+'.idx'
         elif model == 'hrrrX':
             print "\n-------------------------------------------------------------------------"
@@ -205,16 +207,8 @@ def get_hrrr_variable(DATE, variable,
                 print "!! Hey! You are requesting a date that is not on the Pando archive yet.  !!"
                 print "!! That's ok, I'll redirect you to the PARALLEL NOMADS server. :)        !!"
                 print "---------------------------------------------------------------------------\n"
-            if model =='hrrrak':
-                DOMAIN = 'alaska'
-                SHORT = 'ak.'
-            elif model == 'hrrr':
-                DOMAIN = 'conus'
-                SHORT = ''
-            PARA_NOMADS = 'http://para.nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/para/hrrr.%s/%s/' \
-                           % (DATE.strftime('%Y%m%d'), DOMAIN)
-            FILE = 'hrrr.t%02dz.wrf%sf%02d.%sgrib2' % (DATE.hour, field, fxx, SHORT)
-            grib2file = PARA_NOMADS+FILE    
+            grib2file = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod/hrrr.%s/alaska/hrrr.t%02dz.wrf%sf%02d.ak.grib2' \
+                        % (DATE.strftime('%Y%m%d'), DATE.hour, field, fxx)
             fileidx = grib2file+'.idx'
 
     if verbose:
@@ -990,7 +984,7 @@ if __name__ == "__main__":
     AK = get_hrrr_variable(datetime(2018, 2, 24, 15), 'TMP:2 m', fxx=0, model='hrrrak')
     H = get_hrrr_variable(datetime(2018, 2, 24, 15), 'TMP:2 m', fxx=0, model='hrrr')
 
-    m.pcolormesh(AK['lon'], AK['lat'], AK['value'], latlon=True, vmax=320, vmin=240)
-    m.pcolormesh(H['lon'], H['lat'], H['value'], latlon=True, vmax=310, vmin=210)
+    m.pcolormesh(AK['lon'], AK['lat'], AK['value'], latlon=True, vmax=320, vmin=240, cmap='Spectral_r')
+    m.pcolormesh(H['lon'], H['lat'], H['value'], latlon=True, vmax=310, vmin=210, cmap='Spectral_r')
     plt.colorbar()
     plt.show()
