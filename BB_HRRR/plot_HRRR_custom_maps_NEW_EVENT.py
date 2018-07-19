@@ -87,8 +87,8 @@ def lots_of_plots(VALIDDATE):
 
 
 # Valid Dates
-sDATE = datetime(2018, 4, 12, 12)
-eDATE = datetime(2018, 4, 14, 12)
+sDATE = datetime(2018, 7, 17, 0)
+eDATE = datetime(2018, 7, 18, 0)
 
 hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
 DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]

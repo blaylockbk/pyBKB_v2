@@ -145,25 +145,25 @@ def make_plots(inputs):
             barb_thin = 6
             arcgis_res = 800
             bfr = 110
-            alpha = .75
+            alpha = 1
         elif dsize == 'xlarge':
             plus_minus_latlon = 5
             barb_thin = 12
             arcgis_res = 700
             bfr = 210
-            alpha = .75
+            alpha = 1
         elif dsize == 'xxlarge':   # If domain runs into HRRR boundary, then it'll fail
             plus_minus_latlon = 10
             barb_thin = 25
             arcgis_res = 700
             bfr = 430
-            alpha = .75
+            alpha = 1
         elif dsize == 'xxxlarge':
             plus_minus_latlon = 15
             barb_thin = 35
             arcgis_res = 1000
             bfr = 700
-            alpha = .75
+            alpha = 1
         m = Basemap(resolution=map_res, projection='cyl',\
                     area_thresh=3000,\
                     llcrnrlon=lon-plus_minus_latlon, llcrnrlat=lat-plus_minus_latlon,\
@@ -860,22 +860,23 @@ if __name__ == '__main__':
     # === Load Form Input =========================================================
 
     # Valid Dates
-    sDATE = datetime(2018, 4, 12, 0)
-    eDATE = datetime(2018, 4, 13, 0)
+    sDATE = datetime(2018, 7, 17, 0)
+    eDATE = datetime(2018, 7, 18, 0)
 
-    EVENT = 'DPT_anomoly_%s' % sDATE.strftime('%Y-%m-%d')
+    EVENT = 'REF_Thunderstorm_%s' % sDATE.strftime('%Y-%m-%d')
     model = 'hrrr'
-    dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
-    location = '34.429,-119.100'   # A MesoWest ID or a 'lat,lon'
+    dsize = 'large'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
+    location = 'UKBKB'   # A MesoWest ID or a 'lat,lon'
     background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse
     
     #plotcode = '10mWind_Shade,10mWind_Barb'
     #plotcode = 'MSLP_Contour,10mWind_Shade'
     #plotcode = 'dBZ_Fill'
+    plotcode = 'dBZ_Fill,10mWind_Barb'
     #plotcode = '1hrPrecip_Fill'
     #plotcode = 'SnowCover_Fill'
     #plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
-    plotcode = '2mDPT_p95_fill,2mDPT_p05_fill,500HGT_Contour'
+    #plotcode = '2mDPT_p95_fill,2mDPT_p05_fill,500HGT_Contour'
     #plotcode = '10mWind_p95_fill,500HGT_Contour'
     
     hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24

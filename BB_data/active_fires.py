@@ -18,7 +18,7 @@ def get_fires(DATE=datetime.utcnow(),
               min_size=1000, max_size=3000000,
               max_containment=60,
               west_of=-100,
-              limit_num=10,
+              limit_num=12,
               AK=False, HI=False,
               verbose=True):
     """
@@ -55,7 +55,7 @@ def get_fires(DATE=datetime.utcnow(),
     try:
         # Build URL and make request
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % DATE.strftime('%Y-%m-%d')
-        text = urllib2.urlopen(URL)
+        text = urllib2.urlopen(URL).readlines()
     except:
         # Maybe today's file isn't up yet. Try yesterdays...
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
@@ -71,7 +71,7 @@ def get_fires(DATE=datetime.utcnow(),
         F = line.split('\t')
         if len(return_this['FIRES']) >= limit_num:
             continue
-        if i==0 or int(F[7]) < min_size or int(F[7]) > max_size:
+        if i==0 or float(F[7]) < min_size or float(F[7]) > max_size:
             continue # Skip header, small fires, and large fires
         if F[8] != 'Not Reported' and int(F[8]) > max_containment:
             continue # Skip fires that are mostly contained
@@ -81,14 +81,14 @@ def get_fires(DATE=datetime.utcnow(),
             continue # Skip Hawaii
         if float(F[11]) > west_of:
             continue # Skip fires east of the west longitude
-
+        #
         return_this['FIRES'][F[0]] = {'incident number': F[1],
                                       'cause': F[2],
                                       'report date': datetime.strptime(F[3], '%d-%b-%y') if F[3] != 'Not Reported' else 'Not Reported',
                                       'start date': datetime.strptime(F[4], '%d-%b-%y') if F[4] != 'Not Reported' else 'Not Reported',
                                       'IMT Type': F[5],
                                       'state': F[6],
-                                      'area': int(F[7]),
+                                      'area': float(F[7]),
                                       'percent contained': int(F[8]) if F[8] != 'Not Reported' else 'Not Reported',
                                       'expected containment': datetime.strptime(F[9], '%d-%b-%y')  if F[9] != 'Not Reported' else 'Not Reported',
                                       'latitude': float(F[10]),
