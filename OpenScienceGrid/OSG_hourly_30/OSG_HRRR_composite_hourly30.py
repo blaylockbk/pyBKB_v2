@@ -2,7 +2,7 @@
 # August 29, 2017                      I need to buy lightbulbs for the vanity
 
 """
-For evry hour, calculate 30-day (+/-15 days) mean and percentiles for
+For every hour, calculate 30-day (+/-15 days) mean and percentiles for
 the CONUS between two dates from the Pando HRRR archive. 
 New file is created for each hour, saved as a HDF5 file.
 """
