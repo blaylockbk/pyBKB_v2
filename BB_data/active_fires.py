@@ -12,11 +12,12 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os
 import zipfile
+import operator
 
 
 def get_fires(DATE=datetime.utcnow(),
-              min_size=1000, max_size=3000000,
-              max_containment=30,
+              max_size=3000000,
+              max_containment=45,
               west_of=-100,
               limit_num=12,
               AK=False, HI=False,
@@ -43,7 +44,6 @@ def get_fires(DATE=datetime.utcnow(),
 
     Input:
         DATE     - Datetime object. Defaults to the current utc datetime.
-        min_size - The minimum fire size in acres.
         max_size - The maximum fire size in acres (hurricanes sometimes shown in the list).
         AK       - False: do not include fires from Alaska (default)
                    True:  include fires from Alaska
@@ -61,39 +61,56 @@ def get_fires(DATE=datetime.utcnow(),
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
         text = urllib2.urlopen(URL)
 
-    # Initialize the return dictionary
-    return_this = {'DATE Requested':DATE,
-                   'URL':URL,
-                   'FIRES':{}}
-
-    # Fill the FIRES key with a dictionary of each fire information
+    # Dictionary of all fires within defined limitations
+    all_fires = {}
+        
+    # Fill the all_fires dictionary with each fire information
     for i, line in enumerate(text):
         F = line.split('\t')
-        if len(return_this['FIRES']) >= limit_num:
-            continue
-        if i==0 or float(F[7]) < min_size or float(F[7]) > max_size:
-            continue # Skip header, small fires, and large fires
-        if F[8] != 'Not Reported' and int(F[8]) > max_containment:
-            continue # Skip fires that are mostly contained
+        if i==0 or float(F[7]) > max_size:
+            continue # Skip first line (header) and large incidents
         if AK is False and F[6] == 'Alaska':
             continue # Skip Alaska
         if HI is False and F[6] == 'Hawaii':
             continue # Skip Hawaii
+        if F[8] == 'Not Reported' or int(F[8]) > max_containment:
+                continue # Skip fires that are mostly contained or not specified
         if float(F[11]) > west_of:
             continue # Skip fires east of the west longitude
-        #
-        return_this['FIRES'][F[0]] = {'incident number': F[1],
-                                      'cause': F[2],
-                                      'report date': datetime.strptime(F[3], '%d-%b-%y') if F[3] != 'Not Reported' else 'Not Reported',
-                                      'start date': datetime.strptime(F[4], '%d-%b-%y') if F[4] != 'Not Reported' else 'Not Reported',
-                                      'IMT Type': F[5],
-                                      'state': F[6],
-                                      'area': float(F[7]),
-                                      'percent contained': int(F[8]) if F[8] != 'Not Reported' else 'Not Reported',
-                                      'expected containment': datetime.strptime(F[9], '%d-%b-%y')  if F[9] != 'Not Reported' else 'Not Reported',
-                                      'latitude': float(F[10]),
-                                      'longitude': float(F[11]),
-                                      'is MesoWest': False} # MesoWest station ID if you want to include the observed data in plot
+        all_fires[F[0]] = {'incident number': F[1],
+                           'cause': F[2],
+                           'report date': datetime.strptime(F[3], '%d-%b-%y') if F[3] != 'Not Reported' else 'Not Reported',
+                           'start date': datetime.strptime(F[4], '%d-%b-%y') if F[4] != 'Not Reported' else 'Not Reported',
+                           'IMT Type': int(F[5]) if F[5] != '' else np.nan,
+                           'state': F[6],
+                           'area': float(F[7]),
+                           'percent contained': int(F[8]) if F[8] != 'Not Reported' else 'Not Reported',
+                           'expected containment': datetime.strptime(F[9], '%d-%b-%y')  if F[9] != 'Not Reported' else 'Not Reported',
+                           'latitude': float(F[10]),
+                           'longitude': float(F[11]),
+                           'is MesoWest': False} # MesoWest station ID if you want to include the observed data in plot
+
+    # For the list of fires that passed those checks, get some info about fire size
+    sort_this = []
+    for i in all_fires:
+        F = all_fires[i]
+        sort_this.append([i, F['IMT Type'], F['percent contained'], F['area']])
+
+    # Sort the list by the fire size. (You can change the itemgetter to sort by IMT Type or percent contained if you want)
+    sorted_by_size = np.array(sorted(sort_this, key=operator.itemgetter(3), reverse=True))
+    # Get the names of the largest fires, number limited by limit_num
+    names = sorted_by_size[:,0][:limit_num]
+
+    # Initialize a dictionary to return
+    return_this = {'DATE Requested':DATE,
+                   'URL':URL,
+                   'FIRES':{}}
+
+    # Return fire info if it is included in the list of names we have sorted
+    for i in all_fires:
+        if i in names:
+            return_this['FIRES'][i] = all_fires[i]
+
     if verbose:
         print 'Got fire data from Active Fire Mapping Program: %s' % URL       
 
