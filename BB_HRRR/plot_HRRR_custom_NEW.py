@@ -16,7 +16,7 @@ Contents:
     draw_refc       - Composite reflectivity fill (masked) and contours
     draw_tmp_dpt    - Color fill TMP or DPT, freezing contours, 5th and 95th percentile
     draw_rh         - Color fill, compute relative humidity at specified levels
-    draw_hgt        - Contour height at levels
+    draw_hgt        - Contour height at levels, 5th and 95th percentile for 500 hPa
     draw_mslp       - Color fill and contour for Mean Sea Level Pressure
     draw_redflag    - Color fill red flag conditions and red flag potential
     draw_variable   - Generic color fill for any other variable, masked option available
@@ -601,20 +601,63 @@ def draw_hgt(m, lons, lats,
              location, lat, lon,
              RUNDATE, VALIDDATE, fxx,
              alpha, half_box, barb_thin,
-             level='500 mb'):
+             level='500 mb',
+             Contour=False,
+             p05p95=False
+             ):
+    VAR = 'HGT'
+    cmap = 'RdGy'
+    cmapOSG = 'RdGy'
+    label = '%s Height (m)' % level
+    vmax=50
+    vmin=-50
+        
     H = get_hrrr_variable(RUNDATE, 'HGT:%s' % level,
                           model=model, fxx=fxx,
                           outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
                           verbose=False, value_only=True)
 
-    CS = m.contour(lons, lats, H['value'], 
-                    levels=range(3000, 8000, 60),
-                    linewidths=1.7,
-                    colors='k', 
-                    latlon=True,
-                    zorder=100)
-    plt.clabel(CS, inline=1, fmt='%2.f',zorder=50)
+    if Contour:
+        CS = m.contour(lons, lats, H['value'], 
+                        levels=range(3000, 8000, 60),
+                        linewidths=1.7,
+                        colors='k', 
+                        latlon=True,
+                        zorder=100)
+        plt.clabel(CS, inline=1, fmt='%2.f',zorder=50)
 
+    if p05p95:
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/%s_%s/' % (VAR, level.split(' ')[0])
+        FILE = 'OSG_HRRR_%s_%s_m%02d_d%02d_h%02d_f00.h5' % (VAR, level.split(' ')[0], VALIDDATE.month, VALIDDATE.day, VALIDDATE.hour)
+
+        ### Plot Depression
+        with h5py.File(DIR+FILE, 'r') as f:
+            p05 = f["p05"][:]
+        masked = H['value']-p05
+        masked = np.ma.array(masked)
+        masked[masked > 0] = np.ma.masked
+        
+        mesh_depression = m.pcolormesh(lons, lats, masked,
+                                       vmax=vmax, vmin=vmin,
+                                       latlon=True,
+                                       zorder=3,
+                                       cmap=cmapOSG)
+        
+        ### Plot Exceedance
+        with h5py.File(DIR+FILE, 'r') as f:
+            p95 = f["p95"][:]
+        masked = H['value']-p95
+        masked = np.ma.array(masked)
+        masked[masked < 0] = np.ma.masked
+
+        mesh_exceedance = m.pcolormesh(lons, lats, masked,
+                                       vmax=vmax, vmin=vmin,
+                                       latlon=True,
+                                       zorder=3,
+                                       cmap=cmapOSG)
+        
+        cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink, extend='both')
+        cb.set_label(r'5$\mathregular{^{th}}$/95$\mathregular{^{th}}$ percentile Depression/Exceedance %s' % label)
 
 
 def draw_mslp(m, lons, lats,
