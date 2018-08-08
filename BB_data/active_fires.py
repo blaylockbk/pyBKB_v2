@@ -17,9 +17,9 @@ import operator
 
 def get_fires(DATE=datetime.utcnow(),
               max_size=3000000,
-              max_containment=45,
+              max_containment=60,
               west_of=-100,
-              limit_num=12,
+              limit_num=14,
               AK=False, HI=False,
               verbose=True):
     """
@@ -56,6 +56,10 @@ def get_fires(DATE=datetime.utcnow(),
         # Build URL and make request
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % DATE.strftime('%Y-%m-%d')
         text = urllib2.urlopen(URL).readlines()
+        if len(text)<2:
+            # Maybe today's file isn't up yet. Try yesterdays...
+            URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
+            text = urllib2.urlopen(URL)    
     except:
         # Maybe today's file isn't up yet. Try yesterdays...
         URL = 'https://fsapps.nwcg.gov/afm/data/lg_fire/lg_fire_info_%s.txt' % (DATE-timedelta(days=1)).strftime('%Y-%m-%d')
@@ -67,6 +71,10 @@ def get_fires(DATE=datetime.utcnow(),
     # Fill the all_fires dictionary with each fire information
     for i, line in enumerate(text):
         F = line.split('\t')
+        try: 
+            float(F[7])
+        except:
+            continue # Sometimes there is an error in the data input. F[7] should be a number
         if i==0 or float(F[7]) > max_size:
             continue # Skip first line (header) and large incidents
         if AK is False and F[6] == 'Alaska':
