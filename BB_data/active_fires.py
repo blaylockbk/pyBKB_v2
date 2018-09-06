@@ -89,7 +89,7 @@ def get_fires(DATE=datetime.utcnow(),
                            'cause': F[2],
                            'report date': datetime.strptime(F[3], '%d-%b-%y') if F[3] != 'Not Reported' else 'Not Reported',
                            'start date': datetime.strptime(F[4], '%d-%b-%y') if F[4] != 'Not Reported' else 'Not Reported',
-                           'IMT Type': int(F[5]) if F[5] != '' else np.nan,
+                           'IMT Type': int(F[5]) if F[5] not in ['',  'N'] else np.nan,
                            'state': F[6],
                            'area': float(F[7]),
                            'percent contained': int(F[8]) if F[8] != 'Not Reported' else 'Not Reported',
@@ -115,8 +115,9 @@ def get_fires(DATE=datetime.utcnow(),
                    'FIRES':{}}
 
     # Return fire info if it is included in the list of names we have sorted
+    hardcoded_fires = ['COAL HOLLOW', 'CARR', 'COUGAR CREEK', 'GOLD HILL']
     for i in all_fires:
-        if i in names:
+        if i in names or i in hardcoded_fires:
             return_this['FIRES'][i] = all_fires[i]
 
     if verbose:
