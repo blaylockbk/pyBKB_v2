@@ -115,7 +115,7 @@ def get_fires(DATE=datetime.utcnow(),
                    'FIRES':{}}
 
     # Return fire info if it is included in the list of names we have sorted
-    hardcoded_fires = ['COAL HOLLOW', 'CARR', 'COUGAR CREEK', 'GOLD HILL']
+    hardcoded_fires = ['COAL HOLLOW', 'CARR', 'COUGAR CREEK', 'GOLD HILL', 'BALD MOUNTAIN', 'POLE CREEK']
     for i in all_fires:
         if i in names or i in hardcoded_fires:
             return_this['FIRES'][i] = all_fires[i]

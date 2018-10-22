@@ -39,10 +39,12 @@ else, require the user to change the requested variables.
 from datetime import datetime
 import json
 import urllib2
-from get_token import my_token # returns my personal token
-from convert_MW_date import MWdate_to_datetime
-
 import numpy as np
+
+from .get_token import my_token # returns my personal token
+from .convert_MW_date import MWdate_to_datetime
+
+
 
 # Get your own key and token from here: https://mesowest.org/api/signup/
 token = my_token()

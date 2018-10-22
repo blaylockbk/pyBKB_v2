@@ -23,11 +23,9 @@ def MWdate_to_datetime(x):
         DATES = list or array of python datetime object
         dates = native dates format, typically a string or number in epoch time
     """
-
     try:
         # print 'Times are in UTC'
         return datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ')
-
     except:
         # print 'Times are in Local Time'
         return datetime.strptime(x, '%Y-%m-%dT%H:%M:%S-0600')
