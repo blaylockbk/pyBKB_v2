@@ -850,6 +850,8 @@ def draw_variable(m, lons, lats,
         values = np.ma.array(values)
         if VAR == 'APCP':        
             values[values < .25] = np.ma.masked
+        elif VAR == 'LTNG':
+            values[values < .01] = np.ma.masked
         else:
             values[values == 0] = np.ma.masked
 
