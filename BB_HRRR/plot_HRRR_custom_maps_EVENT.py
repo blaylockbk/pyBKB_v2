@@ -311,7 +311,7 @@ def make_plots(inputs):
                 qk.text.set_backgroundcolor('w')
         
         if '10mWind_p95_fill' in plotcode:
-            DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/UVGRD_10_m/'
+            DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/UVGRD_10_m/'
             FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_10_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
             with h5py.File(DIR+FILE, 'r') as f:
                 spd_p95 = f["p95"][:]
@@ -459,7 +459,7 @@ def make_plots(inputs):
                                   outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
                                   verbose=False, value_only=True)
 
-        DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/DPT_2_m/'
+        DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/DPT_2_m/'
         FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('DPT_2_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
         dpt_cb = False
 
@@ -523,7 +523,7 @@ def make_plots(inputs):
                     latlon=True)
         
         if '2mTemp_p95_fill' in plotcode or '2mTemp_p05_fill' in plotcode:
-            DIR = '/uufs/chpc.utah.edu/common/home/horel-group2/blaylock/HRRR_OSG/hourly30/TMP_2_m/'
+            DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/TMP_2_m/'
             FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('TMP_2_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
 
             if '2mTemp_p95_fill' in plotcode:
@@ -860,28 +860,28 @@ if __name__ == '__main__':
     # === Load Form Input =========================================================
 
     # Valid Dates
-    sDATE = datetime(2018, 7, 17, 0)
-    eDATE = datetime(2018, 7, 18, 0)
+    sDATE = datetime(2019, 1, 30, 0)
+    eDATE = datetime(2019, 1, 30, 1)
 
-    EVENT = 'REF_Thunderstorm_%s' % sDATE.strftime('%Y-%m-%d')
+    EVENT = 'Polar_Vortex_%s' % sDATE.strftime('%Y-%m-%d')
     model = 'hrrr'
-    dsize = 'large'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
+    dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
     location = 'UKBKB'   # A MesoWest ID or a 'lat,lon'
     background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse
     
     #plotcode = '10mWind_Shade,10mWind_Barb'
     #plotcode = 'MSLP_Contour,10mWind_Shade'
     #plotcode = 'dBZ_Fill'
-    plotcode = 'dBZ_Fill,10mWind_Barb'
+    #plotcode = 'dBZ_Fill,10mWind_Barb'
     #plotcode = '1hrPrecip_Fill'
     #plotcode = 'SnowCover_Fill'
-    #plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
+    plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
     #plotcode = '2mDPT_p95_fill,2mDPT_p05_fill,500HGT_Contour'
     #plotcode = '10mWind_p95_fill,500HGT_Contour'
     
     hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
     DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
-    FXX = range(0, 19)
+    FXX = range(0,1)
 
     VARS = [[VALID_DATE, fxx] for VALID_DATE in DATES for fxx in FXX]
 

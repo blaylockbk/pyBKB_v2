@@ -876,29 +876,68 @@ if __name__ == '__main__':
     else:
         location = 'WBB'
     background = 'arcgis'
-    fxx = 6
-    VALIDDATE = datetime(2017, 10, 9, 6)
-    RUNDATE = VALIDDATE - timedelta(hours=fxx)
-
-    if ',' in location:
-        # User put inputted a lat/lon point request
-        lat, lon = location.split(',')
-        lat = float(lat)
-        lon = float(lon)
-    else:
-        # User requested a MesoWest station
-        location = location.upper()
-        stninfo = get_station_info([location])
-        lat = stninfo['LAT'][0]
-        lon = stninfo['LON'][0]
-
-    lats, lons = load_lats_lons()
-
+    fxx = 0
     
-    m, alpha, half_box, barb_thin = draw_map_base(model, dsize, background,
-                                                  location, lat, lon,
-                                                  RUNDATE, VALIDDATE, fxx)
+    # DATES
+    sDATE = datetime(2019, 1, 28, 0)
+    eDATE = datetime(2019, 2, 2, 0)
     
+    EVENT = 'Polar_Vortex_%s' % sDATE.strftime('%Y-%m-%d')
+
+    hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
+    DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
     
 
-    plt.show()
+    for VALIDDATE in DATES:
+        RUNDATE = VALIDDATE - timedelta(hours=fxx)
+
+        if ',' in location:
+            # User put inputted a lat/lon point request
+            lat, lon = location.split(',')
+            lat = float(lat)
+            lon = float(lon)
+        else:
+            # User requested a MesoWest station
+            location = location.upper()
+            stninfo = get_station_info([location])
+            lat = stninfo['LAT'][0]
+            lon = stninfo['LON'][0]
+
+        lats, lons = load_lats_lons(model)
+
+        
+        m, alpha, half_box, barb_thin = draw_map_base(model, dsize, background,
+                                                    location, lat, lon,
+                                                    RUNDATE, VALIDDATE, fxx)
+        
+        draw_tmp_dpt(m, lons, lats,
+                    model, dsize, background,
+                    location, lat, lon,
+                    RUNDATE, VALIDDATE, fxx,
+                    alpha, half_box, barb_thin,
+                    variable='TMP:2 m',
+                    Fill=False,
+                    Contour=False, contours = [0],
+                    p05p95=True,                 
+                    )
+
+        draw_hgt(m, lons, lats,
+                model, dsize, background,
+                location, lat, lon,
+                RUNDATE, VALIDDATE, fxx,
+                alpha, half_box, barb_thin,
+                level='500 mb',
+                Contour=True,
+                p05p95=False
+                )
+
+        #plt.show()
+        SAVEDIR = '/uufs/chpc.utah.edu/common/home/u0553130/public_html/PhD/HRRR/Events_Day/%s/' % EVENT
+        if not os.path.exists(SAVEDIR):
+            os.makedirs(SAVEDIR)
+        SAVEFIG = SAVEDIR + '%s_f%02d' % (VALIDDATE.strftime('%Y-%m-%d_h%H'), fxx)
+        plt.savefig(SAVEFIG)
+        print 'SAVED:', SAVEFIG
+        plt.close()
+        plt.clf()
+        plt.cla()
