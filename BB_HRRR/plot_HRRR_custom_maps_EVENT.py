@@ -46,6 +46,7 @@ from BB_downloads.HRRR_S3 import get_hrrr_variable
 from BB_MesoWest.MesoWest_STNinfo import get_station_info
 from BB_wx_calcs.wind import wind_uv_to_spd
 from BB_data.grid_manager import pluck_point_new
+from BB_cmap.NWS_standard_cmap import *
 
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
@@ -247,7 +248,7 @@ def make_plots(inputs):
     # =============================================================================
 
 
-    if '10mWind_Fill' in plotcode or '10mWind_Shade' in plotcode or '10mWind_Barb' in plotcode or '10mWind_Quiver' in plotcode or '10mWind_p95_fill' in plotcode:
+    if '10mWind_Fill' in plotcode or '10mWind_Shade' in plotcode or '10mWind_Barb' in plotcode or '10mWind_Quiver' in plotcode or '10mWind_p95_fill' in plotcode or '10mWind_p95_actual_fill' in plotcode:
         # Get data
         H_u = get_hrrr_variable(DATE, 'UGRD:10 m',
                                 model=model, fxx=fxx,
@@ -260,10 +261,11 @@ def make_plots(inputs):
         spd = wind_uv_to_spd(H_u['value'], H_v['value'])
         
         if '10mWind_Fill' in plotcode:
+            cmap = cm_wind()
             m.pcolormesh(gridlon, gridlat, spd,
                         latlon=True,
-                        cmap='magma_r',
-                        vmin=0, alpha=alpha)
+                        cmap=cmap,
+                        vmin=0, vmax=60, alpha=alpha)
             cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
             cb.set_label(r'10 m Wind Speed (m s$\mathregular{^{-1}}$)')
 
@@ -310,22 +312,59 @@ def make_plots(inputs):
                                 color='darkgreen')
                 qk.text.set_backgroundcolor('w')
         
-        if '10mWind_p95_fill' in plotcode:
+        if '10mWind_p95_fill' in plotcode or '10mWind_p95_actual_fill':
             DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/UVGRD_10_m/'
             FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_10_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
             with h5py.File(DIR+FILE, 'r') as f:
                 spd_p95 = f["p95"][:]
-            masked = spd-spd_p95
-            masked = np.ma.array(masked)
-            masked[masked < 0] = np.ma.masked
+            if '10mWind_p95_fill' in plotcode:
+                masked = spd-spd_p95
+                masked = np.ma.array(masked)
+                masked[masked < 0] = np.ma.masked    
+                m.pcolormesh(gridlon, gridlat, masked,
+                    vmax=10, vmin=0,
+                    latlon=True,
+                    cmap='viridis',
+                    alpha=alpha)
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'10 m Wind Speed 95th Percentile Exceedance (m s$\mathregular{^{-1}}$)')
             
-            m.pcolormesh(gridlon, gridlat, masked,
-                vmax=10, vmin=0,
-                latlon=True,
-                cmap='RdPu',
-                alpha=alpha)
-            cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
-            cb.set_label(r'10 m Wind Speed exceeding 95th Percentile (m s$\mathregular{^{-1}}$)')
+            if '10mWind_p95_actual_fill' in plotcode:
+                cmap = cm_wind()
+                m.pcolormesh(gridlon, gridlat, spd_p95,
+                             vmax=60, vmin=0,
+                             latlon=True,
+                             cmap=cmap,
+                             alpha=alpha)
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'95th Percentile 10 m Wind Speed (m s$\mathregular{^{-1}}$)')
+
+    if '10mWind_p100_fill' in plotcode or '10mWind_p100_actual_fill':
+            DIR = '/uufs/chpc.utah.edu/common/home/horel-group8/blaylock/HRRR_OSG/hourly30/UVGRD_10_m/'
+            FILE = 'OSG_HRRR_%s_m%02d_d%02d_h%02d_f00.h5' % (('UVGRD_10_m', VALID_DATE.month, VALID_DATE.day, VALID_DATE.hour))
+            with h5py.File(DIR+FILE, 'r') as f:
+                spd_p95 = f["p100"][:]
+            if '10mWind_p100_fill' in plotcode:
+                masked = spd-spd_p95
+                masked = np.ma.array(masked)
+                masked[masked < 0] = np.ma.masked    
+                m.pcolormesh(gridlon, gridlat, masked,
+                    vmax=10, vmin=0,
+                    latlon=True,
+                    cmap='viridis',
+                    alpha=alpha)
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'10 m Wind Speed 100th Percentile Exceedance (m s$\mathregular{^{-1}}$)')
+            
+            if '10mWind_p100_actual_fill' in plotcode:
+                cmap = cm_wind()
+                m.pcolormesh(gridlon, gridlat, spd_p95,
+                             vmax=60, vmin=0,
+                             latlon=True,
+                             cmap=cmap,
+                             alpha=alpha)
+                cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+                cb.set_label(r'100th Percentile 10 m Wind Speed (m s$\mathregular{^{-1}}$)')
 
 
     if '80mWind_Fill' in plotcode or '80mWind_Shade' in plotcode or '80mWind_Barb' in plotcode:
@@ -390,29 +429,51 @@ def make_plots(inputs):
             cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
             cb.set_label(r'80 m Wind Speed (m s$\mathregular{^{-1}}$)')
 
+    if 'Wind_Max_Fill' in plotcode:
+        H_gust = get_hrrr_variable(DATE, 'WIND:10 m',
+                                   model=model, fxx=fxx,
+                                   outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                                   verbose=False, value_only=True)
+        cmap = cm_wind()
+        m.pcolormesh(gridlon, gridlat, H_gust['value'],
+                     latlon=True,
+                     cmap=cmap,
+                     vmin=0, vmax=60, alpha=alpha)
+        cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+        cb.set_label(r'Hourly Max 10 m Wind (m s$\mathregular{^{-1}}$)')
 
-    if 'Gust_Hatch' in plotcode:
+
+    if 'Gust_Hatch' in plotcode or 'Gust_Fill' in plotcode:
         H_gust = get_hrrr_variable(DATE, 'GUST:surface',
                                 model=model, fxx=fxx,
                                 outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
                                 verbose=False, value_only=True)
 
         # Add to plot
-        m.contourf(gridlon, gridlat, H_gust['value'],
-                levels=[0, 10, 15, 20, 25],
-                hatches=[None, '.', '\\\\', '*'],
-                colors='none',
-                extend='max',
-                zorder=10,
-                latlon=True)
-        cb = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
-        cb.set_label(r'Surface Wind Gust (ms$\mathregular{^{-1}}$)')
-        
-        m.contour(gridlon, gridlat, H_gust['value'],
-                    levels=[10, 15, 20, 25],
-                    colors='k',
+        if 'Gust_Hatch' in plotcode:
+            m.contourf(gridlon, gridlat, H_gust['value'],
+                    levels=[0, 10, 15, 20, 25],
+                    hatches=[None, '.', '\\\\', '*'],
+                    colors='none',
+                    extend='max',
                     zorder=10,
                     latlon=True)
+            cb = plt.colorbar(orientation='horizontal', shrink=shrink, pad=pad)
+            cb.set_label(r'Surface Wind Gust (ms$\mathregular{^{-1}}$)')
+            
+            m.contour(gridlon, gridlat, H_gust['value'],
+                        levels=[10, 15, 20, 25],
+                        colors='k',
+                        zorder=10,
+                        latlon=True)
+        if 'Gust_Fill' in plotcode:
+            cmap = cm_wind()
+            m.pcolormesh(gridlon, gridlat, H_gust['value'],
+                         latlon=True,
+                         cmap=cmap,
+                         vmin=0, vmax=60, alpha=alpha)
+            cb = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+            cb.set_label(r'Surface Wind Gust (m s$\mathregular{^{-1}}$)')
 
 
     if 'dBZ_Fill' in plotcode or 'dBZ_Contour' in plotcode:
@@ -860,13 +921,13 @@ if __name__ == '__main__':
     # === Load Form Input =========================================================
 
     # Valid Dates
-    sDATE = datetime(2019, 1, 30, 0)
-    eDATE = datetime(2019, 1, 30, 1)
+    sDATE = datetime(2018, 11, 8, 0)
+    eDATE = datetime(2018, 11, 9, 1)
 
-    EVENT = 'Polar_Vortex_%s' % sDATE.strftime('%Y-%m-%d')
+    EVENT = 'CampFire_10mwind100th_%s' % sDATE.strftime('%Y-%m-%d')
     model = 'hrrr'
-    dsize = 'conus'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
-    location = 'UKBKB'   # A MesoWest ID or a 'lat,lon'
+    dsize = 'xlarge'    # ['conus', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge']
+    location = '39.82, -121.44'   # A MesoWest ID or a 'lat,lon'
     background = 'arcgis'    # arcgis, arcgisSat, arcgisRoad, terrain, landuse
     
     #plotcode = '10mWind_Shade,10mWind_Barb'
@@ -875,13 +936,19 @@ if __name__ == '__main__':
     #plotcode = 'dBZ_Fill,10mWind_Barb'
     #plotcode = '1hrPrecip_Fill'
     #plotcode = 'SnowCover_Fill'
-    plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
+    #plotcode = '2mTemp_p95_fill,2mTemp_p05_fill,500HGT_Contour'
     #plotcode = '2mDPT_p95_fill,2mDPT_p05_fill,500HGT_Contour'
     #plotcode = '10mWind_p95_fill,500HGT_Contour'
-    
+    #plotcode = '10mWind_p95_fill,10mWind_Barb'
+    #plotcode = 'Wind_Max_Fill,10mWind_Barb'
+    #plotcode = 'Gust_Fill,10mWind_Barb'
+    #plotcode = '10mWind_p95_actual_fill'
+    plotcode = '10mWind_p100_actual_fill'
+
+
     hours = (eDATE-sDATE).seconds/60/60 + (eDATE-sDATE).days*24
     DATES = [sDATE + timedelta(hours=h) for h in range(0,hours+1)]
-    FXX = range(0,1)
+    FXX = range(0,19)
 
     VARS = [[VALID_DATE, fxx] for VALID_DATE in DATES for fxx in FXX]
 
