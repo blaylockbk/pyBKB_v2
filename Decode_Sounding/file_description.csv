@@ -1,0 +1,24 @@
+# Description of Sounding File,,,,,,,
+#,,,,,,,
+# Brian Blaylock,,,,,,,
+# 28 September 2016,,,,,,,
+File Name,State,Latitude,Longitude,Month,Day,Year,Time(UTC)
+a,Bad Data,,,,,,
+b,Idaho,44.1,-116,8,19,2016,1400
+c,Bad Data,,,,,,
+e,Oregon,44.4,-118.2,8,16,2016,1500
+f,California,36.3,-121.9,8,14,2016,2000
+g,California,36.3,-121.9,8,12,2016,2000
+h,Bad Data,46.3,-114.1,8,9,2016,1800
+i,Bad Data,46.3,-114.1,8,9,2016,1800
+j,Colorado,40.9,-106.4,8,8,2016,1400
+k,Oregon,44.4,-118.2,8,7,2016,1500
+l,Oregon,44.4,-118.2,8,6,2016,1500
+m,Montana,46.3,-114.1,8,5,2016,2000
+n,EE Level,,,,,,
+o,Oregon,44.4,-118.2,8,5,2016,1600
+p,Utah,37.4,-113.5,8,3,2016,1400
+q,Utah,37.4,-113.5,7,29,2016,1500
+r,Utah,37.4,-113.5,7,27,2016,1400
+s,EE Level,,,,,,
+t,Bad Data,,,,,,

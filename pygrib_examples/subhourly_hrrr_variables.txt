@@ -1,0 +1,41 @@
+1:Maximum/Composite radar reflectivity:dB (instant):lambert:unknown:level 0 10:fcst time 1035 mins:from 201610180300
+2:3:3 (instant):lambert:cloudTop:level 0:fcst time 1035 mins:from 201610180300
+3:Vertically-integrated liquid:kg m**-1 (instant):lambert:unknown:level 0 10:fcst time 1035 mins:from 201610180300
+4:Visibility:m (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+5:Derived radar reflectivity:dB (instant):lambert:heightAboveGround:level 1000 m:fcst time 1035 mins:from 201610180300
+6:Derived radar reflectivity:dB (instant):lambert:heightAboveGround:level 4000 m:fcst time 1035 mins:from 201610180300
+7:Wind speed (gust):m s**-1 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+8:Updraft Helicity:m**2 s**-2 (instant):lambert:heightAboveGroundLayer:levels 5000-2000 m:fcst time 1035 mins:from 201610180300
+9:U component of wind:m s**-1 (instant):lambert:heightAboveGround:level 80 m:fcst time 1035 mins:from 201610180300
+10:V component of wind:m s**-1 (instant):lambert:heightAboveGround:level 80 m:fcst time 1035 mins:from 201610180300
+11:Surface pressure:Pa (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+12:2 metre temperature:K (instant):lambert:heightAboveGround:level 2 m:fcst time 1035 mins:from 201610180300
+13:Specific humidity:kg kg**-1 (instant):lambert:heightAboveGround:level 2 m:fcst time 1035 mins:from 201610180300
+14:2 metre dewpoint temperature:K (instant):lambert:heightAboveGround:level 2 m:fcst time 1035 mins:from 201610180300
+15:10 metre U wind component:m s**-1 (instant):lambert:heightAboveGround:level 10 m:fcst time 1035 mins:from 201610180300
+16:10 metre V wind component:m s**-1 (instant):lambert:heightAboveGround:level 10 m:fcst time 1035 mins:from 201610180300
+17:10 metre wind speed:m s**-1 (avg):lambert:heightAboveGround:level 10 m:fcst time 1030-1035 mins (avg):from 201610180300
+18:10 metre U wind component:m s**-1 (avg):lambert:heightAboveGround:level 10 m:fcst time 1030-1035 mins (avg):from 201610180300
+19:10 metre V wind component:m s**-1 (avg):lambert:heightAboveGround:level 10 m:fcst time 1030-1035 mins (avg):from 201610180300
+20:Downward short-wave radiation flux:W m**-2 (avg):lambert:surface:level 0:fcst time 1020-1035 mins (avg):from 201610180300
+21:Visible Beam Downward Solar Flux:W m**-2 (avg):lambert:surface:level 0:fcst time 1020-1035 mins (avg):from 201610180300
+22:Percent frozen precipitation:% (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+23:Precipitation rate:kg m**-2 s**-1 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+24:Categorical snow:(Code table 4.222) (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+25:Categorical ice pellets:(Code table 4.222) (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+26:Categorical freezing rain:(Code table 4.222) (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+27:Categorical rain:(Code table 4.222) (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+28:Geopotential Height:gpm (instant):lambert:cloudBase:level 0:fcst time 1035 mins:from 201610180300
+29:Geopotential Height:gpm (instant):lambert:unknown:level 0 215:fcst time 1035 mins:from 201610180300
+30:Geopotential Height:gpm (instant):lambert:cloudTop:level 0:fcst time 1035 mins:from 201610180300
+31:Upward long-wave radiation flux:W m**-2 (instant):lambert:nominalTop:level 0:fcst time 1035 mins:from 201610180300
+32:Downward short-wave radiation flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+33:Downward long-wave radiation flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+34:Upward short-wave radiation flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+35:Upward long-wave radiation flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+36:Visible Beam Downward Solar Flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+37:Visible Diffuse Downward Solar Flux:W m**-2 (instant):lambert:surface:level 0:fcst time 1035 mins:from 201610180300
+38:1:1 (instant):lambert:nominalTop:level 0:fcst time 1035 mins:from 201610180300
+39:2:2 (instant):lambert:nominalTop:level 0:fcst time 1035 mins:from 201610180300
+40:7:7 (instant):lambert:nominalTop:level 0:fcst time 1035 mins:from 201610180300
+41:8:8 (instant):lambert:nominalTop:level 0:fcst time 1035 mins:from 201610180300

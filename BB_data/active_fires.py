@@ -17,7 +17,7 @@ import operator
 
 def get_fires(DATE=datetime.utcnow(),
               max_size=3000000,
-              max_containment=60,
+              max_containment=60, containment_limit=False,
               west_of=-100,
               limit_num=14,
               AK=False, HI=False,
@@ -74,14 +74,20 @@ def get_fires(DATE=datetime.utcnow(),
         try: 
             float(F[7])
         except:
+            print "error", F[0]
             continue # Sometimes there is an error in the data input. F[7] should be a number
         if i==0 or float(F[7]) > max_size:
+            print "error", F[0], 'greater than maxsize'
             continue # Skip first line (header) and large incidents
         if AK is False and F[6] == 'Alaska':
+            print "error", F[0], 'In Alaska'
             continue # Skip Alaska
         if HI is False and F[6] == 'Hawaii':
+            print "error", F[0], "in Hawaii"
             continue # Skip Hawaii
-        if F[8] == 'Not Reported' or int(F[8]) > max_containment:
+        if containment_limit:
+            if F[8] == 'Not Reported' or int(F[8]) > max_containment:
+                print "error", F[0], 'Containment not reported'
                 continue # Skip fires that are mostly contained or not specified
         if float(F[11]) > west_of:
             continue # Skip fires east of the west longitude
@@ -107,6 +113,7 @@ def get_fires(DATE=datetime.utcnow(),
     # Sort the list by the fire size. (You can change the itemgetter to sort by IMT Type or percent contained if you want)
     sorted_by_size = np.array(sorted(sort_this, key=operator.itemgetter(3), reverse=True))
     # Get the names of the largest fires, number limited by limit_num
+    limit_num = np.minimum(len(sorted_by_size), limit_num)
     names = sorted_by_size[:,0][:limit_num]
 
     # Initialize a dictionary to return
