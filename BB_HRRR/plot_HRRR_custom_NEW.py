@@ -510,6 +510,28 @@ def draw_tmp_dpt(m, lons, lats,
         cb.set_label(r'5$\mathregular{^{th}}$/95$\mathregular{^{th}}$ percentile Depression/Exceedance %s' % label)
 
 
+def draw_pot(m, lons, lats,
+             model, dsize, background,
+             location, lat, lon,
+             RUNDATE, VALIDDATE, fxx,
+             alpha, half_box, barb_thin,
+             level='2 m'):
+    """
+    2 m Potential Temperature
+    """
+    # Only 2 m Potential temperature is in the HRRR file
+    level = '2 m'
+    H = get_hrrr_variable(RUNDATE, 'POT:%s' % level,
+                          model=model, fxx=fxx,
+                          outDIR='/uufs/chpc.utah.edu/common/home/u0553130/temp/',
+                          verbose=False, value_only=True)
+    m.pcolormesh(lons, lats, H['value'], cmap="coolwarm",
+                 zorder=2,
+                 latlon=True)
+    cbT = plt.colorbar(orientation='horizontal', pad=pad, shrink=shrink)
+    cbT.set_label('%s Potential Temperature (K)' % level)
+
+
 def draw_rh(m, lons, lats,
             model, dsize, background,
             location, lat, lon,
@@ -825,11 +847,11 @@ def draw_variable(m, lons, lats,
         cmap = 'BuPu_r'
         vmin = -1000
         vmax = 0
-    elif variable == 'POT:2 m':
-        cmap = 'Oranges'
-        label = '2 m Potential Temperature (C)'
-        vmax = H['value'].max()
-        vmin = H['value'].min()
+    #elif variable == 'POT:2 m':
+    #    cmap = 'Oranges'
+    #    label = '2 m Potential Temperature (C)'
+    #    vmax = H['value'].max()
+    #    vmin = H['value'].min()
     elif variable == 'PWAT':
         cmap = 'RdYlGn'
         label = r'Vertically Integrated Liquid Water (kg m$\mathregular{^{-2}}$)'
